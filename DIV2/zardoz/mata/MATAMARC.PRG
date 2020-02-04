@@ -16,7 +16,7 @@ begin
   // **** Carga de recursos ****
   // Graficos
   // Shit! Tengo que mover los ficheros
-  fpgPlayer = load_fpg("fpg\player.fpg");
+  fpgPlayer = load_fpg("zardoz\mata\fpg\player.fpg");
 
   // Creaci¢n procesos
   playerShip(fpgPlayer, 1);

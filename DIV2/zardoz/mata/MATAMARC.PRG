@@ -9,7 +9,19 @@ program matamarcianos;
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
 global
+  // **** Libreria de graficos
   fpgPlayer;
+  fpgShoots;
+
+  // **** Tipos de disparo
+  // Disparos simples
+  struct simpleShootData[3]
+    graphFile;
+    graph;
+    int damage; // Da¤o del disparo
+    int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
+    int speed; // Velocidad en pixels
+  end;
 
 begin
   set_mode(m640x480);
@@ -19,9 +31,15 @@ begin
   // **** Carga de recursos ****
   // Graficos
   fpgPlayer = load_fpg("zardoz\mata\fpg\player.fpg");
+  fpgShoots = load_fpg("zardoz\mata\fpg\shoots.fpg");
+
+  // Carga tipos de disparo
+  loadShootTypeData();
 
   // Creaci¢n procesos
   playerShip(fpgPlayer, 1);
+
+  // Main loop
   loop
     // Salida del juego para modo debug
     if (DEBUG_MODE == 1 && key(_q))
@@ -33,21 +51,58 @@ begin
   end
 end
 
+function loadShootTypeData()
+begin
+  // TODO Autocargar esto desde un fichero
+  simpleShootData[0].damage = 1;
+  simpleShootData[0].graphFile = fpgShoots;
+  simpleShootData[0].graph = 1;
+  simpleShootData[0].delay = 1;
+  simpleShootData[0].speed = 8;
+
+  simpleShootData[1].damage = 6;
+  simpleShootData[1].graphFile = fpgShoots;
+  simpleShootData[1].graph = 2;
+  simpleShootData[1].delay = 5;
+  simpleShootData[1].speed = 8;
+
+  simpleShootData[2].damage = 20;
+  simpleShootData[2].graphFile = fpgShoots;
+  simpleShootData[2].graph = 3;
+  simpleShootData[2].delay = 10;
+  simpleShootData[2].speed = 5;
+
+end
+
 process playerShip(graphFile, graphIndex)
+private
+  _health = 100;
+  _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
+  _mainWeapon = 0;
 begin
   // Asignaci¢n grafico
   file = graphFile;
   graph = graphIndex;
 
   loop
+    if (_health < 0)
+      break;
+    end;
     // Calcula de nueva posici¢n
     x = mouse.x;
     y = mouse.y;
 
-    if (mouse.left)
-      simpleShoot(fpgPlayer, 2, x, y, 1, 90000, 8, false);
+    if (mouse.left )
+      if (_mainShootCounter >= simpleShootData[_mainWeapon].delay)
+        _mainShootCounter = 0;
+        simpleShoot(simpleShootData[_mainWeapon].graphFile,
+          simpleShootData[_mainWeapon].graph, x, y,
+          simpleShootData[_mainWeapon].damage, 90000,
+          simpleShootData[_mainWeapon].speed, false);
+      end
     end
 
+    _mainShootCounter++;
     frame;
   end;
 end

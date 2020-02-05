@@ -7,15 +7,16 @@ COMPILER_OPTIONS _case_sensitive;
 
 program matamarcianos;
 
-import "c:\div2\demo2.dll";
+import "csv.dll";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
 global
-  num = 16;
   // **** Libreria de graficos
   fpgPlayer;
   fpgShoots;
+
+  array[10];
 
   // **** Tipos de disparo
   // Disparos simples
@@ -32,7 +33,10 @@ begin
   set_fps(60, 0);
   vsync=1;
 
-  num = ADDSQRT(30, 2);
+  // Vamos a ver si tira esto
+  readCSVToIntArray("data.csv", offset array, sizeof(array));
+  write_int(0, 0, 10, 0, offset array);
+
   // **** Carga de recursos ****
   // Graficos
   fpgPlayer = load_fpg("zardoz\mata\fpg\player.fpg");

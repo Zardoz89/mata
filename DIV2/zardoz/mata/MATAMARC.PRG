@@ -6,9 +6,13 @@ COMPILER_OPTIONS _case_sensitive;
 // ****************************************************************************
 
 program matamarcianos;
+
+import "c:\div2\demo2.dll";
+
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
 global
+  num = 16;
   // **** Libreria de graficos
   fpgPlayer;
   fpgShoots;
@@ -28,6 +32,7 @@ begin
   set_fps(60, 0);
   vsync=1;
 
+  num = ADDSQRT(30, 2);
   // **** Carga de recursos ****
   // Graficos
   fpgPlayer = load_fpg("zardoz\mata\fpg\player.fpg");
@@ -95,7 +100,7 @@ begin
     if (mouse.left )
       if (_mainShootCounter >= simpleShootData[_mainWeapon].delay)
         _mainShootCounter = 0;
-        simpleShoot(simpleShootData[_mainWeapon].graphFile,
+        shoot(simpleShootData[_mainWeapon].graphFile,
           simpleShootData[_mainWeapon].graph, x, y,
           simpleShootData[_mainWeapon].damage, 90000,
           simpleShootData[_mainWeapon].speed, false);
@@ -108,7 +113,7 @@ begin
 end
 
 /**
- * Disparo simple que se mueve en linea recta
+ * Disparo que se mueve en linea recta
  *
  * Par metros:
  * graphFile
@@ -120,7 +125,7 @@ end
  * speed Velocidad del disparo
  * enemyShoot si es 1, es un disparo enemigo y da¤a al jugador
  */
-process simpleShoot(graphFile, graphIndex, x, y, damage, direction, speed, enemyShoot)
+process shoot(graphFile, graphIndex, x, y, damage, direction, speed, enemyShoot)
 private
 begin
   // Asignaci¢n de grafico
@@ -141,3 +146,4 @@ begin
   end;
 end
 
+// TODO meter un process para spamear naves enemigas

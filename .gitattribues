@@ -10,4 +10,6 @@
 *.pcx binary
 *.MAP binary
 *.map binary
+*.EXE binary
+*.exe binary
 

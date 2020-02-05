@@ -3,6 +3,9 @@
 *.bat text eol=crlf
 *.PRG text eol=crlf
 *.prg text eol=crlf
+*.cpp text eol=crlf
+*.CPP text eol=crlf
+makefile text eol=crlf
 
 *.FPG binary
 *.fpg binary

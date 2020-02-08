@@ -6,7 +6,7 @@
 #define __CSV_H_
 
 // Descomentar est  linea para activar el modo debug de la DLL
-//#define CSV_DEBUG 1
+#define CSV_DEBUG 1
 
 #ifdef CSV_DEBUG
 #define CSV_LOG_FILE "csv.log"

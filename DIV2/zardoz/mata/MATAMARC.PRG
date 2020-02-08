@@ -17,6 +17,7 @@ global
   fpgShoots;
 
   array[10];
+  retval = 0;
 
   // **** Tipos de disparo
   // Disparos simples
@@ -34,8 +35,9 @@ begin
   vsync=1;
 
   // Vamos a ver si tira esto
-  readCSVToIntArray("data.csv", offset array, sizeof(array));
+  retval = readCSVToIntArray("zardoz\mata\file.csv", offset array, sizeof(array));
   write_int(0, 0, 10, 0, offset array);
+  write_int(0, 0, 50, 0, offset retval);
 
   // **** Carga de recursos ****
   // Graficos

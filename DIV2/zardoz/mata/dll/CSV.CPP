@@ -4,10 +4,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+
+#include "csv.h"
 
 #define GLOBALS
 #include "div.h"
+
+INIT_LOG();
+
+#define BUFFER_SIZE 256
 
 void dropBufferFrom(char *buf,char dropCharacter);
 void tokenizeLine(char *buf, int offset, int numberOfElements, int *index);
@@ -67,9 +72,11 @@ void putValue(const char *token, int offset, int index)
 void readCSVToIntArray() {
   char* fileName = NULL;
   FILE *file = NULL;
-  char buf[256];
+  char buf[BUFFER_SIZE];
   int error = 0;
   int index = 0;
+
+  OPEN_LOG();
 
   // Los par metros se leen en el orden inverso en que se declaran, al
   // provenir del stack del interprete de DIV
@@ -77,29 +84,36 @@ void readCSVToIntArray() {
   int offset = getparm();
   int offsetFileName = getparm();
 
-
-
-  //div_text_out("prueba lectura fichero", 0,0);
   // Obtenermos el texto en el array, a partir del bloque de textos + el offset que nos pasa DIV
   fileName = (char *)&mem[text_offset + offsetFileName];
 
-  bzero(buf, sizeof buf); // Datos basura en el buf? No gracias
+  LPRINTF("CSV: nElem = %d\n", numberOfElements);
+  LPRINTF("CSV: offset = %d\n", offset);
+  LPRINTF("CSV: fileName = %s\n", fileName);
 
-  errno = 0; // Limpiamos errno
+  memset(buf, 0, BUFFER_SIZE * sizeof(char));
+
   file = div_fopen(fileName, "r");
   if (file != NULL) {
-    /*while (index < numberOfElements ) { //&& fgets(buf, 255, file ) != NULL) {
-      //dropBufferFrom(buf, '\r');
-      //dropBufferFrom(buf, '\n'); // Purgar fin de linea CRLF o LF
-      //dropBufferFrom(buf, '#'); // Comentarios
-      //tokenizeLine(buf, offset, numberOfElements, &index);
-      index++;
-    }*/
+    LPRINT("CSV: fopen\n");
+    while (index < numberOfElements && fgets(buf, BUFFER_SIZE-1, file ) != NULL) {
+      LPRINTF("CSV: buf=%s\n", buf);
+      dropBufferFrom(buf, '\r');
+      dropBufferFrom(buf, '\n'); // Purgar fin de linea CRLF o LF
+      dropBufferFrom(buf, '#'); // Comentarios
+      tokenizeLine(buf, offset, numberOfElements, &index);
+    }
+    div_fclose(file);
+  } else {
+    LPRINT("CSV: file not opened or found\n");
+    retval(-1);
+    return;
   }
-  div_fclose(file);
 
-  error = (int) errno;
-  retval(error);
+  LPRINTF("CSV: index=%d\n", index);
+  CLOSE_LOG();
+  
+  retval(index);
 }
 
 void __export divlibrary(LIBRARY_PARAMS) {

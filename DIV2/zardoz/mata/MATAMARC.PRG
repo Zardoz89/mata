@@ -28,7 +28,8 @@ global
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
   end;
-
+local // Las variables locales a los procesos, se definen "universalmente" aqui
+  life;
 begin
   set_mode(m640x480);
   set_fps(60, 0);
@@ -191,8 +192,7 @@ begin
     // Colision con un enemigo
     enemyId = collision(type enemy);
     if (enemyId <> 0)
-      // TODO Ver como demonios accedo a la vida del proceso enemigo
-      //enemyId.life = enemyId.life - damage;
+      enemyId.life = enemyId.life - damage;
       break;
     end
 
@@ -216,7 +216,7 @@ end
  */
 process enemy(graph, x, y, initialLife)
 private
-  life = 0;
+  //life = 0;
 begin
   life = initialLife;
   file = fpgEnemy;

@@ -28,7 +28,16 @@ global
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
   end;
-local // Las variables locales a los procesos, se definen "universalmente" aqui
+
+  // **** Patrones de movimiento [paso, Id patr¢n]
+  struct paths[10,10]
+    angle; //  ngulo de movimiento
+    speed; // Velocidad de movimiento
+    ticks; // N§ de ticks que dura este paso
+    stop; // Indicador de no hay mas pasos
+  end;
+
+local // Las variables locales a los profesos, se definen "universalmente" aqui
   life;
 begin
   set_mode(m640x480);
@@ -44,6 +53,9 @@ begin
 
   // Carga tipos de disparo
   loadShootTypeData();
+
+  // Carga patrones de movimiento
+  loadMovPaths();
 
   // Creaci¢n procesos
   playerShip(1);
@@ -75,25 +87,16 @@ begin
   retVal = readCSVToIntArray(pathResolve("shoots.csv"),
       offset simpleShootData,
       sizeof(simpleShootData));
-
-  /*
-  // Autocargar esto desde un fichero
-  simpleShootData[0].damage = 1;
-  simpleShootData[0].graph = 1;
-  simpleShootData[0].delay = 1;
-  simpleShootData[0].speed = 8;
-
-  simpleShootData[1].damage = 6;
-  simpleShootData[1].graph = 2;
-  simpleShootData[1].delay = 5;
-  simpleShootData[1].speed = 8;
-
-  simpleShootData[2].damage = 20;
-  simpleShootData[2].graph = 3;
-  simpleShootData[2].delay = 10;
-  simpleShootData[2].speed = 5;
-  */
 end
+
+function loadMovPaths()
+private
+  retVal = 0;
+begin
+  retVal = readCSVToIntArray(pathResolve("movpaths.csv"),
+      offset paths,
+      sizeof(paths));
+end;
 
 function spawnEnemy()
 private
@@ -102,7 +105,7 @@ begin
   for (i=0; i < 5; i++)
     x = rand(0, 500);
     y = rand(0, 50);
-    enemy(1, x, y, 10);
+    enemy(1, x, y, 10, 0);
   end
 end
 
@@ -214,19 +217,38 @@ end
  * y
  * life : Vida del enemigo
  */
-process enemy(graph, x, y, initialLife)
+process enemy(graph, x, y, life, pathId)
 private
-  //life = 0;
+  _pathStep = 0;
+  _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
 begin
-  life = initialLife;
   file = fpgEnemy;
   region = GAME_REGION;
 
   while (! out_region(id, region) && life > 0)
+    // Aplicamos el patr¢n de mov. si hay uno asignado
+    if (pathId <> -1 && _pathStep <= 10)
+      if (!paths[_pathStep, pathId].stop)
+        if (_pathTick >= paths[_pathStep, pathId].ticks)
+          _pathStep++;
+          _pathTick = 0;
+        end;
+        xadvance(paths[_pathStep, pathId].angle, paths[_pathStep, pathId].speed);
+        _pathTick++;
+      end;
+    end;
     // TODO Colision con el jugador, le quita vida
 
-    // TODO Movimiento preprogramado...
     // Se leeria de un array de tuplas con direcci¢n y tiempo
     frame;
   end;
+end
+
+/**
+ * Interpolaci¢n lineal
+ * @param p Cuanto se interpola. De 0 a 100
+ */
+function linear(p, a, b)
+begin
+  return ((((100 - p) * a) + (p * b)) / 100);
 end

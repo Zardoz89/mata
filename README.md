@@ -31,7 +31,7 @@ Para esto me influencia bastante estos juegos :
     - [x] Movimiento de un sprite placeholder
     - [x] Disparos usando un arma asignada
     - [ ] (WIP) Control de colisión básico
-    - [ ] Patrón de movimiento de enemigo
+    - [x] Patrón de movimiento de enemigo
     - [ ] Generador de oleadas de enemigos
     - [ ] Items para cambiar/mejorar el arma
     - [ ] Tilemap de fondo de pantalla

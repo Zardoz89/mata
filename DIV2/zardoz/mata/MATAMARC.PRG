@@ -13,7 +13,8 @@ const
   DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
   PATH_USER="zardoz";
   PATH_PROG="mata";
-  GAME_REGION=0;
+  GAME_REGION=0; // Region de la zona de juego
+  PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
 global
   // **** Libreria de graficos
   fpgPlayer;
@@ -29,12 +30,16 @@ global
     int speed; // Velocidad en pixels
   end;
 
-  // **** Patrones de movimiento [paso, Id patr¢n]
-  struct paths[10,10]
-    angle; //  ngulo de movimiento
-    speed; // Velocidad de movimiento
-    ticks; // N§ de ticks que dura este paso
-    stop; // Indicador de no hay mas pasos
+  // **** Patrones de movimiento [Id patr¢n]
+  struct paths[10]
+    maxSteps; // N§ de pasos
+    vx0; // Velocidad inicial eje X
+    vy0; // Velocidad inicial eje Y
+    struct steps[10]
+      ax; // Aceleraci¢n eje x
+      ay; // Aceleraci¢n eje y
+      ticks; // N§ de ticks que dura este paso
+    end;
   end;
 
 local // Las variables locales a los profesos, se definen "universalmente" aqui
@@ -103,8 +108,8 @@ private
   i;
 begin
   for (i=0; i < 5; i++)
-    x = rand(0, 500);
-    y = rand(0, 50);
+    x = rand(0, 5000);
+    y = rand(0, 500);
     enemy(1, x, y, 10, 0);
   end
 end
@@ -119,14 +124,15 @@ begin
   file = fpgPlayer;
   graph = graph;
   region = GAME_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
 
   loop
     if (_health < 0)
       break;
     end;
     // Calcula de nueva posici¢n
-    x = mouse.x;
-    y = mouse.y;
+    x = mouse.x * PLAYFIELD_RESOLUTION;
+    y = mouse.y * PLAYFIELD_RESOLUTION;
 
     if (mouse.left )
       if (_mainShootCounter >= simpleShootData[_mainWeapon].delay)
@@ -160,6 +166,7 @@ begin
   // Asignaci¢n de grafico
   file = fpgShoots;
   region = GAME_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
 
   while (! out_region(id, region))
     if (collision(type playerShip))
@@ -190,6 +197,7 @@ private
 begin
   file = fpgShoots;
   region = GAME_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
 
   while (! out_region(id, region))
     // Colision con un enemigo
@@ -221,25 +229,37 @@ process enemy(graph, x, y, life, pathId)
 private
   _pathStep = 0;
   _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
+  _vx = 0;
+  _vy = 0;
 begin
   file = fpgEnemy;
   region = GAME_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  // Aplicamos la velocidad inicial si hay un patr¢n de mov.
+  if (pathId <> -1)
+    _vx = paths[pathId].vx0;
+    _vy = paths[pathId].vy0;
+  end;
+
 
   while (! out_region(id, region) && life > 0)
     // Aplicamos el patr¢n de mov. si hay uno asignado
     if (pathId <> -1 && _pathStep <= 10)
-      if (!paths[_pathStep, pathId].stop)
-        if (_pathTick >= paths[_pathStep, pathId].ticks)
+      if (paths[pathId].maxSteps >= _pathStep)
+        if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
           _pathStep++;
           _pathTick = 0;
         end;
-        xadvance(paths[_pathStep, pathId].angle, paths[_pathStep, pathId].speed);
+        _vx = _vx + paths[pathId].steps[_pathStep].ax;
+        _vy = _vy + paths[pathId].steps[_pathStep].ay;
         _pathTick++;
       end;
     end;
+    x = x + _vx;
+    y = y + _vy;
+
     // TODO Colision con el jugador, le quita vida
 
-    // Se leeria de un array de tuplas con direcci¢n y tiempo
     frame;
   end;
 end

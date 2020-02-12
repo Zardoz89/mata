@@ -15,6 +15,12 @@ const
   PATH_PROG="mata";
   GAME_REGION=0; // Region de la zona de juego
   PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
+
+  // **** Tipos de animaci¢n
+  ANI_SINGLE = 0; // Al terminar los frames, para
+  ANI_LOOP = 1; // Hace bucle
+  ANI_SPRING = 2; // avanza-retrocede en la animaci¢n
+
 global
   // **** Libreria de graficos
   fpgPlayer;
@@ -42,8 +48,21 @@ global
     end;
   end;
 
-local // Las variables locales a los profesos, se definen "universalmente" aqui
-  life;
+  // **** Tipos de enemigos del juego
+  struct enemyType[10]
+    // Sprite y animaci¢n
+    byte nFrames;
+    byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
+    int graphId[10];
+    int hull; // Vidia inicial
+    int shootTypeId; // Tipo de disparo
+    int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
+    // Abs es la frecuencia de disparo -> rand(0, 100) <= abs(aggresion)
+    word score; // Puntos que da al ser destruido
+  end;
+
+local // Las variables locales a los procesos, se definen "universalmente" aqui
+  hull; // Vida o puntos de casco de las naves
 begin
   set_mode(m640x480);
   set_fps(60, 0);
@@ -61,6 +80,9 @@ begin
 
   // Carga patrones de movimiento
   loadMovPaths();
+
+  // Carga tipo de enemigos
+  loadEnemyType();
 
   // Creaci¢n procesos
   playerShip(1);
@@ -103,6 +125,16 @@ begin
       sizeof(paths));
 end;
 
+function loadEnemyType()
+private
+  retVal = 0;
+begin
+  retVal = readCSVToIntArray(pathResolve("enemtype.csv"),
+      offset enemyType,
+      sizeof(enemyType));
+end;
+
+// Funcion temporal para crear enemigos
 function spawnEnemy()
 private
   i;
@@ -110,13 +142,12 @@ begin
   for (i=0; i < 5; i++)
     x = rand(0, 5000);
     y = rand(0, 500);
-    enemy(1, x, y, 10, 0);
+    enemy(x, y, 0, 0);
   end
 end
 
 process playerShip(graph)
 private
-  _health = 100;
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
   _mainWeapon = 0;
 begin
@@ -126,8 +157,10 @@ begin
   region = GAME_REGION;
   resolution = PLAYFIELD_RESOLUTION;
 
+  hull = 100;
+
   loop
-    if (_health < 0)
+    if (hull < 0)
       break;
     end;
     // Calcula de nueva posici¢n
@@ -203,7 +236,7 @@ begin
     // Colision con un enemigo
     enemyId = collision(type enemy);
     if (enemyId <> 0)
-      enemyId.life = enemyId.life - damage;
+      enemyId.hull = enemyId.hull - damage;
       break;
     end
 
@@ -220,21 +253,27 @@ end
 /**
  * Nave o bicho enemigo
  * Par metros:
- * graph : Indice con el sprite a usar
  * x
  * y
- * life : Vida del enemigo
+ * pathId : Patr¢n de movimiento
+ * enemyTypeId : Tipo de enemigo
  */
-process enemy(graph, x, y, life, pathId)
+process enemy(x, y, pathId, enemyTypeId)
 private
   _pathStep = 0;
   _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
   _vx = 0;
   _vy = 0;
+  _frame = 0;
+  _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
 begin
   file = fpgEnemy;
   region = GAME_REGION;
   resolution = PLAYFIELD_RESOLUTION;
+  graph = enemyType[enemyTypeId].graphId[_frame];
+
+  hull = enemyType[enemyTypeId].hull;
+
   // Aplicamos la velocidad inicial si hay un patr¢n de mov.
   if (pathId <> -1)
     _vx = paths[pathId].vx0;
@@ -242,33 +281,52 @@ begin
   end;
 
 
-  while (! out_region(id, region) && life > 0)
+  while (! out_region(id, region) && hull > 0)
+
+    // **** Movimiento
     // Aplicamos el patr¢n de mov. si hay uno asignado
     if (pathId <> -1 && _pathStep <= 10)
       if (paths[pathId].maxSteps >= _pathStep)
         if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
           _pathStep++;
           _pathTick = 0;
-        end;
+        end
         _vx = _vx + paths[pathId].steps[_pathStep].ax;
         _vy = _vy + paths[pathId].steps[_pathStep].ay;
         _pathTick++;
-      end;
-    end;
+      end
+    end
     x = x + _vx;
     y = y + _vy;
 
-    // TODO Colision con el jugador, le quita vida
+    // **** Animaci¢n
+    switch (enemyType[enemyTypeId].animationType)
+      case ANI_SINGLE:
+        if (enemyType[enemyTypeId].nFrames -1 <= _frame)
+        else
+          _frame++;
+        end
+      end
+      case ANI_LOOP:
+        if (enemyType[enemyTypeId].nFrames -1 <= _frame)
+          _frame = 0;
+        else
+          _frame++;
+        end
+      end
+      case ANI_SPRING:
+        if (enemyType[enemyTypeId].nFrames -1 <= _frame)
+          _frameDir = -1;
+        else if (_frame <= 0)
+          _frameDir = 1;
+          end
+        end
+        _frame = _frame + _frameDir;
+      end
+    end
+    graph = enemyType[enemyTypeId].graphId[_frame];
 
     frame;
   end;
 end
 
-/**
- * Interpolaci¢n lineal
- * @param p Cuanto se interpola. De 0 a 100
- */
-function linear(p, a, b)
-begin
-  return ((((100 - p) * a) + (p * b)) / 100);
-end

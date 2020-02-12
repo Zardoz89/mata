@@ -1,0 +1,5 @@
+# Datos tipos de disparo
+# graph     ; damage  ; delay   ; speed
+1           ; 1       ; 1       ; 80
+2           ; 6       ; 5       ; 80
+3           ; 20      ; 10      ; 50

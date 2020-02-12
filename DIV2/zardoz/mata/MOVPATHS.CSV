@@ -1,0 +1,18 @@
+# CSV con los patrones de movimiento
+# patron id 0
+# maxSteps ; vx0   ; vxy0
+4          ; 0     ; 20
+# pasos id 0
+# ax  ; ay  ; ticks
+0     ; 0   ; 20 # 0
+0     ; -1  ; 20
+0     ; 0   ; 10
+20    ; -5  ; 1
+0     ; 0   ; 0
+0     ; 0   ; 0  # 5
+0     ; 0   ; 0
+0     ; 0   ; 0
+0     ; 0   ; 0
+0     ; 0   ; 0
+0     ; 0   ; 0  # 10
+

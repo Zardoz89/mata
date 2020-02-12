@@ -16,6 +16,14 @@ const
   GAME_REGION=0; // Region de la zona de juego
   PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
 
+  // **** Tipos de dispersion del disparo
+  DIS_NONE = 0; // No dispersa
+  DIS_RAND = 1; // Dispersi¢n aleatoria
+  DIS_SIN = 2; // Dispersi¢n senoidal
+  DIS_FOLLOW_Y_FATHER = 3; // Se mantiene en el mismo eje Y que el proceso padre
+
+  DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN
+
   // **** Tipos de animaci¢n
   ANI_SINGLE = 0; // Al terminar los frames, para
   ANI_LOOP = 1; // Hace bucle
@@ -34,6 +42,8 @@ global
     int damage; // Da¤o del disparo
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
+    int disperseValue; // Angulo de dispersion
+    int disperseType; // Tipo de dispersion del disparo
   end;
 
   // **** Patrones de movimiento [Id patr¢n]
@@ -163,6 +173,7 @@ process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
   _mainWeapon = 2;
+  _dispersionAngle = 0;
 begin
   // Asignaci¢n grafico
   file = fpgPlayer;
@@ -183,7 +194,20 @@ begin
     if (mouse.left )
       if (_mainShootCounter >= shootData[_mainWeapon].delay)
         _mainShootCounter = 0;
-        shoot(x, y, 90000, _mainWeapon);
+        switch (shootData[_mainWeapon].disperseType)
+          case DIS_RAND:
+           _dispersionAngle = rand(- shootData[_mainWeapon].disperseValue,
+               shootData[_mainWeapon].disperseValue);
+          end
+          case DIS_SIN:
+           _dispersionAngle = (shootData[_mainWeapon].disperseValue / 1000)
+              * sin(ticksCounter * DIS_TICKS_SIN_MULTIPLIER);
+          end
+          default:
+            _dispersionAngle = 0;
+          end
+        end
+        shoot(x, y, 90000 + _dispersionAngle , _mainWeapon);
       end
     end
 
@@ -221,6 +245,8 @@ begin
     end
 
     // Movimiento
+    // TODO Si el tipo de dispersion es DIS_FOLLOW_Y_FATHER,
+    // se mueve en la vertical del padre
     xadvance(direction, shootData[typeId].speed);
 
     frame;

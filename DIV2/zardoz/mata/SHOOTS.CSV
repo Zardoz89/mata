@@ -1,7 +1,7 @@
 # Datos tipos de disparo
-# graph     ; damage  ; delay   ; speed
-001         ; 2       ; 5       ; 50
-100         ; 1       ; 1       ; 140
-101         ; 2       ; 1       ; 140
-102         ; 3       ; 1       ; 140
-103         ; 6       ; 1       ; 140
+# graph     ; damage  ; delay   ; speed ; dispersionValue ; dispersionType
+001         ; 2       ; 5       ; 50    ; 1000            ; 1
+100         ; 1       ; 1       ; 140   ; 5000            ; 2
+101         ; 2       ; 1       ; 140   ; 5000            ; 2
+102         ; 3       ; 1       ; 140   ; 5000            ; 2
+103         ; 6       ; 1       ; 140   ; 5000            ; 2

@@ -162,7 +162,7 @@ end
 process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
-  _mainWeapon = 0;
+  _mainWeapon = 2;
 begin
   // Asignaci¢n grafico
   file = fpgPlayer;

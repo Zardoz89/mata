@@ -3,6 +3,9 @@ M.A.T.A. (Mobile Assault Tactical Aircraft)
 
 Matamarcianos en un mes usando DIV Games Studio 2 para la [DIV Compo 2020](https://divcompo.now.sh/)
 
+## Lore
+
+WIP...
 
 ## ¿Qué es DIV Games Studio?
 
@@ -33,11 +36,13 @@ Para esto me influencia bastante estos juegos :
     - [x] Disparos usando un arma asignada
     - [ ] (WIP) Control de colisión básico
     - [x] Patrón de movimiento de enemigo
-    - [ ] Generador de oleadas de enemigos
+    - [x] Tipos de arma y dispersión de armas
+    - [x] Animaciones de enemigos y disparos enemigos
+    - [ ] (WIP) Generador de oleadas de enemigos
     - [ ] Items para cambiar/mejorar el arma
     - [ ] Tilemap de fondo de pantalla
     - [ ] Barra de salud, escudos, arma principal y secundaria
-    - [ ] Pantalla de carga y menu
+    - [ ] Pantalla de carga y menú
     - [ ] Niveles
 - [ ] Refinar el prototipo hacia un diseño mas elaborado
 - [x] Librería DLL para extender el lenguaje y poder cargar datos de un fichero
@@ -45,4 +50,16 @@ Para esto me influencia bastante estos juegos :
     características de las armas, enemigos, patrones de movimiento, oleadas y
     tilemaps.
 - [ ] Ponerle un nombre en condiciones
+
+
+## Recursos usados
+
+### Gráficos
+
+- https://lostgarden.home.blog/2007/04/05/free-game-graphics-tyrian-ships-and-tiles/
+
+### Audio
+
+### Música
+
 

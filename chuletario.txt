@@ -1,0 +1,44 @@
+// Estructuras de datos
+
+// Al cargar cada nivel se leera de un fichero los valores de level
+struct level
+    int tileMapId; // Id del tilemap que se va a usar en el fondo
+    int bossId;
+    int bossSpawnTime;
+    struct groups[32]
+        int enemyTypeId[6];
+        int formationId;
+        byte bonusType;
+        int spawnTime;
+        byte _destroyed = 0; // Se va a modificar en vivo
+        byte _bonusFlag = 0; // Se va a modificar en vivo
+    end;
+end;
+
+struct formation[11]
+    struct startPosition[6]
+        int x;
+        int y;
+        int pathId; // Patrón de movimiento
+    end
+end
+
+struct enemyType[10]
+    // Sprite y animación
+    byte nFrames;
+    byte animationType; // 0 al terminar animación para. 1 bucle. 2 avanza-retrocede
+    int graphId[7];
+    int hull; // Vida
+    int shootTypeId; // Tipo de disparo
+    int aggression; // Si es negativo dispara directamente al jugador. Si es positivo dispara hacia abajo. Abs es la frecuencia de disparo por mil
+    word score; // puntos
+end
+
+struct shootData[10]
+    int graph;
+    int damage;
+    int delay;
+    int speed;
+    int disperseValue; // Cuanto varia el angulo de dispersion
+    int disperseType; // Tipo de dispersion
+end

@@ -23,14 +23,14 @@ const
 
 global
   // **** Libreria de graficos
-  fpgPlayer;
-  fpgShoots;
-  fpgEnemy;
+  int fpgPlayer;
+  int fpgShoots;
+  int fpgEnemy;
 
   // **** Tipos de disparo
   // Disparos simples
-  struct simpleShootData[3]
-    graph; // Indice del grafico a usar de fpgShoots
+  struct shootData[3]
+    int graph; // Indice del grafico a usar de fpgShoots
     int damage; // Da¤o del disparo
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
@@ -38,13 +38,13 @@ global
 
   // **** Patrones de movimiento [Id patr¢n]
   struct paths[10]
-    maxSteps; // N§ de pasos
-    vx0; // Velocidad inicial eje X
-    vy0; // Velocidad inicial eje Y
+    byte maxSteps; // N§ de pasos
+    int vx0; // Velocidad inicial eje X
+    int vy0; // Velocidad inicial eje Y
     struct steps[10]
-      ax; // Aceleraci¢n eje x
-      ay; // Aceleraci¢n eje y
-      ticks; // N§ de ticks que dura este paso
+      int ax; // Aceleraci¢n eje x
+      int ay; // Aceleraci¢n eje y
+      int ticks; // N§ de ticks que dura este paso
     end;
   end;
 
@@ -61,8 +61,12 @@ global
     word score; // Puntos que da al ser destruido
   end;
 
+  // **** Generales de la partida
+  int score = 0;
+
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de las naves
+  enemyTypeId = -1; // Usada en los procesos enemy para acceder a los datos de tipo de enemigo
 begin
   set_mode(m640x480);
   set_fps(60, 0);
@@ -112,8 +116,8 @@ begin
   // Efectivamente reyena un array de structs
   // La razon es que internamente DIV usa un array gigante para todas las variables
   retVal = readCSVToIntArray(pathResolve("shoots.csv"),
-      offset simpleShootData,
-      sizeof(simpleShootData));
+      offset shootData,
+      sizeof(shootData));
 end
 
 function loadMovPaths()
@@ -144,6 +148,13 @@ begin
     y = rand(0, 500);
     enemy(x, y, 0, 0);
   end
+
+  for (i=0; i < 5; i++)
+    x = i * 1000;
+    y = 0;
+    enemy(x, y, 0, 1);
+  end
+
 end
 
 process playerShip(graph)
@@ -168,12 +179,12 @@ begin
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
     if (mouse.left )
-      if (_mainShootCounter >= simpleShootData[_mainWeapon].delay)
+      if (_mainShootCounter >= shootData[_mainWeapon].delay)
         _mainShootCounter = 0;
-        shoot(simpleShootData[_mainWeapon].graph,
+        shoot(shootData[_mainWeapon].graph,
           x, y,
-          simpleShootData[_mainWeapon].damage, 90000,
-          simpleShootData[_mainWeapon].speed);
+          shootData[_mainWeapon].damage, 90000,
+          shootData[_mainWeapon].speed);
       end
     end
 
@@ -237,6 +248,7 @@ begin
     enemyId = collision(type enemy);
     if (enemyId <> 0)
       enemyId.hull = enemyId.hull - damage;
+      score += enemyType[enemyId.enemyTypeId].score;
       break;
     end
 
@@ -266,6 +278,7 @@ private
   _vy = 0;
   _frame = 0;
   _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
+  _animTick = 0; // Ticks de la animaci¢n
 begin
   file = fpgEnemy;
   region = GAME_REGION;
@@ -300,7 +313,8 @@ begin
     y = y + _vy;
 
     // **** Animaci¢n
-    switch (enemyType[enemyTypeId].animationType)
+    if (!_animTick) // Se actualiza la animaci¢n cada 2 frames
+      switch (enemyType[enemyTypeId].animationType)
       case ANI_SINGLE:
         if (enemyType[enemyTypeId].nFrames -1 <= _frame)
         else
@@ -325,7 +339,10 @@ begin
       end
     end
     graph = enemyType[enemyTypeId].graphId[_frame];
+    end
+    _animTick++;
 
+    // **** Disparo
     frame;
   end;
 end

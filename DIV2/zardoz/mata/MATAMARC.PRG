@@ -29,7 +29,7 @@ global
 
   // **** Tipos de disparo
   // Disparos simples
-  struct shootData[3]
+  struct shootData[10]
     int graph; // Indice del grafico a usar de fpgShoots
     int damage; // Da¤o del disparo
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
@@ -57,16 +57,18 @@ global
     int hull; // Vidia inicial
     int shootTypeId; // Tipo de disparo
     int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
-    // Abs es la frecuencia de disparo -> rand(0, 100) <= abs(aggresion)
+    // Abs es la frecuencia de disparo -> rand(0, 1000) <= abs(aggresion)
     word score; // Puntos que da al ser destruido
   end;
 
   // **** Generales de la partida
+  int playerShipId;
   int score = 0;
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
-  hull; // Vida o puntos de casco de las naves
-  enemyTypeId = -1; // Usada en los procesos enemy para acceder a los datos de tipo de enemigo
+  hull; // Vida o puntos de casco de cosos destruibles
+  typeId = -1; // Usada en los procesos acceder a los datos de tipo de lo que sea
+  ticksCounter = 0; // Contador de ticks (frames)
 begin
   set_mode(m640x480);
   set_fps(60, 0);
@@ -89,7 +91,7 @@ begin
   loadEnemyType();
 
   // Creaci¢n procesos
-  playerShip(1);
+  playerShipId = playerShip(1);
   spawnEnemy();
 
   // Main loop
@@ -181,79 +183,78 @@ begin
     if (mouse.left )
       if (_mainShootCounter >= shootData[_mainWeapon].delay)
         _mainShootCounter = 0;
-        shoot(shootData[_mainWeapon].graph,
-          x, y,
-          shootData[_mainWeapon].damage, 90000,
-          shootData[_mainWeapon].speed);
+        shoot(x, y, 90000, _mainWeapon);
       end
     end
 
     _mainShootCounter++;
+    ticksCounter++;
     frame;
   end;
 end
 
 /**
- * Disparo enemigo que se mueve en linea recta
+ * Disparo del jugador
  *
  * Par metros:
- * graphIndex
  * x
  * y
- * damage Da¤o
- * direction Direcci¢n del movimiento
- * speed Velocidad del disparo
+ * direction Angulo de movimiento
+ * typeId Tipo de disparo
  */
-process enemyShoot(graph, x, y, damage, direction, speed)
-private
-begin
-  // Asignaci¢n de grafico
-  file = fpgShoots;
-  region = GAME_REGION;
-  resolution = PLAYFIELD_RESOLUTION;
-
-  while (! out_region(id, region))
-    if (collision(type playerShip))
-      // TODO Herir al jugador
-    end;
-
-    // Movimiento
-    xadvance(direction, speed);
-
-    frame;
-  end;
-end
-
-/**
- * Disparo que se mueve en linea recta
- *
- * Par metros:
- * graph
- * x
- * y
- * damage Da¤o
- * direction Direcci¢n del movimiento
- * speed Velocidad del disparo
- */
-process shoot(graph, x, y, damage, direction, speed)
+process shoot(x, y, direction, typeId)
 private
   enemyId;
 begin
   file = fpgShoots;
   region = GAME_REGION;
   resolution = PLAYFIELD_RESOLUTION;
+  graph = shootData[typeId];
 
   while (! out_region(id, region))
     // Colision con un enemigo
     enemyId = collision(type enemy);
-    if (enemyId <> 0)
-      enemyId.hull = enemyId.hull - damage;
-      score += enemyType[enemyId.enemyTypeId].score;
+    if (enemyId)
+      enemyId.hull = enemyId.hull - shootData[typeId].damage;
+      score += enemyType[enemyId.typeId].score;
       break;
     end
 
     // Movimiento
-    xadvance(direction, speed);
+    xadvance(direction, shootData[typeId].speed);
+
+    frame;
+  end;
+end
+
+/**
+ * Disparo de las naves enemigas
+ *
+ * Par metros:
+ * x
+ * y
+ * direction Angulo de movimiento
+ * typeId Tipo de disparo
+ */
+process enemyShoot(x, y, direction, typeId)
+private
+  playerId;
+begin
+  file = fpgShoots;
+  region = GAME_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  graph = shootData[typeId];
+
+  while (! out_region(id, region))
+    // Colision con un enemigo
+    playerId = collision(type playerShip);
+    if (playerId)
+      playerId.hull = playerId.hull - shootData[typeId].damage;
+      break;
+    end
+
+    // Movimiento
+    xadvance(direction, shootData[typeId].speed);
 
     frame;
   end;
@@ -268,24 +269,25 @@ end
  * x
  * y
  * pathId : Patr¢n de movimiento
- * enemyTypeId : Tipo de enemigo
+ * typeId : Tipo de enemigo
  */
-process enemy(x, y, pathId, enemyTypeId)
+process enemy(x, y, pathId, typeId)
 private
-  _pathStep = 0;
-  _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
-  _vx = 0;
-  _vy = 0;
-  _frame = 0;
-  _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
-  _animTick = 0; // Ticks de la animaci¢n
+  int _pathStep = 0;
+  int _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
+  int _vx = 0;
+  int _vy = 0;
+  int _frame = 0;
+  int _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
+  int _aggressionAbs;
 begin
   file = fpgEnemy;
   region = GAME_REGION;
   resolution = PLAYFIELD_RESOLUTION;
-  graph = enemyType[enemyTypeId].graphId[_frame];
+  graph = enemyType[typeId].graphId[_frame];
 
-  hull = enemyType[enemyTypeId].hull;
+  hull = enemyType[typeId].hull;
+  _aggressionAbs = abs(enemyType[typeId].aggression);
 
   // Aplicamos la velocidad inicial si hay un patr¢n de mov.
   if (pathId <> -1)
@@ -313,23 +315,23 @@ begin
     y = y + _vy;
 
     // **** Animaci¢n
-    if (!_animTick) // Se actualiza la animaci¢n cada 2 frames
-      switch (enemyType[enemyTypeId].animationType)
+    if (!ticksCounter) // Se actualiza la animaci¢n cada 2 frames
+      switch (enemyType[typeId].animationType)
       case ANI_SINGLE:
-        if (enemyType[enemyTypeId].nFrames -1 <= _frame)
+        if (enemyType[typeId].nFrames -1 <= _frame)
         else
           _frame++;
         end
       end
       case ANI_LOOP:
-        if (enemyType[enemyTypeId].nFrames -1 <= _frame)
+        if (enemyType[typeId].nFrames -1 <= _frame)
           _frame = 0;
         else
           _frame++;
         end
       end
       case ANI_SPRING:
-        if (enemyType[enemyTypeId].nFrames -1 <= _frame)
+        if (enemyType[typeId].nFrames -1 <= _frame)
           _frameDir = -1;
         else if (_frame <= 0)
           _frameDir = 1;
@@ -338,11 +340,27 @@ begin
         _frame = _frame + _frameDir;
       end
     end
-    graph = enemyType[enemyTypeId].graphId[_frame];
+    graph = enemyType[typeId].graphId[_frame];
     end
-    _animTick++;
 
     // **** Disparo
+    if (enemyType[typeId].shootTypeId <> -1)
+      if (ticksCounter >> 1)
+         if (rand(0, 1000) <= _aggressionAbs)
+           // Disparamos
+           if (enemyType[typeId].aggression >= 0)
+            // Dispara hacia el jugador
+            enemyShoot(x, y, fget_angle(x, y, playerShipId.x, playerShipId.y),
+              enemyType[typeId].shootTypeId);
+           else
+            // Dispara recto
+            enemyShoot(x, y, 270000, enemyType[typeId].shootTypeId);
+           end
+         end
+      end
+    end
+
+    ticksCounter++;
     frame;
   end;
 end

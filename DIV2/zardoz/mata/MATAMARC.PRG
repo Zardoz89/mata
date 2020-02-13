@@ -24,6 +24,14 @@ const
 
   DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN
 
+  // **** Tipos de movimientos relativos
+  MOVREL_NONE = 0;
+  MOVREL_SYNC_X = 1; // Sincroniza eje X con el padre
+  MOVREL_SYNC_Y = 2; // Sincroniza eje Y con el padre
+  MOVREL_REL_X  = 4; // Movimiento relativo solo eje X
+  MOVREL_REL_Y  = 8; // Movimiento relativo solo eje Y
+  MOVREL_REL_XY = MOVREL_REL_X || MOVREL_REL_Y; // Ambos ejes
+
   // **** Tipos de animaci¢n
   ANI_SINGLE = 0; // Al terminar los frames, para
   ANI_LOOP = 1; // Hace bucle
@@ -79,6 +87,9 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
   typeId = -1; // Usada en los procesos acceder a los datos de tipo de lo que sea
   ticksCounter = 0; // Contador de ticks (frames)
+  xrel; // Posiciones relativas
+  yrel;
+
 begin
   set_mode(m640x480);
   set_fps(60, 0);
@@ -172,7 +183,7 @@ end
 process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
-  _mainWeapon = 2;
+  _mainWeapon = 5;
   _dispersionAngle = 0;
 begin
   // Asignaci¢n grafico
@@ -194,27 +205,43 @@ begin
     if (mouse.left )
       if (_mainShootCounter >= shootData[_mainWeapon].delay)
         _mainShootCounter = 0;
-        switch (shootData[_mainWeapon].disperseType)
-          case DIS_RAND:
-           _dispersionAngle = rand(- shootData[_mainWeapon].disperseValue,
-               shootData[_mainWeapon].disperseValue);
-          end
-          case DIS_SIN:
-           _dispersionAngle = (shootData[_mainWeapon].disperseValue / 1000)
-              * sin(ticksCounter * DIS_TICKS_SIN_MULTIPLIER);
-          end
-          default:
-            _dispersionAngle = 0;
-          end
+        _dispersionAngle = calcDispersionAngle(shootData[_mainWeapon].disperseValue,
+          shootData[_mainWeapon].disperseType, ticksCounter);
+        if (shootData[_mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
+          shoot(x, y, 90000 + _dispersionAngle , _mainWeapon, MOVREL_NONE);
+        else
+          shoot(x, y, 90000 + _dispersionAngle , _mainWeapon,
+            MOVREL_SYNC_X || MOVREL_REL_Y);
         end
-        shoot(x, y, 90000 + _dispersionAngle , _mainWeapon);
       end
     end
 
     _mainShootCounter++;
     ticksCounter++;
     frame;
-  end;
+  end
+end
+
+/**
+ * Calcula el nuevo angulo de dispersion a partir del tipo, angulo maximo y ticks
+ */
+function calcDispersionAngle(weaponDispersionAngle, dispersionType, ticks)
+private
+  int _dispersionAngle;
+begin
+  switch (dispersionType)
+    case DIS_RAND:
+      _dispersionAngle = rand(- weaponDispersionAngle, weaponDispersionAngle);
+    end
+    case DIS_SIN:
+      _dispersionAngle = (weaponDispersionAngle / 1000)
+              * sin(ticks * DIS_TICKS_SIN_MULTIPLIER);
+    end
+    default:
+      _dispersionAngle = 0;
+    end
+  end
+  return (_dispersionAngle);
 end
 
 /**
@@ -226,7 +253,7 @@ end
  * direction Angulo de movimiento
  * typeId Tipo de disparo
  */
-process shoot(x, y, direction, typeId)
+process shoot(x, y, direction, typeId, moveRelativeToFather)
 private
   enemyId;
 begin
@@ -234,6 +261,8 @@ begin
   region = GAME_REGION;
   resolution = PLAYFIELD_RESOLUTION;
   graph = shootData[typeId];
+  xrel = 0;
+  yrel = 0;
 
   while (! out_region(id, region))
     // Colision con un enemigo
@@ -245,10 +274,22 @@ begin
     end
 
     // Movimiento
-    // TODO Si el tipo de dispersion es DIS_FOLLOW_Y_FATHER,
-    // se mueve en la vertical del padre
-    xadvance(direction, shootData[typeId].speed);
-
+    // Si es movimiento relativo
+    if ((moveRelativeToFather && MOVREL_SYNC_X) == MOVREL_SYNC_X)
+      x = father.x;
+      if (direction == 270000 || direction == -90000)
+        yrel = yrel + shootData[typeId].speed;
+      else
+        yrel = yrel - shootData[typeId].speed;
+      end
+      if ((moveRelativeToFather && MOVREL_REL_Y) == MOVREL_REL_Y)
+        y = father.y + yrel;
+      else
+        y = yrel;
+      end
+    else
+      xadvance(direction, shootData[typeId].speed);
+    end
     frame;
   end;
 end
@@ -306,6 +347,7 @@ private
   int _frame = 0;
   int _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
   int _aggressionAbs;
+  int _dispersionAngle;
 begin
   file = fpgEnemy;
   region = GAME_REGION;
@@ -372,17 +414,25 @@ begin
     // **** Disparo
     if (enemyType[typeId].shootTypeId <> -1)
       if (ticksCounter >> 1)
-         if (rand(0, 1000) <= _aggressionAbs)
-           // Disparamos
-           if (enemyType[typeId].aggression >= 0)
+        if (rand(0, 1000) <= _aggressionAbs)
+          // Disparamos
+          _dispersionAngle = calcDispersionAngle(
+            shootData[enemyType[typeId].shootTypeId].disperseValue,
+            shootData[enemyType[typeId].shootTypeId].disperseType,
+            ticksCounter);
+
+          if (enemyType[typeId].aggression >= 0)
             // Dispara hacia el jugador
-            enemyShoot(x, y, fget_angle(x, y, playerShipId.x, playerShipId.y),
+
+            enemyShoot(x, y,
+              fget_angle(x, y, playerShipId.x, playerShipId.y) + _dispersionAngle ,
               enemyType[typeId].shootTypeId);
-           else
+          else
             // Dispara recto
-            enemyShoot(x, y, 270000, enemyType[typeId].shootTypeId);
-           end
-         end
+            enemyShoot(x, y, 270000 + _dispersionAngle,
+              enemyType[typeId].shootTypeId);
+          end
+        end
       end
     end
 

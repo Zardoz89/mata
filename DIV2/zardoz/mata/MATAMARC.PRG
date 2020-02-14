@@ -90,6 +90,8 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   xrel; // Posiciones relativas
   yrel;
 
+private
+
 begin
   set_mode(m640x480);
   set_fps(60, 0);
@@ -115,6 +117,10 @@ begin
   playerShipId = playerShip(1);
   spawnEnemy();
 
+  if (DEBUG_MODE == 1)
+    debugText();
+  end
+
   // Main loop
   loop
     // Salida del juego para modo debug
@@ -123,7 +129,7 @@ begin
       break;
     end
 
-    frame;
+    frame(200);
   end
 end
 
@@ -178,6 +184,24 @@ begin
     enemy(x, y, 0, 1);
   end
 
+end
+
+/**
+ * Proceso que muestra informaci¢n de debug como los FPS
+ */
+process debugText()
+private
+  int fpsTxtId = 0;
+  int _fps;
+begin
+  loop
+    if (fpsTxtId)
+      delete_text(fpsTxtId);
+    end
+    _fps = fps;
+    fpsTxtId = write_int(0, 640, 0, 2, offset _fps);
+    frame(3000); // Actualza a 2 FPS
+  end
 end
 
 process playerShip(graph)

@@ -434,10 +434,10 @@ begin
               enemyType[typeId].shootTypeId, MOVREL_NONE, true);
 
             if (shootData[_shootId].disperseType <> DIS_FOLLOW_Y_FATHER)
-              shoot(x, y, 270000 + _dispersionAngle , _shootId, MOVREL_NONE, false);
+              shoot(x, y, 270000 + _dispersionAngle , _shootId, MOVREL_NONE, true);
             else
               shoot(x, y, 270000 + _dispersionAngle , _shootId,
-                MOVREL_SYNC_X || MOVREL_REL_Y, false);
+                MOVREL_SYNC_X || MOVREL_REL_Y, true);
             end
 
           end

@@ -208,10 +208,10 @@ begin
         _dispersionAngle = calcDispersionAngle(shootData[_mainWeapon].disperseValue,
           shootData[_mainWeapon].disperseType, ticksCounter);
         if (shootData[_mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
-          shoot(x, y, 90000 + _dispersionAngle , _mainWeapon, MOVREL_NONE);
+          shoot(x, y, 90000 + _dispersionAngle , _mainWeapon, MOVREL_NONE, false);
         else
           shoot(x, y, 90000 + _dispersionAngle , _mainWeapon,
-            MOVREL_SYNC_X || MOVREL_REL_Y);
+            MOVREL_SYNC_X || MOVREL_REL_Y, false);
         end
       end
     end
@@ -252,10 +252,12 @@ end
  * y
  * direction Angulo de movimiento
  * typeId Tipo de disparo
+ * moveRelativeToFather Cte. que indica el tipo de movimiento relativo
+ * enemyshoot True si es disparado por un enemigo
  */
-process shoot(x, y, direction, typeId, moveRelativeToFather)
+process shoot(x, y, direction, typeId, moveRelativeToFather, enemyShoot)
 private
-  enemyId;
+  hitId;
 begin
   file = fpgShoots;
   region = GAME_REGION;
@@ -265,12 +267,21 @@ begin
   yrel = 0;
 
   while (! out_region(id, region))
-    // Colision con un enemigo
-    enemyId = collision(type enemy);
-    if (enemyId)
-      enemyId.hull = enemyId.hull - shootData[typeId].damage;
-      score += enemyType[enemyId.typeId].score;
-      break;
+    if (enemyShoot)
+      // Colision con el jugador
+      hitId = collision(type playerShip);
+      if (hitId)
+        hitId.hull = hitId.hull - shootData[typeId].damage;
+        break;
+      end
+    else
+      // Colision con un enemigo
+      hitId = collision(type enemy);
+      if (hitId)
+        hitId.hull = hitId.hull - shootData[typeId].damage;
+        score += enemyType[hitId.typeId].score;
+        break;
+      end
     end
 
     // Movimiento
@@ -295,42 +306,6 @@ begin
 end
 
 /**
- * Disparo de las naves enemigas
- *
- * Par metros:
- * x
- * y
- * direction Angulo de movimiento
- * typeId Tipo de disparo
- */
-process enemyShoot(x, y, direction, typeId)
-private
-  playerId;
-begin
-  file = fpgShoots;
-  region = GAME_REGION;
-  resolution = PLAYFIELD_RESOLUTION;
-  graph = shootData[typeId];
-
-  while (! out_region(id, region))
-    // Colision con un enemigo
-    playerId = collision(type playerShip);
-    if (playerId)
-      playerId.hull = playerId.hull - shootData[typeId].damage;
-      break;
-    end
-
-    // Movimiento
-    xadvance(direction, shootData[typeId].speed);
-
-    frame;
-  end;
-end
-
-
-// TODO meter un process para spamear naves enemigas
-
-/**
  * Nave o bicho enemigo
  * Par metros:
  * x
@@ -348,6 +323,7 @@ private
   int _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
   int _aggressionAbs;
   int _dispersionAngle;
+  int _shootId;
 begin
   file = fpgEnemy;
   region = GAME_REGION;
@@ -356,6 +332,7 @@ begin
 
   hull = enemyType[typeId].hull;
   _aggressionAbs = abs(enemyType[typeId].aggression);
+  _shootId = enemyType[typeId].shootTypeId;
 
   // Aplicamos la velocidad inicial si hay un patr¢n de mov.
   if (pathId <> -1)
@@ -417,20 +394,28 @@ begin
         if (rand(0, 1000) <= _aggressionAbs)
           // Disparamos
           _dispersionAngle = calcDispersionAngle(
-            shootData[enemyType[typeId].shootTypeId].disperseValue,
-            shootData[enemyType[typeId].shootTypeId].disperseType,
+            shootData[_shootId].disperseValue,
+            shootData[_shootId].disperseType,
             ticksCounter);
 
           if (enemyType[typeId].aggression >= 0)
             // Dispara hacia el jugador
 
-            enemyShoot(x, y,
+            shoot(x, y,
               fget_angle(x, y, playerShipId.x, playerShipId.y) + _dispersionAngle ,
-              enemyType[typeId].shootTypeId);
+              enemyType[typeId].shootTypeId, MOVREL_NONE, true);
           else
             // Dispara recto
-            enemyShoot(x, y, 270000 + _dispersionAngle,
-              enemyType[typeId].shootTypeId);
+            shoot(x, y, 270000 + _dispersionAngle,
+              enemyType[typeId].shootTypeId, MOVREL_NONE, true);
+
+            if (shootData[_shootId].disperseType <> DIS_FOLLOW_Y_FATHER)
+              shoot(x, y, 270000 + _dispersionAngle , _shootId, MOVREL_NONE, false);
+            else
+              shoot(x, y, 270000 + _dispersionAngle , _shootId,
+                MOVREL_SYNC_X || MOVREL_REL_Y, false);
+            end
+
           end
         end
       end

@@ -17,8 +17,8 @@ const
   PATH_PROG = "mata";
 
   GAME_REGION = 0; // Region de la zona de juego
-  PLAYFIELD_RESOLUTION = 10; // Valor de resolution en la zona de juego
-  TIME_RESOLUTION = 1000; // Precisi¢n global del timer
+  PLAYFIELD_RESOLUTION = 100; // Valor de resolution en la zona de juego
+  TIME_RESOLUTION = 10; // Precisi¢n global del timer
 
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
@@ -70,7 +70,7 @@ global
     struct steps[10]
       int ax; // Aceleraci¢n eje x
       int ay; // Aceleraci¢n eje y
-      int ticks; // N§ de ticks que dura este paso
+      int ms; // Ms que dura este paso
     end;
   end;
 
@@ -204,13 +204,13 @@ private
   i;
 begin
   for (i=0; i < 5; i++)
-    x = rand(0, 5000);
-    y = rand(0, 500);
+    x = rand(0, 50000);
+    y = rand(0, 5000);
     enemy(x, y, 0, 0);
   end
 
   for (i=0; i < 5; i++)
-    x = i * 1000;
+    x = i * 10000;
     y = 0;
     enemy(x, y, 0, 1);
   end
@@ -353,9 +353,9 @@ begin
     if ((moveRelativeToFather && MOVREL_SYNC_X) == MOVREL_SYNC_X)
       x = father.x;
       if (direction == 270000 || direction == -90000)
-        yrel = yrel + shootData[typeId].speed;
+        yrel += shootData[typeId].speed * delta / 2;
       else
-        yrel = yrel - shootData[typeId].speed;
+        yrel -= shootData[typeId].speed * delta / 2;
       end
       if ((moveRelativeToFather && MOVREL_REL_Y) == MOVREL_REL_Y)
         y = father.y + yrel;
@@ -363,7 +363,7 @@ begin
         y = yrel;
       end
     else
-      xadvance(direction, shootData[typeId].speed);
+      xadvance(direction, shootData[typeId].speed * delta / 2);
     end
     frame;
   end;
@@ -380,7 +380,7 @@ end
 process enemy(x, y, pathId, typeId)
 private
   int _pathStep = 0;
-  int _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
+  int _pathMs = 0; // Utilizamos para contar los ms que permanece en paso actual de mov.
   int _vx = 0;
   int _vy = 0;
   int _frame = 0;
@@ -404,24 +404,23 @@ begin
     _vy = paths[pathId].vy0;
   end;
 
-
   while (! out_region(id, region) && hull > 0)
 
     // **** Movimiento
     // Aplicamos el patr¢n de mov. si hay uno asignado
     if (pathId <> -1 && _pathStep <= 10)
       if (paths[pathId].maxSteps >= _pathStep)
-        if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
+        if (_pathMs >= paths[pathId].steps[_pathStep].ms)
           _pathStep++;
-          _pathTick = 0;
+          _pathMs -= paths[pathId].steps[_pathStep].ms;
         end
-        _vx = _vx + paths[pathId].steps[_pathStep].ax;
-        _vy = _vy + paths[pathId].steps[_pathStep].ay;
-        _pathTick++;
+        _vx += paths[pathId].steps[_pathStep].ax;
+        _vy += paths[pathId].steps[_pathStep].ay;
+        _pathMs += delta;
       end
     end
-    x = x + _vx;
-    y = y + _vy;
+    x += (_vx * delta) >> 1;
+    y += (_vy * delta) >> 1;
 
     // **** Animaci¢n
     if (!ticksCounter) // Se actualiza la animaci¢n cada 2 frames
@@ -454,7 +453,7 @@ begin
 
     // **** Disparo
     if (enemyType[typeId].shootTypeId <> -1)
-      if (ticksCounter >> 1)
+      if (ticksCounter >> 1) // Cada 4 frames mira si dispara
         if (rand(0, 1000) <= _aggressionAbs)
           // Disparamos
           _dispersionAngle = calcDispersionAngle(
@@ -470,12 +469,13 @@ begin
               enemyType[typeId].shootTypeId, MOVREL_NONE, true);
           else
             // Dispara recto
-            shoot(x, y, 270000 + _dispersionAngle,
-              enemyType[typeId].shootTypeId, MOVREL_NONE, true);
-
+            //shoot(x, y, 270000 + _dispersionAngle,
+            //  enemyType[typeId].shootTypeId, MOVREL_NONE, true);
             if (shootData[_shootId].disperseType <> DIS_FOLLOW_Y_FATHER)
+              // Disparo recto con dispersion
               shoot(x, y, 270000 + _dispersionAngle , _shootId, MOVREL_NONE, true);
             else
+              // Disparo recto tipo rayo laser
               shoot(x, y, 270000 + _dispersionAngle , _shootId,
                 MOVREL_SYNC_X || MOVREL_REL_Y, true);
             end

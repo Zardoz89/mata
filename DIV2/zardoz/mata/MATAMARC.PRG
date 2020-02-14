@@ -10,11 +10,15 @@ program matamarcianos;
 import "csv.dll";
 
 const
-  DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
-  PATH_USER="zardoz";
-  PATH_PROG="mata";
-  GAME_REGION=0; // Region de la zona de juego
-  PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
+  DEBUG_MODE = 1; // Modo debug. Activa la salida r pida, etc.
+
+  // Paths
+  PATH_USER = "zardoz";
+  PATH_PROG = "mata";
+
+  GAME_REGION = 0; // Region de la zona de juego
+  PLAYFIELD_RESOLUTION = 10; // Valor de resolution en la zona de juego
+  TIME_RESOLUTION = 1000; // Precisi¢n global del timer
 
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
@@ -38,6 +42,10 @@ const
   ANI_SPRING = 2; // avanza-retrocede en la animaci¢n
 
 global
+  // **** Temporizaci¢n (by Ferminho)
+  int delta; // Delta de tiempo entre frames
+  int globalTime; // Contador de tiempo
+
   // **** Libreria de graficos
   int fpgPlayer;
   int fpgShoots;
@@ -113,6 +121,9 @@ begin
   // Carga tipo de enemigos
   loadEnemyType();
 
+  // Inicializaci¢n del manager de temporizaci¢n
+  timeMaster();
+
   // Creaci¢n procesos
   playerShipId = playerShip(1);
   spawnEnemy();
@@ -167,6 +178,26 @@ begin
       sizeof(enemyType));
 end;
 
+/**
+ * Proceso para la temporizaci¢n global (by Ferminho)
+ */
+process timeMaster()
+private
+  int lastTimer = 0;
+begin
+  priority = max_int; // Forzamos que sea el primer proceso en actualizar
+  loop
+    delta = timer[0] - lastTimer;
+    lastTimer += delta;
+    // Pasamos a ms para hacer mas facil de entender todo
+    delta = delta * 10;
+
+    globalTime += delta;
+    frame;
+  end
+end
+
+
 // Funcion temporal para crear enemigos
 function spawnEnemy()
 private
@@ -191,16 +222,25 @@ end
  */
 process debugText()
 private
-  int fpsTxtId = 0;
+  int _fpsTxtId = 0;
   int _fps;
+  int _deltaTxtId = 0;
+  int _delta;
+
 begin
   loop
-    if (fpsTxtId)
-      delete_text(fpsTxtId);
+    if (_fpsTxtId)
+      delete_text(_fpsTxtId);
     end
+    if (_deltaTxtId)
+      delete_text(_deltaTxtId);
+    end
+
     _fps = fps;
-    fpsTxtId = write_int(0, 640, 0, 2, offset _fps);
-    frame(3000); // Actualza a 2 FPS
+    _delta = delta;
+    _fpsTxtId = write_int(0, 640, 0, 2, offset _fps);
+    _deltaTxtId = write_int(0, 620, 0, 2, offset _delta);
+    frame(3000); // Actualiza a 2 FPS
   end
 end
 

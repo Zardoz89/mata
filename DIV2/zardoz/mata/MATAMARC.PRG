@@ -17,8 +17,8 @@ const
   PATH_PROG = "mata";
 
   GAME_REGION = 0; // Region de la zona de juego
-  PLAYFIELD_RESOLUTION = 100; // Valor de resolution en la zona de juego
-  TIME_RESOLUTION = 10; // Precisi¢n global del timer
+  PLAYFIELD_RESOLUTION = 1000; // Valor de resolution en la zona de juego
+  TIME_RESOLUTION = 1000; // Precisi¢n global del timer
 
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
@@ -189,8 +189,7 @@ begin
   loop
     delta = timer[0] - lastTimer;
     lastTimer += delta;
-    // Pasamos a ms para hacer mas facil de entender todo
-    delta = delta * 10;
+    delta = (delta * TIME_RESOLUTION) / 100;
 
     globalTime += delta;
     frame;
@@ -363,7 +362,7 @@ begin
         y = yrel;
       end
     else
-      xadvance(direction, shootData[typeId].speed * delta / 2);
+      xadvance(direction, shootData[typeId].speed * delta / 26);
     end
     frame;
   end;
@@ -419,8 +418,8 @@ begin
         _pathMs += delta;
       end
     end
-    x += (_vx * delta) >> 1;
-    y += (_vy * delta) >> 1;
+    x += (_vx * delta);
+    y += (_vy * delta);
 
     // **** Animaci¢n
     if (!ticksCounter) // Se actualiza la animaci¢n cada 2 frames

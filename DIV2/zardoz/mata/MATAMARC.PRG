@@ -12,7 +12,7 @@ program matamarcianos;
 import "csv.dll";
 
 const
-  DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
+  DEBUG_MODE=1; // Modo debug. Activa la salida rápida, etc.
 
   // cte. para las rutas
   PATH_USER="zardoz";
@@ -23,8 +23,8 @@ const
 
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
-  DIS_RAND = 1; // Dispersi¢n aleatoria
-  DIS_SIN = 2; // Dispersi¢n senoidal
+  DIS_RAND = 1; // Dispersión aleatoria
+  DIS_SIN = 2; // Dispersión senoidal
   DIS_FOLLOW_Y_FATHER = 3; // Se mantiene en el mismo eje Y que el proceso padre
 
   DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN
@@ -37,10 +37,10 @@ const
   MOVREL_REL_Y  = 8; // Movimiento relativo solo eje Y
   MOVREL_REL_XY = MOVREL_REL_X || MOVREL_REL_Y; // Ambos ejes
 
-  // **** Tipos de animaci¢n
+  // **** Tipos de animación
   ANI_SINGLE = 0; // Al terminar los frames, para
   ANI_LOOP = 1; // Hace bucle
-  ANI_SPRING = 2; // avanza-retrocede en la animaci¢n
+  ANI_SPRING = 2; // avanza-retrocede en la animación
 
 global
   // **** Libreria de graficos
@@ -48,32 +48,55 @@ global
   int fpgShoots;
   int fpgEnemy;
 
+  // **** Definición de un "nivel"
+  struct level
+    int tileMapId; // Id del tilemap que se va usar para el fondo
+    int bossId;
+    int bossSpawnTime;
+    struct groups[64]
+      int x0; int y0; // Posición inicial del grupo
+      int formationType; // Tipo de formación asignada. -1 es no moverse respecto al scroll.
+      int spawnTime; // Tiempo en ms de cuando hace spawn este grupo
+      int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
+      int enemyType[6]; // Array con los tipos de enemigos que representan esta oleada. -1 no hay enemigo
+      //byte _destroyed = 0; // Indicador si el grupo ha sido destruido
+      //byte _bonusFlag:
+    end
+  end
+
+  // **** Formaciones de naves enemigas
+  struct formations[16]
+    struct startPosition[6]
+      int x; int y;
+      int pathId; // Si es -1, el enemigo no se mueve respecto al scroll del fondo
+    end
+  end
+
   // **** Tipos de disparo
-  // Disparos simples
   struct shootData[10]
     int graph; // Indice del grafico a usar de fpgShoots
-    int damage; // Da¤o del disparo
+    int damage; // Daño del disparo
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
     int disperseValue; // Angulo de dispersion
     int disperseType; // Tipo de dispersion del disparo
-  end;
+  end
 
-  // **** Patrones de movimiento [Id patr¢n]
+  // **** Patrones de movimiento [Id patrón]
   struct paths[10]
-    byte maxSteps; // N§ de pasos
+    byte maxSteps; // Nº de pasos
     int vx0; // Velocidad inicial eje X
     int vy0; // Velocidad inicial eje Y
     struct steps[10]
-      int ax; // Aceleraci¢n eje x
-      int ay; // Aceleraci¢n eje y
-      int ticks; // N§ de ticks que dura este paso
-    end;
-  end;
+      int ax; // Aceleración eje x
+      int ay; // Aceleración eje y
+      int ticks; // Nº de ticks que dura este paso
+    end
+  end
 
   // **** Tipos de enemigos del juego
   struct enemyType[10]
-    // Sprite y animaci¢n
+    // Sprite y animación
     byte nFrames;
     byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
     int graphId[10];
@@ -82,7 +105,7 @@ global
     int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
     // Abs es la frecuencia de disparo -> rand(0, 1000) <= abs(aggresion)
     word score; // Puntos que da al ser destruido
-  end;
+  end
 
   // **** Generales de la partida
   int playerShipId;
@@ -118,7 +141,13 @@ begin
   // Carga tipo de enemigos
   loadEnemyType();
 
-  // Creaci¢n procesos
+  // Carga tipo de enemigos
+  loadFormations();
+
+  // Carga de datos del nivel 1
+  loadLevelData("level_01");
+
+  // Creación procesos
   playerShipId = playerShip(1);
   spawnEnemy();
 
@@ -138,39 +167,119 @@ begin
   end
 end
 
+/**
+ * Genera la ruta relativa a los ficheros del juego
+ */
 function pathResolve(file)
 begin
   return (PATH_USER + "\" + PATH_PROG + "\" + file);
 end
 
+/**
+ * Lee el fichero con los tipos de disparo
+ */
 function loadShootTypeData()
 private
-  retVal = 0;
+  _retVal = 0;
+  _path;
+  string _msg;
 begin
   // Efectivamente reyena un array de structs
   // La razon es que internamente DIV usa un array gigante para todas las variables
-  retVal = readCSVToIntArray(pathResolve("shoots.csv"),
+  _path = pathResolve("shoots.csv");
+  _retVal = readCSVToIntArray(_path,
       offset shootData,
       sizeof(shootData));
+  if (DEBUG_MODE == 1 && _retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+  end
+  return(_retVal);
 end
 
+/**
+ * Lee el fichero con los patrones de movimiento
+ */
 function loadMovPaths()
 private
-  retVal = 0;
+  _retVal = 0;
+  _path;
+  string _msg;
 begin
-  retVal = readCSVToIntArray(pathResolve("movpaths.csv"),
+  _path = pathResolve("movpaths.csv");
+  _retVal = readCSVToIntArray(_path,
       offset paths,
       sizeof(paths));
+  if (DEBUG_MODE == 1 && _retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+  end
+  return(_retVal);
 end;
 
+/**
+ * Lee el fichero con los tipos de enemigo
+ */
 function loadEnemyType()
 private
-  retVal = 0;
+  _retVal = 0;
+  _path;
+  string _msg;
 begin
-  retVal = readCSVToIntArray(pathResolve("enemtype.csv"),
+  _path = pathResolve("enemtype.csv");
+  _retVal = readCSVToIntArray(_path,
       offset enemyType,
       sizeof(enemyType));
+  if (DEBUG_MODE == 1 && _retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+  end
+  return(_retVal);
 end;
+
+/**
+ * Lee el fichero con las formaciones de enemigos
+ */
+function loadFormations()
+private
+  _retVal = 0;
+  _path;
+  string _msg;
+begin
+  _path = pathResolve("formatio.csv");
+  _retVal = readCSVToIntArray(_path,
+      offset formations,
+      sizeof(formations));
+  if (DEBUG_MODE == 1 && _retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+  end
+  return(_retVal);
+end;
+
+
+/**
+ * Lee el fichero con los datos de nivel
+ */
+function loadLevelData(string levelName)
+private
+  _retVal = 0;
+  _path;
+  string _msg;
+begin
+  // WTF TODO mirar por que no le gusta a div que haga esto
+  //_path = levelName + ".csv";
+  _path = pathResolve("lvl\level_01.csv");
+  _retVal = readCSVToIntArray(_path,
+      offset level,
+      sizeof(level));
+  if (DEBUG_MODE == 1 && _retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+  end
+  return(_retVal);
+end;
+
 
 // Funcion temporal para crear enemigos
 function spawnEnemy()
@@ -192,20 +301,20 @@ begin
 end
 
 /**
- * Proceso que muestra informaci¢n de debug como los FPS
+ * Proceso que muestra información de debug como los FPS
  */
 process debugText()
 private
   int fpsTxtId = 0;
-  int _fps;
+  string _msg;
 begin
   loop
     if (fpsTxtId)
       delete_text(fpsTxtId);
     end
-    _fps = fps;
-    fpsTxtId = write_int(0, 640, 0, 2, offset _fps);
-    frame(3000); // Actualza a 2 FPS
+    _msg = "FPS: " + itoa(fps);
+    fpsTxtId = write(0, 640, 0, 2, _msg);
+    frame(3000); // Actualiza a 2 FPS
   end
 end
 
@@ -215,7 +324,7 @@ private
   _mainWeapon = 5;
   _dispersionAngle = 0;
 begin
-  // Asignaci¢n grafico
+  // Asignación grafico
   file = fpgPlayer;
   graph = graph;
   region = GAME_REGION;
@@ -227,7 +336,7 @@ begin
     if (hull < 0)
       break;
     end;
-    // Calcula de nueva posici¢n
+    // Calcula de nueva posición
     x = mouse.x * PLAYFIELD_RESOLUTION;
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
@@ -276,7 +385,7 @@ end
 /**
  * Disparo del jugador
  *
- * Par metros:
+ * Parámetros:
  * x
  * y
  * direction Angulo de movimiento
@@ -336,10 +445,10 @@ end
 
 /**
  * Nave o bicho enemigo
- * Par metros:
+ * Parámetros:
  * x
  * y
- * pathId : Patr¢n de movimiento
+ * pathId : Patrón de movimiento
  * typeId : Tipo de enemigo
  */
 process enemy(x, y, pathId, typeId)
@@ -363,7 +472,7 @@ begin
   _aggressionAbs = abs(enemyType[typeId].aggression);
   _shootId = enemyType[typeId].shootTypeId;
 
-  // Aplicamos la velocidad inicial si hay un patr¢n de mov.
+  // Aplicamos la velocidad inicial si hay un patrón de mov.
   if (pathId <> -1)
     _vx = paths[pathId].vx0;
     _vy = paths[pathId].vy0;
@@ -373,7 +482,7 @@ begin
   while (! out_region(id, region) && hull > 0)
 
     // **** Movimiento
-    // Aplicamos el patr¢n de mov. si hay uno asignado
+    // Aplicamos el patrón de mov. si hay uno asignado
     if (pathId <> -1 && _pathStep <= 10)
       if (paths[pathId].maxSteps >= _pathStep)
         if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
@@ -388,8 +497,8 @@ begin
     x += _vx;
     y += _vy;
 
-    // **** Animaci¢n
-    if (!ticksCounter) // Se actualiza la animaci¢n cada 2 frames
+    // **** Animación
+    if (!ticksCounter) // Se actualiza la animación cada 2 frames
       switch (enemyType[typeId].animationType)
       case ANI_SINGLE:
         if (enemyType[typeId].nFrames -1 <= _frame)

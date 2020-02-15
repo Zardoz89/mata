@@ -2,43 +2,65 @@
 
 // Al cargar cada nivel se leera de un fichero los valores de level
 struct level
-    int tileMapId; // Id del tilemap que se va a usar en el fondo
-    int bossId;
-    int bossSpawnTime;
-    struct groups[32]
-        int enemyTypeId[6];
-        int formationId;
-        byte bonusType;
-        int spawnTime;
-        byte _destroyed = 0; // Se va a modificar en vivo
-        byte _bonusFlag = 0; // Se va a modificar en vivo
-    end;
-end;
-
-struct formation[11]
-    struct startPosition[6]
-        int x;
-        int y;
-        int pathId; // Patrón de movimiento
+  int tileMapId; // Id del tilemap que se va usar para el fondo
+  int bossId;
+  int bossSpawnTime;
+  struct groups[64]
+    int x0; int y0; // Posici¢n inicial del grupo
+    int formationType; // Tipo de formaci¢n asignada. -1 es no moverse respecto al scroll.
+    int spawnTime; // Tiempo en ms de cuando hace spawn este grupo
+    int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
+    struct enemy[6]
+      int enemyType;
+      int pathId;
     end
+    int enemyType[6]; // Array con los tipos de enemigos que representan esta oleada. -1 no hay enemigo
+    //byte _destroyed = 0; // Indicador si el grupo ha sido destruido
+    //byte _bonusFlag:
+  end
 end
 
-struct enemyType[10]
-    // Sprite y animación
-    byte nFrames;
-    byte animationType; // 0 al terminar animación para. 1 bucle. 2 avanza-retrocede
-    int graphId[7];
-    int hull; // Vida
-    int shootTypeId; // Tipo de disparo
-    int aggression; // Si es negativo dispara directamente al jugador. Si es positivo dispara hacia abajo. Abs es la frecuencia de disparo por mil
-    word score; // puntos
+// **** Formaciones de naves enemigas
+struct formations[16]
+  struct startPosition[6]
+    int x; int y;
+  end
 end
 
+// **** Tipos de disparo
 struct shootData[10]
-    int graph;
-    int damage;
-    int delay;
-    int speed;
-    int disperseValue; // Cuanto varia el angulo de dispersion
-    int disperseType; // Tipo de dispersion
+  int graph; // Indice del grafico a usar de fpgShoots
+  int damage; // Da¤o del disparo
+  int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
+  int speed; // Velocidad en pixels
+  int disperseValue; // Angulo de dispersion
+  int disperseType; // Tipo de dispersion del disparo
 end
+
+// **** Patrones de movimiento [Id patr¢n]
+struct paths[10]
+  byte maxSteps; // N§ de pasos
+  int vx0; // Velocidad inicial eje X
+  int vy0; // Velocidad inicial eje Y
+  struct steps[10]
+    int ax; // Aceleraci¢n eje x
+    int ay; // Aceleraci¢n eje y
+    int ticks; // N§ de ticks que dura este paso
+  end
+end
+
+// **** Tipos de enemigos del juego
+struct enemyType[10]
+  // Sprite y animaci¢n
+  byte nFrames;
+  byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
+  int graphId[10];
+  int hull; // Vidia inicial
+  int shootTypeId; // Tipo de disparo
+  int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
+  // Abs es la frecuencia de disparo -> rand(0, 1000) <= abs(aggresion)
+  word score; // Puntos que da al ser destruido
+end
+
+
+

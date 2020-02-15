@@ -1,6 +1,6 @@
 # Datos tipos de disparo
 # graph     ; damage  ; delay   ; speed ; dispersionValue ; dispersionType
-001         ; 2       ; 5       ; 50    ; 5000            ; 1
+001         ; 2       ; 5       ; 50    ; 2000            ; 1
 # Vulcan
 100         ; 1       ; 1       ; 140   ; 5000            ; 2
 101         ; 2       ; 1       ; 140   ; 5000            ; 2

@@ -12,7 +12,7 @@ program matamarcianos;
 import "csv.dll";
 
 const
-  DEBUG_MODE=1; // Modo debug. Activa la salida rápida, etc.
+  DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.
 
   // cte. para las rutas
   PATH_USER="zardoz";
@@ -23,8 +23,8 @@ const
 
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
-  DIS_RAND = 1; // Dispersión aleatoria
-  DIS_SIN = 2; // Dispersión senoidal
+  DIS_RAND = 1; // Dispersion aleatoria
+  DIS_SIN = 2; // Dispersion senoidal
   DIS_FOLLOW_Y_FATHER = 3; // Se mantiene en el mismo eje Y que el proceso padre
 
   DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN
@@ -37,10 +37,10 @@ const
   MOVREL_REL_Y  = 8; // Movimiento relativo solo eje Y
   MOVREL_REL_XY = MOVREL_REL_X || MOVREL_REL_Y; // Ambos ejes
 
-  // **** Tipos de animación
+  // **** Tipos de animacion
   ANI_SINGLE = 0; // Al terminar los frames, para
   ANI_LOOP = 1; // Hace bucle
-  ANI_SPRING = 2; // avanza-retrocede en la animación
+  ANI_SPRING = 2; // avanza-retrocede en la animacion
 
 global
   // **** Libreria de graficos
@@ -48,17 +48,25 @@ global
   int fpgShoots;
   int fpgEnemy;
 
-  // **** Definición de un "nivel"
+  // **** Definicion de un "nivel"
   struct level
     int tileMapId; // Id del tilemap que se va usar para el fondo
     int bossId;
     int bossSpawnTime;
+    int numberOfGroups;
     struct groups[64]
-      int x0; int y0; // Posición inicial del grupo
-      int formationType; // Tipo de formación asignada. -1 es no moverse respecto al scroll.
+      int x0; int y0; // Posicion inicial del grupo
+      int formationType; // Tipo de formacion asignada. -1 es no moverse respecto al scroll.
       int spawnTime; // Tiempo en ms de cuando hace spawn este grupo
       int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
-      int enemyType[6]; // Array con los tipos de enemigos que representan esta oleada. -1 no hay enemigo
+      int enemyType[6]; // -1 no hay enemigo
+      int pathId[6]; // -1 esta fijo respecto al scroll de fondo
+      /*
+      struct enemy[6] // Array con los enemigos que representan esta oleada
+        int enemyType; // -1 no hay enemigo
+        int pathId; // -1 esta fijo respecto al scroll de fondo
+      end
+      */
       //byte _destroyed = 0; // Indicador si el grupo ha sido destruido
       //byte _bonusFlag:
     end
@@ -68,7 +76,6 @@ global
   struct formations[16]
     struct startPosition[6]
       int x; int y;
-      int pathId; // Si es -1, el enemigo no se mueve respecto al scroll del fondo
     end
   end
 
@@ -82,21 +89,21 @@ global
     int disperseType; // Tipo de dispersion del disparo
   end
 
-  // **** Patrones de movimiento [Id patrón]
+  // **** Patrones de movimiento [Id patron]
   struct paths[10]
     byte maxSteps; // Nº de pasos
     int vx0; // Velocidad inicial eje X
     int vy0; // Velocidad inicial eje Y
     struct steps[10]
-      int ax; // Aceleración eje x
-      int ay; // Aceleración eje y
+      int ax; // Aceleracion eje x
+      int ay; // Aceleracion eje y
       int ticks; // Nº de ticks que dura este paso
     end
   end
 
   // **** Tipos de enemigos del juego
   struct enemyType[10]
-    // Sprite y animación
+    // Sprite y animacion
     byte nFrames;
     byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
     int graphId[10];
@@ -117,7 +124,8 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   ticksCounter = 0; // Contador de ticks (frames)
   xrel; // Posiciones relativas
   yrel;
-
+  remaningChildrens = 0; // Numero de procesos hijos restantes
+  killedChildrens = 0; // Numero de procesos hijos matados por el jugador
 private
 
 begin
@@ -147,9 +155,8 @@ begin
   // Carga de datos del nivel 1
   loadLevelData("level_01");
 
-  // Creación procesos
-  playerShipId = playerShip(1);
-  spawnEnemy();
+  // Proceso nivel de juego
+  gameLevel();
 
   if (DEBUG_MODE == 1)
     debugText();
@@ -280,28 +287,79 @@ begin
   return(_retVal);
 end;
 
-
-// Funcion temporal para crear enemigos
-function spawnEnemy()
+/**
+ * Proceso que representa un nivel del juego
+ */
+process gameLevel()
 private
-  i;
+ _destroyedAll = false;
+ _actualGroupInd = 0;
 begin
-  for (i=0; i < 5; i++)
-    x = rand(0, 5000);
-    y = rand(0, 500);
-    enemy(x, y, 0, 0);
-  end
+  // Inicializar el timer[0]
+  timer[0] = 0;
 
-  for (i=0; i < 5; i++)
-    x = i * 1000;
-    y = 0;
-    enemy(x, y, 0, 1);
-  end
+  // TODO procesar tilemapId y crear el scroll de fondo
 
+  // Crear al proceso jugador
+  playerShipId = playerShip(1);
+
+  loop
+    // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
+    if (_actualGroupInd < level.numberOfGroups)
+      if (timer[0] >= level.groups[_actualGroupInd].spawnTime)
+        timer[0] -= level.groups[_actualGroupInd].spawnTime;
+
+        enemyGroup(_actualGroupInd);
+        _actualGroupInd++;
+      end
+    end
+
+    frame;
+  end
 end
 
 /**
- * Proceso que muestra información de debug como los FPS
+ * Crea a u ngrupo de enemigos y gestiona el spawn del bonus si es necesario
+ */
+process enemyGroup(groupInd)
+private
+ i;
+ _formationType;
+ _enemyType;
+ _totalChildrens = 0;
+begin
+  _formationType = formations[level.groups[groupInd].formationType];
+
+  for (i=0; i <= 6; i++)
+    debug;
+    _enemyType = level.groups[groupInd].enemyType[i];
+    if (_enemyType <> -1)
+      enemy(
+        formations[_formationType].startPosition[i].x,
+        formations[_formationType].startPosition[i].y,
+        level.groups[groupInd].pathId[i],
+        _enemyType);
+      remaningChildrens++;
+    end
+  end
+  _totalChildrens = remaningChildrens;
+
+  loop
+    if (remaningChildrens <= 0)
+      if (killedChildrens == _totalChildrens)
+        // TODO Hacer aparece el bonus si es necesario
+        write(0, 0, 0, 0, "Eliminado grupo");
+      end
+      break;
+    end
+
+    frame;
+  end
+end
+
+
+/**
+ * Proceso que muestra informacion de debug como los FPS
  */
 process debugText()
 private
@@ -324,7 +382,7 @@ private
   _mainWeapon = 5;
   _dispersionAngle = 0;
 begin
-  // Asignación grafico
+  // Asignacion grafico
   file = fpgPlayer;
   graph = graph;
   region = GAME_REGION;
@@ -336,7 +394,7 @@ begin
     if (hull < 0)
       break;
     end;
-    // Calcula de nueva posición
+    // Calcula de nueva posicion
     x = mouse.x * PLAYFIELD_RESOLUTION;
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
@@ -385,7 +443,7 @@ end
 /**
  * Disparo del jugador
  *
- * Parámetros:
+ * Parametros:
  * x
  * y
  * direction Angulo de movimiento
@@ -418,6 +476,8 @@ begin
       if (hitId)
         hitId.hull = hitId.hull - shootData[typeId].damage;
         score += enemyType[hitId.typeId].score;
+        hitId.father.killedChildrens++;
+        hitId.father.remaningChildrens--;
         break;
       end
     end
@@ -445,10 +505,10 @@ end
 
 /**
  * Nave o bicho enemigo
- * Parámetros:
+ * Parametros:
  * x
  * y
- * pathId : Patrón de movimiento
+ * pathId : Patron de movimiento
  * typeId : Tipo de enemigo
  */
 process enemy(x, y, pathId, typeId)
@@ -472,7 +532,7 @@ begin
   _aggressionAbs = abs(enemyType[typeId].aggression);
   _shootId = enemyType[typeId].shootTypeId;
 
-  // Aplicamos la velocidad inicial si hay un patrón de mov.
+  // Aplicamos la velocidad inicial si hay un patron de mov.
   if (pathId <> -1)
     _vx = paths[pathId].vx0;
     _vy = paths[pathId].vy0;
@@ -482,7 +542,7 @@ begin
   while (! out_region(id, region) && hull > 0)
 
     // **** Movimiento
-    // Aplicamos el patrón de mov. si hay uno asignado
+    // Aplicamos el patron de mov. si hay uno asignado
     if (pathId <> -1 && _pathStep <= 10)
       if (paths[pathId].maxSteps >= _pathStep)
         if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
@@ -497,8 +557,8 @@ begin
     x += _vx;
     y += _vy;
 
-    // **** Animación
-    if (!ticksCounter) // Se actualiza la animación cada 2 frames
+    // **** Animacion
+    if (!ticksCounter) // Se actualiza la animacion cada 2 frames
       switch (enemyType[typeId].animationType)
       case ANI_SINGLE:
         if (enemyType[typeId].nFrames -1 <= _frame)
@@ -562,5 +622,6 @@ begin
     ticksCounter++;
     frame;
   end;
+  father.remaningChildrens--;
 end
 

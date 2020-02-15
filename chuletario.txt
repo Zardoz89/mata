@@ -5,16 +5,16 @@ struct level
   int tileMapId; // Id del tilemap que se va usar para el fondo
   int bossId;
   int bossSpawnTime;
+  int numberOfGroups;
   struct groups[64]
     int x0; int y0; // Posici¢n inicial del grupo
     int formationType; // Tipo de formaci¢n asignada. -1 es no moverse respecto al scroll.
     int spawnTime; // Tiempo en ms de cuando hace spawn este grupo
     int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
     struct enemy[6]
-      int enemyType;
+      int enemyType; // Si es -1 no hay enemigo
       int pathId;
     end
-    int enemyType[6]; // Array con los tipos de enemigos que representan esta oleada. -1 no hay enemigo
     //byte _destroyed = 0; // Indicador si el grupo ha sido destruido
     //byte _bonusFlag:
   end

@@ -288,12 +288,11 @@ end;
 function loadLevelData(string levelName)
 private
   _retVal = 0;
-  _path;
+  string _path;
   string _msg;
 begin
-  // WTF TODO mirar por que no le gusta a div que haga esto
-  //_path = levelName + ".csv";
-  _path = pathResolve("lvl\level_01.csv");
+  _path = "lvl\" + levelName + ".csv";
+  _path = pathResolve(_path);
   _retVal = readCSVToIntArray(_path,
       offset level,
       sizeof(level));

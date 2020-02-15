@@ -18,8 +18,23 @@ const
   PATH_USER="zardoz";
   PATH_PROG="mata";
 
-  GAME_REGION=0; // Region de la zona de juego
   PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
+
+  PLAYFIELD_REGION=1; // Region de la zona de juego
+  PLAYFIELD_REGION_W=492;
+  PLAYFIELD_REGION_H=480;
+  // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible
+  PLAYFIELD_XMIN = 0;
+  PLAYFIELD_XMAX = 4920;
+  PLAYFIELD_YMIN = -17000;
+  PLAYFIELD_YMAX = 4800 + 17000;
+
+  STATUS_REGION=2; // Region de la zona con el estado del jugador
+  STATUS_X=640-148;
+  STATUS_Y=0;
+  STATUS_W=148;
+  STATUS_H=480;
+
 
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
@@ -47,6 +62,7 @@ global
   int fpgPlayer;
   int fpgShoots;
   int fpgEnemy;
+  int fpgBack;
 
   // **** Definicion de un "nivel"
   struct level
@@ -139,6 +155,7 @@ begin
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
+  fpgBack = load_fpg(pathResolve("fpg\back.fpg"));
 
   // Carga tipos de disparo
   loadShootTypeData();
@@ -287,6 +304,25 @@ begin
   return(_retVal);
 end;
 
+function isOutsidePlayfield(x, y)
+begin
+  if (x < PLAYFIELD_XMIN || x > PLAYFIELD_XMAX)
+    return(true);
+  end
+  if (y < PLAYFIELD_YMIN || y > PLAYFIELD_YMAX)
+    return(true);
+  end
+  return(false);
+end;
+
+function max(val, maxVal)
+begin
+  if (val > maxVal)
+    return(maxVal);
+  end
+  return(val);
+end
+
 /**
  * Proceso que representa un nivel del juego
  */
@@ -297,6 +333,13 @@ private
 begin
   // Inicializar el timer[0]
   timer[0] = 0;
+
+  // Inicializaci¢n de las regiones
+  define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
+  define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
+
+  // Fondo dummy
+  put_screen(fpgBack, 1);//, 0, 0);
 
   // TODO procesar tilemapId y crear el scroll de fondo
 
@@ -328,15 +371,14 @@ private
  _enemyType;
  _totalChildrens = 0;
 begin
-  _formationType = formations[level.groups[groupInd].formationType];
+  _formationType = level.groups[groupInd].formationType;
 
   for (i=0; i <= 6; i++)
-    debug;
     _enemyType = level.groups[groupInd].enemyType[i];
     if (_enemyType <> -1)
       enemy(
-        formations[_formationType].startPosition[i].x,
-        formations[_formationType].startPosition[i].y,
+        level.groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
+        level.groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
         level.groups[groupInd].pathId[i],
         _enemyType);
       remaningChildrens++;
@@ -348,7 +390,6 @@ begin
     if (remaningChildrens <= 0)
       if (killedChildrens == _totalChildrens)
         // TODO Hacer aparece el bonus si es necesario
-        write(0, 0, 0, 0, "Eliminado grupo");
       end
       break;
     end
@@ -385,7 +426,7 @@ begin
   // Asignacion grafico
   file = fpgPlayer;
   graph = graph;
-  region = GAME_REGION;
+  region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
 
   hull = 100;
@@ -395,7 +436,7 @@ begin
       break;
     end;
     // Calcula de nueva posicion
-    x = mouse.x * PLAYFIELD_RESOLUTION;
+    x = max(mouse.x * PLAYFIELD_RESOLUTION, PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
     if (mouse.left )
@@ -456,7 +497,7 @@ private
   hitId;
 begin
   file = fpgShoots;
-  region = GAME_REGION;
+  region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
   graph = shootData[typeId];
   xrel = 0;
@@ -524,10 +565,9 @@ private
   int _shootId;
 begin
   file = fpgEnemy;
-  region = GAME_REGION;
+  region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
   graph = enemyType[typeId].graphId[_frame];
-
   hull = enemyType[typeId].hull;
   _aggressionAbs = abs(enemyType[typeId].aggression);
   _shootId = enemyType[typeId].shootTypeId;
@@ -539,7 +579,8 @@ begin
   end;
 
 
-  while (! out_region(id, region) && hull > 0)
+  //while (! out_region(id, region) && hull > 0)
+  while (! isOutsidePlayfield(x, y) && hull > 0)
 
     // **** Movimiento
     // Aplicamos el patron de mov. si hay uno asignado

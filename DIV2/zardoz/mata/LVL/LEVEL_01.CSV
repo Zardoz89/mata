@@ -1,0 +1,22 @@
+# Nivel 01
+# tileMapId ;  bossId ; bossSpawnTime ; numberOfGroups
+  1         ;  -1     ; 0             ; 2
+
+# Grupos de naves (hasta 64)
+# grupo 0
+# x0    ; y0    ; formationType ; spawnTime ; bonusType
+  0     ; -1680  ; 0             ; 0         ; -1
+# enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
+  1             ; 1             ; 1             ; 1             ; 1             ; -1            ; -1
+# pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]
+  0             ; 0             ; 0             ; 0             ; 0             ; 0             ; 0
+
+# grupo 1
+# x0    ; y0    ; formationType ; spawnTime ; bonusType
+  1000  ; -300  ; 1             ; 500       ; -1
+# enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
+  0             ; 0             ; 0             ; 0             ; 0             ; -1            ; -1
+# pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]
+  0             ; 0             ; 0             ; 0             ; 0             ; 0             ; 0
+
+

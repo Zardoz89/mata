@@ -41,18 +41,19 @@ Para esto me influencia bastante estos juegos :
     - [x] Patrón de movimiento de enemigo
     - [x] Tipos de arma y dispersión de armas
     - [x] Animaciones de enemigos y disparos enemigos
-    - [ ] (WIP) Generador de oleadas de enemigos
+    - [x] Generador de oleadas de enemigos
+    - [x] Regiones y zona de juego
     - [ ] Items para cambiar/mejorar el arma
     - [ ] Tilemap de fondo de pantalla
     - [ ] Barra de salud, escudos, arma principal y secundaria
     - [ ] Pantalla de carga y menú
-    - [ ] Niveles
+    - [ ] (WIP) Niveles
 - [ ] Refinar el prototipo hacia un diseño mas elaborado
 - [x] Librería DLL para extender el lenguaje y poder cargar datos de un fichero
     CSV. La idea es tener tablas en ficheros editables de texto con las
     características de las armas, enemigos, patrones de movimiento, oleadas y
     tilemaps.
-- [ ] Ponerle un nombre en condiciones
+- [x] Ponerle un nombre en condiciones
 
 
 ## Recursos usados

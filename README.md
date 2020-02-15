@@ -7,6 +7,9 @@ Matamarcianos en un mes usando DIV Games Studio 2 para la [DIV Compo 2020](https
 
 WIP...
 
+Eres un piloto que acaba de iniciar su carrera de mercenario con un caza
+recién comprado de segunda mano...
+
 ## ¿Qué es DIV Games Studio?
 
 Un IDE para desarrollar juegos MS-DOS 2d y falso 3d que salio a finales de los 90.

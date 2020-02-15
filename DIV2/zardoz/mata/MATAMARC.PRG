@@ -2,6 +2,8 @@ COMPILER_OPTIONS _case_sensitive;
 // ****************************************************************************
 // Matamarcianos con DIV 2 Games Studio para el DivCompo
 //
+// M.A.T.A.                                    Mobile Assault Tactical Aircraft
+//
 // https://divcompo.now.sh
 // ****************************************************************************
 
@@ -11,8 +13,11 @@ import "csv.dll";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida r pida, etc.
+
+  // cte. para las rutas
   PATH_USER="zardoz";
   PATH_PROG="mata";
+
   GAME_REGION=0; // Region de la zona de juego
   PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
 
@@ -313,9 +318,9 @@ begin
     if ((moveRelativeToFather && MOVREL_SYNC_X) == MOVREL_SYNC_X)
       x = father.x;
       if (direction == 270000 || direction == -90000)
-        yrel = yrel + shootData[typeId].speed;
+        yrel += shootData[typeId].speed;
       else
-        yrel = yrel - shootData[typeId].speed;
+        yrel -= shootData[typeId].speed;
       end
       if ((moveRelativeToFather && MOVREL_REL_Y) == MOVREL_REL_Y)
         y = father.y + yrel;
@@ -380,8 +385,8 @@ begin
         _pathTick++;
       end
     end
-    x = x + _vx;
-    y = y + _vy;
+    x += _vx;
+    y += _vy;
 
     // **** Animaci¢n
     if (!ticksCounter) // Se actualiza la animaci¢n cada 2 frames

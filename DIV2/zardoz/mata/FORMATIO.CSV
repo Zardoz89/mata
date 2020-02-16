@@ -13,13 +13,13 @@
 # Formatión 1 - Linea horizontal
 # Posiciones y patrones (hasta 6)
 # x     ; y
-  0     ; 0     # 0                   0123456
+  0     ; 0     # 0                   6420135
   240   ; 0     # 1
-  480   ; 0     # 2
-  720   ; 0     # 3
-  960   ; 0     # 4
-  1200  ; 0     # 5
-  1440  ; 0     # 6
+  -240  ; 0     # 2
+  480   ; 0     # 3
+  -480  ; 0     # 4
+  720   ; 0     # 5
+  -720  ; 0     # 6
 
 # Formatión 2 - Escalera derecha
 # Posiciones y patrones (hasta 6)
@@ -120,4 +120,37 @@
   960   ; 0     # 4
   1200  ; 140   # 5
   1440  ; 0     # 6
+
+# Formatión 11 - >
+# Posiciones y patrones (hasta 6)
+# x     ; y
+  0     ; 0     # 0                  6
+  -240  ; 140   # 1                    4
+  -240  ; -140  # 2                      2
+  -480  ; 280   # 3                        0
+  -480  ; -280  # 4                      1
+  -720  ; 560   # 5                    3
+  -720  ; -560  # 6                  5
+
+# Formatión 12 - <
+# Posiciones y patrones (hasta 6)
+# x     ; y
+  0     ; 0     # 0                        6
+  240   ; 140   # 1                      4
+  240   ; -140  # 2                    2
+  480   ; 280   # 3                  0
+  480   ; -280  # 4                    1
+  720   ; 560   # 5                      3
+  720   ; -560  # 6                        5
+
+# Formatión 13 - Wedge
+# Posiciones y patrones (hasta 6)
+# x     ; y
+  0     ; 0     # 0
+  240   ; 140   # 1
+  -240  ; 140   # 2              4   6   5
+  0     ; 140   # 3                2 3 1
+  -480  ; 280   # 4                  0
+  480   ; 280   # 5
+  0     ; 280   # 6
 

@@ -73,16 +73,10 @@ global
     struct groups[64]
       int x0; int y0; // Posicion inicial del grupo
       int formationType; // Tipo de formacion asignada. -1 es no moverse respecto al scroll.
-      int spawnTime; // Tiempo en ms de cuando hace spawn este grupo
+      int spawnTime; // Tiempo en ticks de cuando hace spawn este grupo
       int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
       int enemyType[6]; // -1 no hay enemigo
       int pathId[6]; // -1 esta fijo respecto al scroll de fondo
-      /*
-      struct enemy[6] // Array con los enemigos que representan esta oleada
-        int enemyType; // -1 no hay enemigo
-        int pathId; // -1 esta fijo respecto al scroll de fondo
-      end
-      */
       //byte _destroyed = 0; // Indicador si el grupo ha sido destruido
       //byte _bonusFlag:
     end
@@ -330,9 +324,6 @@ private
  _destroyedAll = false;
  _actualGroupInd = 0;
 begin
-  // Inicializar el timer[0]
-  timer[0] = 0;
-
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
@@ -348,14 +339,15 @@ begin
   loop
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
     if (_actualGroupInd < level.numberOfGroups)
-      if (timer[0] >= level.groups[_actualGroupInd].spawnTime)
-        timer[0] -= level.groups[_actualGroupInd].spawnTime;
+      if (ticksCounter >= level.groups[_actualGroupInd].spawnTime)
+        ticksCounter -= level.groups[_actualGroupInd].spawnTime;
 
         enemyGroup(_actualGroupInd);
         _actualGroupInd++;
       end
     end
 
+    ticksCounter++;
     frame;
   end
 end

@@ -13,7 +13,7 @@
 
 # grupo 1
 # x0    ; y0    ; formationType ; spawnTime ; bonusType
-  4680  ; -1960 ; 0             ; 500       ; -1
+  4680  ; -1960 ; 0             ; 150       ; -1
 # enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
   1             ; 1             ; 1             ; 1             ; 1             ; 1             ; 1
 # pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]
@@ -21,7 +21,7 @@
 
 # grupo 3
 # x0    ; y0    ; formationType ; spawnTime ; bonusType
-  1000  ; -300  ; 1             ; 100       ; -1
+  1000  ; -300  ; 1             ; 300       ; -1
 # enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
   0             ; 0             ; 0             ; 0             ; 0             ; -1            ; -1
 # pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]

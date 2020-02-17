@@ -45,7 +45,7 @@ Para esto me influencia bastante estos juegos :
     - [x] Regiones y zona de juego
     - [ ] Items para cambiar/mejorar el arma
     - [ ] Tilemap de fondo de pantalla
-    - [ ] Barra de salud, escudos, arma principal y secundaria
+    - [ ] (WIP) Barra de salud, escudos, arma principal y secundaria
     - [ ] Pantalla de carga y menú
     - [ ] (WIP) Niveles
 - [ ] Refinar el prototipo hacia un diseño mas elaborado

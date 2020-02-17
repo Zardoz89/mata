@@ -23,17 +23,22 @@ const
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
   PLAYFIELD_REGION_H=480;
+
+  PLAYFIELD_MARGIN=17000;
   // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible
-  PLAYFIELD_XMIN = 0;
-  PLAYFIELD_XMAX = 4920;
-  PLAYFIELD_YMIN = -17000;
-  PLAYFIELD_YMAX = 4800 + 17000;
+  PLAYFIELD_XMIN = 0 - PLAYFIELD_MARGIN;
+  PLAYFIELD_XMAX = 4920 + PLAYFIELD_MARGIN;
+  PLAYFIELD_YMIN = - PLAYFIELD_MARGIN;
+  PLAYFIELD_YMAX = 4800 + PLAYFIELD_MARGIN;
 
   STATUS_REGION=2; // Region de la zona con el estado del jugador
-  STATUS_X=640-148;
+  STATUS_X=640-148; // = 492
   STATUS_Y=0;
   STATUS_W=148;
   STATUS_H=480;
+
+  PLAYER_MAX_HULL = 200;
+  PLAYER_MAX_SHIELD = 200;
 
 
   // **** Tipos de dispersion del disparo
@@ -59,6 +64,7 @@ const
 
 global
   // **** Libreria de graficos
+  int fpgBlitter;
   int fpgPlayer;
   int fpgShoots;
   int fpgEnemy;
@@ -146,6 +152,7 @@ begin
 
   // **** Carga de recursos ****
   // Graficos
+  fpgBlitter = load_fpg(pathResolve("fpg\hud.fpg"));
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
@@ -266,6 +273,7 @@ begin
 
   // Crear al proceso jugador
   playerShipId = playerShip(1);
+  playerHullStatus();
 
   loop
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
@@ -339,6 +347,31 @@ begin
   end
 end
 
+/**
+ * Proceso que muestra el estado del casco del jugador
+ */
+process playerHullStatus()
+private
+  int tmp;
+begin
+  region=STATUS_REGION;
+  x=496;
+  y=100;
+  file=fpgBlitter;
+  graph=new_map(16, 200, 0, 0, 196);
+  loop
+    tmp = max(playerShipId.hull, PLAYER_MAX_HULL);
+    // Se pinta primero el fondo con la barra completa
+    map_block_copy(fpgBlitter, graph, 0, 0, 997, 0, 0, 16, 200);
+    // Enmascaramos con un grafico negro la parte que sobra
+    map_block_copy(fpgBlitter, graph, 0, 0, 996, 0, 0, 16, 200-tmp);
+    frame(200);
+  end
+end
+
+/**
+ * Nave del juegador
+ */
 process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos

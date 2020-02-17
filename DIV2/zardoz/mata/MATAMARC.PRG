@@ -7,7 +7,7 @@ COMPILER_OPTIONS _case_sensitive;
 // https://divcompo.now.sh
 // ****************************************************************************
 
-program matamarcianos;
+program mata;
 
 import "csv.dll";
 
@@ -89,7 +89,7 @@ global
   end
 
   // **** Formaciones de naves enemigas
-  struct formations[16]
+  struct formations[13]
     struct startPosition[6]
       int x; int y;
     end
@@ -106,8 +106,8 @@ global
   end
 
   // **** Patrones de movimiento [Id patron]
-  struct paths[10]
-    byte maxSteps; // Nº de pasos
+  struct paths[40]
+    byte maxSteps; // N§ de pasos
     int vx0; // Velocidad inicial eje X
     int vy0; // Velocidad inicial eje Y
     struct steps[10]

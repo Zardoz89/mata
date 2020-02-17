@@ -152,20 +152,16 @@ begin
   fpgBack = load_fpg(pathResolve("fpg\back.fpg"));
 
   // Carga tipos de disparo
-  loadShootTypeData();
-
+  loadData("dat\shoots", offset shootData, sizeof(shootData));
+  // Carga las formaciones
+  loadData("dat\formatio", offset formations, sizeof(formations));
   // Carga patrones de movimiento
-  loadMovPaths();
-
+  loadData("dat\movpaths", offset paths, sizeof(paths));
   // Carga tipo de enemigos
-  loadEnemyType();
-
-  // Carga tipo de enemigos
-  loadFormations();
+  loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
 
   // Carga de datos del nivel 1
   loadLevelData("level_01");
-
   // Proceso nivel de juego
   gameLevel();
 
@@ -194,107 +190,42 @@ begin
 end
 
 /**
- * Lee el fichero con los tipos de disparo
+ * Lee un fichero CSV con datos de juego
  */
-function loadShootTypeData()
+function loadData(dataFile, _offset, size)
 private
-  _retVal = 0;
-  _path;
+  int _retVal = 0;
+  string _path;
   string _msg;
 begin
-  // Efectivamente reyena un array de structs
+  _path = dataFile + ".csv";
+  _path = pathResolve(_path);
+  // Efectivamente rellena un array de structs
   // La razon es que internamente DIV usa un array gigante para todas las variables
-  _path = pathResolve("shoots.csv");
-  _retVal = readCSVToIntArray(_path,
-      offset shootData,
-      sizeof(shootData));
-  if (DEBUG_MODE == 1 && _retVal <= 0)
+  _retVal = readCSVToIntArray(_path, _offset, size);
+  if (_retVal <= 0)
     _msg = "Error al abrir fichero de datos: " + _path;
     write(0, 0, 0, 0, _msg);
+    loop
+      // abortamos ejecuci¢n
+      if (key(_q) || key(_esc))
+        let_me_alone();
+        break;
+      end
+
+      frame;
+    end
   end
   return(_retVal);
 end
-
-/**
- * Lee el fichero con los patrones de movimiento
- */
-function loadMovPaths()
-private
-  _retVal = 0;
-  _path;
-  string _msg;
-begin
-  _path = pathResolve("movpaths.csv");
-  _retVal = readCSVToIntArray(_path,
-      offset paths,
-      sizeof(paths));
-  if (DEBUG_MODE == 1 && _retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-  end
-  return(_retVal);
-end;
-
-/**
- * Lee el fichero con los tipos de enemigo
- */
-function loadEnemyType()
-private
-  _retVal = 0;
-  _path;
-  string _msg;
-begin
-  _path = pathResolve("enemtype.csv");
-  _retVal = readCSVToIntArray(_path,
-      offset enemyType,
-      sizeof(enemyType));
-  if (DEBUG_MODE == 1 && _retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-  end
-  return(_retVal);
-end;
-
-/**
- * Lee el fichero con las formaciones de enemigos
- */
-function loadFormations()
-private
-  _retVal = 0;
-  _path;
-  string _msg;
-begin
-  _path = pathResolve("formatio.csv");
-  _retVal = readCSVToIntArray(_path,
-      offset formations,
-      sizeof(formations));
-  if (DEBUG_MODE == 1 && _retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-  end
-  return(_retVal);
-end;
-
 
 /**
  * Lee el fichero con los datos de nivel
  */
 function loadLevelData(string levelName)
 private
-  _retVal = 0;
-  string _path;
-  string _msg;
 begin
-  _path = "lvl\" + levelName + ".csv";
-  _path = pathResolve(_path);
-  _retVal = readCSVToIntArray(_path,
-      offset level,
-      sizeof(level));
-  if (DEBUG_MODE == 1 && _retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-  end
-  return(_retVal);
+   return(loadData("lvl\" + levelName, offset level, sizeof(level)));
 end;
 
 function isOutsidePlayfield(x, y)

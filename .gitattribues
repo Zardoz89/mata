@@ -6,6 +6,7 @@
 *.cpp text eol=crlf
 *.CPP text eol=crlf
 makefile text eol=crlf
+MAKEFILE text eol=crlf
 
 *.FPG binary
 *.fpg binary

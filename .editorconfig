@@ -1,0 +1,19 @@
+# top-most EditorConfig file
+root = true
+
+[*.{prg,PRG,csv,CSV}]
+end_of_line = crlf
+insert_final_newline = true
+
+[MAKEFILE]
+end_of_line = crlf
+insert_final_newline = true
+
+[makefile]
+end_of_line = crlf
+insert_final_newline = true
+
+[*.{sh,md,conf}]
+end_of_line = lf
+charset = utf-8
+

@@ -482,7 +482,7 @@ end
 process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
-  _mainWeapon = 5;
+  _mainWeapon = 1;
   _dispersionAngle = 0;
 begin
   // Asignacion grafico
@@ -504,14 +504,19 @@ begin
 
     if (mouse.left )
       if (_mainShootCounter >= shootData[_mainWeapon].delay)
-        _mainShootCounter = 0;
-        _dispersionAngle = calcDispersionAngle(shootData[_mainWeapon].disperseValue,
-          shootData[_mainWeapon].disperseType, ticksCounter);
-        if (shootData[_mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
-          shoot(x, y, 90000 + _dispersionAngle , _mainWeapon, MOVREL_NONE, false);
-        else
-          shoot(x, y, 90000 + _dispersionAngle , _mainWeapon,
-            MOVREL_SYNC_X || MOVREL_REL_Y, false);
+        if (playerShipEnergy > 2)
+          // TODO meter el consumo de energia
+          playerShipEnergy = clamp(playerShipEnergy - 2, 0, PLAYER_MAX_ENERGY);
+
+          _mainShootCounter = 0;
+          _dispersionAngle = calcDispersionAngle(shootData[_mainWeapon].disperseValue,
+            shootData[_mainWeapon].disperseType, ticksCounter);
+          if (shootData[_mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
+            shoot(x, y, 90000 + _dispersionAngle , _mainWeapon, MOVREL_NONE, false);
+          else
+            shoot(x, y, 90000 + _dispersionAngle , _mainWeapon,
+              MOVREL_SYNC_X || MOVREL_REL_Y, false);
+          end
         end
       end
     end

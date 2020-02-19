@@ -38,12 +38,25 @@ const
   STATUS_H=480;
 
   STATUS_HULL_BAR_REGION = 3;
-  STATUS_HULL_BAR_X = PLAYFIELD_REGION_W + 28;
+  STATUS_HULL_BAR_X = PLAYFIELD_REGION_W + 22 + 6;
   STATUS_HULL_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
+
+  STATUS_SHIELD_BAR_REGION = 4;
+  STATUS_SHIELD_BAR_X = PLAYFIELD_REGION_W + 70 + 6;
+  STATUS_SHIELD_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
+
+  STATUS_ENERGY_BAR_REGION = 5;
+  STATUS_ENERGY_BAR_X = PLAYFIELD_REGION_W + 118 + 6;
+  STATUS_ENERGY_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
+
 
 
   PLAYER_MAX_HULL = 200;
   PLAYER_MAX_SHIELD = 200;
+  PLAYER_MAX_ENERGY = 200;
+  SHIELD_REGENERATION_RATE = 5;  // Cuanto regenera el escudo
+  GENERATOR_RATE = 5; // Cuanto regenera la energia
+
 
 
   // **** Tipos de dispersion del disparo
@@ -138,6 +151,8 @@ global
 
   // **** Generales de la partida
   int playerShipId;
+  int playerShipShield;
+  int playerShipEnergy;
   int score = 0;
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
@@ -284,6 +299,7 @@ begin
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
+  xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
 
   // Fondo dummy
   //put_screen(fpgBack, 1);//, 0, 0);
@@ -291,8 +307,12 @@ begin
   // TODO procesar tilemapId y crear el scroll de fondo
 
   // Crear al proceso jugador
+  playerShipShield = PLAYER_MAX_SHIELD >> 1;
+  playerShipEnergy = 25;
   playerShipId = playerShip(1);
-  playerStatus();
+  playerHullStatus();
+  playerShieldStatus();
+  playerEnergyStatus();
 
   loop
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
@@ -369,7 +389,7 @@ end
 /**
  * Proceso que muestra el estado del casco del jugador
  */
-process playerStatus()
+process playerHullStatus()
 private
   int clampHull;
   int regionY;
@@ -379,7 +399,6 @@ begin
   y = STATUS_HULL_BAR_Y;
   file=fpgHud;
   graph=2; // Grafico vida
-  xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
   loop
     clampHull = clamp(playerShipId.hull, 0, PLAYER_MAX_HULL);
     regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
@@ -387,13 +406,75 @@ begin
       STATUS_HULL_BAR_X - 6,
       regionY,
       12, clampHull);
-    // Se pinta primero el fondo con la barra completa
-    //map_block_copy(fpgBlitter, graph, 0, 0, 997, 0, 0, 16, 200);
-    // Enmascaramos con un grafico negro la parte que sobra
-    //map_block_copy(fpgBlitter, graph, 0, 0, 996, 0, 0, 16, 200-tmp);
     frame(200);
   end
 end
+
+/**
+ * Proceso que muestra el estado del escudo del jugador
+ */
+process playerShieldStatus()
+private
+  int clampShield;
+  int regionY;
+begin
+  region=STATUS_SHIELD_BAR_REGION;
+  x = STATUS_SHIELD_BAR_X;
+  y = STATUS_SHIELD_BAR_Y;
+  file=fpgHud;
+  graph=3; // Grafico barra escudos
+  loop
+    clampShield = clamp(playerShipShield, 0, PLAYER_MAX_SHIELD);
+    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampShield;
+    define_region(STATUS_SHIELD_BAR_REGION,
+      STATUS_SHIELD_BAR_X - 6,
+      regionY,
+      12, clampShield);
+
+    // Regeneraci¢n escudos
+    if (playerShipEnergy > 30 && ticksCounter > 30)
+      playerShipShield = clamp(playerShipShield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
+      playerShipEnergy -= (SHIELD_REGENERATION_RATE >> 1);
+      ticksCounter = 0;
+    end
+
+    ticksCounter++;
+    frame;
+  end
+end
+
+/**
+ * Proceso que muestra la energia del jugador
+ */
+process playerEnergyStatus()
+private
+  int clampEnergy;
+  int regionY;
+begin
+  region=STATUS_ENERGY_BAR_REGION;
+  x = STATUS_ENERGY_BAR_X;
+  y = STATUS_ENERGY_BAR_Y;
+  file=fpgHud;
+  graph=4; // Grafico barra escudos
+  loop
+    clampEnergy = clamp(playerShipEnergy, 0, PLAYER_MAX_ENERGY);
+    regionY = STATUS_ENERGY_BAR_Y - 100 + 200 - clampEnergy;
+    define_region(STATUS_ENERGY_BAR_REGION,
+      STATUS_ENERGY_BAR_X - 6,
+      regionY,
+      12, clampEnergy);
+
+    // Regeneraci¢n energia
+    if (ticksCounter > 4)
+      playerShipEnergy = clamp(playerShipEnergy + GENERATOR_RATE, 0, PLAYER_MAX_ENERGY);
+      ticksCounter = 0;
+    end
+
+    ticksCounter++;
+    frame;
+  end
+end
+
 
 /**
  * Nave del juegador
@@ -416,6 +497,7 @@ begin
     if (hull < 0)
       break;
     end;
+
     // Calcula de nueva posicion
     x = max(mouse.x * PLAYFIELD_RESOLUTION, PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
     y = mouse.y * PLAYFIELD_RESOLUTION;
@@ -489,7 +571,11 @@ begin
       // Colision con el jugador
       hitId = collision(type playerShip);
       if (hitId)
-        hitId.hull = hitId.hull - shootData[typeId].damage;
+        playerShipShield -= shootData[typeId].damage;
+        if (playerShipShield < 0)
+          hitId.hull += playerShipShield;
+          playerShipShield = 0;
+        end
         break;
       end
     else

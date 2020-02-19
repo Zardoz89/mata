@@ -1,3 +1,8 @@
+/*
+ Areas de juego
+ playfield 492x480
+ status 640-492=148 -> 148x480
+
 // Estructuras de datos
 
 // Al cargar cada nivel se leera de un fichero los valores de level

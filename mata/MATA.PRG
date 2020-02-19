@@ -37,6 +37,11 @@ const
   STATUS_W=148;
   STATUS_H=480;
 
+  STATUS_HULL_BAR_REGION = 3;
+  STATUS_HULL_BAR_X = PLAYFIELD_REGION_W + 28;
+  STATUS_HULL_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
+
+
   PLAYER_MAX_HULL = 200;
   PLAYER_MAX_SHIELD = 200;
 
@@ -68,6 +73,7 @@ global
   int fpgPlayer;
   int fpgShoots;
   int fpgEnemy;
+  int fpgHud;
   int fpgBack;
 
   // **** Definicion de un "nivel"
@@ -152,11 +158,12 @@ begin
 
   // **** Carga de recursos ****
   // Graficos
-  fpgBlitter = load_fpg(pathResolve("fpg\hud.fpg"));
+  //fpgBlitter = load_fpg(pathResolve("fpg\tilemap.fpg"));
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
   fpgBack = load_fpg(pathResolve("fpg\back.fpg"));
+  fpgHud = load_fpg(pathResolve("fpg\hud.fpg"));
 
   // Carga tipos de disparo
   loadData("dat\shoots", offset shootData, sizeof(shootData));
@@ -254,6 +261,18 @@ begin
   return(val);
 end
 
+function clamp(val, minVal, maxVal)
+begin
+  if (val > maxVal)
+    return(maxVal);
+  end
+  if (val < minVal)
+    return(minVal);
+  end
+  return(val);
+end
+
+
 /**
  * Proceso que representa un nivel del juego
  */
@@ -267,13 +286,13 @@ begin
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
 
   // Fondo dummy
-  put_screen(fpgBack, 1);//, 0, 0);
+  //put_screen(fpgBack, 1);//, 0, 0);
 
   // TODO procesar tilemapId y crear el scroll de fondo
 
   // Crear al proceso jugador
   playerShipId = playerShip(1);
-  playerHullStatus();
+  playerStatus();
 
   loop
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
@@ -350,21 +369,28 @@ end
 /**
  * Proceso que muestra el estado del casco del jugador
  */
-process playerHullStatus()
+process playerStatus()
 private
-  int tmp;
+  int clampHull;
+  int regionY;
 begin
-  region=STATUS_REGION;
-  x=496;
-  y=100;
-  file=fpgBlitter;
-  graph=new_map(16, 200, 0, 0, 196);
+  region=STATUS_HULL_BAR_REGION;
+  x = STATUS_HULL_BAR_X;
+  y = STATUS_HULL_BAR_Y;
+  file=fpgHud;
+  graph=2; // Grafico vida
+  xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
   loop
-    tmp = max(playerShipId.hull, PLAYER_MAX_HULL);
+    clampHull = clamp(playerShipId.hull, 0, PLAYER_MAX_HULL);
+    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
+    define_region(STATUS_HULL_BAR_REGION,
+      STATUS_HULL_BAR_X - 6,
+      regionY,
+      12, clampHull);
     // Se pinta primero el fondo con la barra completa
-    map_block_copy(fpgBlitter, graph, 0, 0, 997, 0, 0, 16, 200);
+    //map_block_copy(fpgBlitter, graph, 0, 0, 997, 0, 0, 16, 200);
     // Enmascaramos con un grafico negro la parte que sobra
-    map_block_copy(fpgBlitter, graph, 0, 0, 996, 0, 0, 16, 200-tmp);
+    //map_block_copy(fpgBlitter, graph, 0, 0, 996, 0, 0, 16, 200-tmp);
     frame(200);
   end
 end

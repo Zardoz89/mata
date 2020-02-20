@@ -20,15 +20,17 @@ global
 local
 
 private
-  int tiles[63] =
-    16,  16,   2,  13,  13,  13,  13,  13,
-    16,  16,   2,  13,  13,  13,  13,  13,
-     4,   4,   9,  13,  13,  13,  13,  13,
-    13,  13,  13,  13,  13,  13,  13,  13,
-    13,  13,  13,  13,  13,  13,  13,  13,
-    13,  13,  13,  13,  13,  13,  13,  13,
-    13,  13,  13,  13,  13,  13,  13,  13,
-    13,  13,  13,  13,  13,  13,  13,  13;
+  int tiles[8, 8] =
+  // 0    1    2    3    4    5    6    7
+    16,  16,   2,  13,  13,  13,  13,  13, // 0
+    16,  16,   2,  13,  13,  13,  13,  13, // 1
+     4,   4,   9,  13,  13,  13,  13,  13, // 2
+    13,  13,  13,  13,  13,  13,  13,  13, // 3
+    13,  13,  13,  13,  13,  13,  13,  13, // 4
+    13,  13,  13,  13,  13,  13,  13,  13, // 5
+    13,  13,  13,  13,  13,  13,  13,  13, // 6
+    13,  13,  13,  13,  13,  13,  13,  13, // 7
+    13,  13,  13,  13,  13,  13,  13,  13; // 8
 
   tileMap;
 begin
@@ -65,19 +67,26 @@ private
   buffer;
   tileIndex;
   tileMap;
+  halfTileWidth;
+  halfTileHeight;
 begin
-  bufferWidth = tileWidth * (mapColumns-1);
-  bufferHeight = tileHeight * (mapRows-1);
+  bufferWidth = tileWidth * mapColumns;
+  bufferHeight = tileHeight * (mapRows + 1);
 
   buffer = new_map(bufferWidth, bufferHeight,
     bufferWidth >> 1, bufferHeight >> 1,
     196);
-  for (y = 0; y < mapRows; y++)
+
+  halfTileWidth = tileWidth >> 1;
+  halfTileHeight = tileHeight >> 1;
+
+  for (y = 0; y <= mapRows; y++)
     for (x = 0; x < mapColumns; x++)
       tileIndex = mapColumns * y + x;
       tileMap = tilesPtr[tileIndex];
       map_put(0, buffer, tileMap,
-        x * tileWidth, y * tileHeight);
+        (x * tileWidth) + halfTileWidth,
+        (y * tileHeight) + halfTileHeight);
     end
   end
   return(buffer);

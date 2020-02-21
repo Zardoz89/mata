@@ -17,16 +17,21 @@ const
 
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
-  PLAYFIELD_REGION_H=480;
+  PLAYFIELD_REGION_H=448; // 28px * 16
 
   TILE_WIDTH=24;
   TILE_HEIGHT=28;
   TILEMAP_COLUMNS=25;
-  TILEMAP_ROWS=18;
+  TILEMAP_ROWS=26;
+  TILEMAP_MAX_X= 600; //TILEMAP_COLUMNS * TILEMAP_WIDTH - playfield_region_w;
+  TILEMAP_MAX_Y= 768; //TILEMAP_ROWS * TILEMAP_HEIGHT;
+
 
 global
 
 local
+scrollY = 0;
+scrollX = 0;
 
 private
   int tiles[TILEMAP_ROWS, TILEMAP_COLUMNS] =
@@ -51,7 +56,15 @@ private
     21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
     13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21, // 8
 
-    13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21; // 0
+    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
+    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
+    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
+    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
+    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
+    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
+    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
+    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
+    13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21; // 8
 
 
   tileMap;
@@ -62,17 +75,22 @@ begin
 
   load_fpg(pathResolve("fpg\tilemap.fpg"));
 
-  ctype=c_scroll;
-  scroll.camera = id;
+  //ctype=c_scroll;
+  //scroll.camera = id;
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
-  tileMap = createTileBuffer(TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT);
-  drawTiles(tileMap, offset tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT);
-  start_scroll(0, 0, tileMap, 0, PLAYFIELD_REGION, 0);
+  debugText();
+
+  tileMap = createTileBuffer(TILEMAP_COLUMNS, TILE_WIDTH, PLAYFIELD_REGION_H);
+  backgroundScroll(tileMap, offset tiles);
+  //drawTiles(tileMap, offset tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0);
+  //start_scroll(0, 0, tileMap, 0, PLAYFIELD_REGION, 0);
 
   loop
-    x = mouse.x;
-    y = mouse.y;
+    //scroll[0].x0 = mouse.x;
+
+    //drawTiles(tileMap, offset tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, mouse.y);
+    //refresh_scroll(0);
     frame;
   end
 end
@@ -85,38 +103,112 @@ begin
   return (PATH_USER + "\" + PATH_PROG + "\" + file);
 end
 
-function createTileBuffer(mapColumns, mapRows, tileWidth, tileHeight)
+/**
+ * Proceso que muestra informacion de debug como los FPS
+ */
+process debugText()
+private
+  int fpsTxtId = 0;
+  string _msg;
+begin
+  loop
+    if (fpsTxtId)
+      delete_text(fpsTxtId);
+    end
+    _msg = "FPS: " + itoa(fps);
+    fpsTxtId = write(0, 640, 0, 2, _msg);
+    frame(3000); // Actualiza a 2 FPS
+  end
+end
+
+function createTileBuffer(mapColumns, tileWidth, regionHeight)
 private
   bufferWidth;
-  bufferHeight;
   buffer;
 begin
   bufferWidth = tileWidth * mapColumns;
-  bufferHeight = tileHeight * (mapRows+1);
 
-  buffer = new_map(bufferWidth, bufferHeight,
-    bufferWidth >> 1, bufferHeight >> 1,
+  buffer = new_map(bufferWidth, regionHeight,
+    0, 0,//bufferWidth >> 1, regionHeight >> 1,
     196);
   return(buffer);
 end
 
-function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
+
+process backgroundScroll(graph, int pointer tilesPtr)
+private
+  oldScrollX;
+  oldScrollY;
+begin
+  file = 0;
+  region = PLAYFIELD_REGION;
+  z = 512;
+  scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
+
+  oldScrollX = scrollX;
+  oldScrollY = scrollY;
+
+
+  drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0, 0);
+  loop
+    scrollX = clamp(mouse.x, 0, TILEMAP_MAX_X - PLAYFIELD_REGION_W);
+    scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
+    if (scrollX <> oldScrollX || scrollY <> oldScrollY)
+      drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, scrollX, scrollY);
+    end
+    oldScrollX = scrollX;
+    oldScrollY = scrollY;
+
+    frame(200);
+  end
+
+end
+
+function clamp(val, minVal, maxVal)
+begin
+  if (val > maxVal)
+    return(maxVal);
+  end
+  if (val < minVal)
+    return(minVal);
+  end
+  return(val);
+end
+
+/**
+ * Pinta un tilemap grande en un buffer
+ *
+ *
+ * El funcionamiento es el siguiente, determina las filas y columnas que van a estar dentro del buffer de destino
+ * a partir de inputX e inputY como desplazamientos.
+ * Recorre el array multidimensional del tileMap, pero solamente las parte visibles y las pinta en el buffer de destino
+ */
+function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight, inputX, inputY)
 private
   tileIndex;
-  tileMap;
-  halfTileWidth;
-  halfTileHeight;
+  tileMap; // Grafico del tilemap a pintar
+  halfTileWidth; // Centro X del tilemap
+  halfTileHeight; // Centro Y del tilemap
+  x0; // Primera columna que se va a pintar
+  y0; // Primera fila que se va a pintar
+  xMax; // Ultima columna que se va a pintar
+  yMax; // Ultima fila que se va a pintar
+  putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
 begin
   y=0; x=0;
+  x0 = inputX / tileWidth;
+  y0 = inputY / tileHeight;
+  xMax = clamp(((inputX + PLAYFIELD_REGION_W) / tileWidth) + 1, 0, mapColumns);
+  yMax = clamp(((inputY + PLAYFIELD_REGION_H) / tileHeight) + 1, 0, mapRows);
   halfTileWidth = tileWidth >> 1;
   halfTileHeight = tileHeight >> 1;
-  for (y = 0; y <= mapRows; y++)
-    for (x = 0; x < mapColumns; x++)
+
+  for (y = y0; y <= (mapRows); y++)
+    putY = (y * tileHeight) + halfTileHeight - inputY;
+    for (x = x0 ; x < xMax; x++)
       tileIndex = mapColumns * y + x;
       tileMap = tilesPtr[tileIndex];
-      map_put(0, buffer, tileMap,
-        (x * tileWidth) + halfTileWidth,
-        (y * tileHeight) + halfTileHeight);
+      map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth - inputX, putY);
     end
   end
 end

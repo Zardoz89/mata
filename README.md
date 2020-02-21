@@ -44,7 +44,8 @@ Para esto me influencia bastante estos juegos :
     - [x] Generador de oleadas de enemigos
     - [x] Regiones y zona de juego
     - [ ] Items para cambiar/mejorar el arma
-    - [ ] Tilemap de fondo de pantalla
+    - [x] Tilemap de fondo de pantalla
+    - [ ] Mecanica de movimiento del scroll de fondo
     - [x] Barra de salud, escudos y energía
     - [x] Mecánica de regeneración escudos, energía y consumo de energía
     - [ ] (WIP) Arma principal y secundaria

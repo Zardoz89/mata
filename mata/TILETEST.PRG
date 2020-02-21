@@ -19,14 +19,14 @@ const
   PLAYFIELD_REGION_W=492;
   PLAYFIELD_REGION_H=480;
 
-  TILEMAP_ROWS=24;
+  TILEMAP_COLUMNS=24;
 
 global
 
 local
 
 private
-  int tiles[8, TILEMAP_ROWS] =
+  int tiles[8, TILEMAP_COLUMNS] =
   // 0    1    2    3    4    5    6    7     8    9   10   11   12   13   14   15    16   17   18   19   20   21   22   23
     16,  16,   2,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,
     16,  16,   2,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,
@@ -51,8 +51,9 @@ begin
   scroll.camera = id;
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
-  tileMap = drawTiles(offset tiles, TILEMAP_ROWS, 8, 24, 28);
-  start_scroll(0, 0, tileMap, 0, PLAYFIELD_REGION, 3);
+  tileMap = createTileBuffer(TILEMAP_COLUMNS, 8,24, 28);
+  drawTiles(tileMap, offset tiles, TILEMAP_COLUMNS, 8, 24, 28);
+  start_scroll(0, 0, tileMap, 0, PLAYFIELD_REGION, 0);
 
   loop
     x = mouse.x;
@@ -69,22 +70,29 @@ begin
   return (PATH_USER + "\" + PATH_PROG + "\" + file);
 end
 
-function drawTiles(int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
+function createTileBuffer(mapColumns, mapRows, tileWidth, tileHeight)
 private
   bufferWidth;
   bufferHeight;
   buffer;
-  tileIndex;
-  tileMap;
 begin
-  y=0; x=0;
   bufferWidth = tileWidth * mapColumns;
   bufferHeight = tileHeight * (mapRows+1);
 
   buffer = new_map(bufferWidth, bufferHeight,
     bufferWidth >> 1, bufferHeight >> 1,
     196);
+  return(buffer);
+end
 
+function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
+private
+  tileIndex;
+  tileMap;
+  halfTileWidth;
+  halfTileHeight;
+begin
+  y=0; x=0;
   halfTileWidth = tileWidth >> 1;
   halfTileHeight = tileHeight >> 1;
   for (y = 0; y <= mapRows; y++)
@@ -96,6 +104,5 @@ begin
         (y * tileHeight) + halfTileHeight);
     end
   end
-  return(buffer);
 end
 

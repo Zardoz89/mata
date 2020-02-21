@@ -31,6 +31,13 @@ const
   PLAYFIELD_YMIN = - PLAYFIELD_MARGIN;
   PLAYFIELD_YMAX = 4800 + PLAYFIELD_MARGIN;
 
+  TILE_WIDTH=24;
+  TILE_HEIGHT=28;
+  TILEMAP_COLUMNS=25;
+  TILEMAP_ROWS=26; // TODO Valor temporal, tiene que venir determinado del CSV de nivel
+  TILEMAP_MAX_X= 600; // TILEMAP_COLUMNS * TILEMAP_WIDTH - playfield_region_w;
+  TILEMAP_MAX_Y= 768; // TILEMAP_ROWS * TILEMAP_HEIGHT;
+
   STATUS_REGION=2; // Region de la zona con el estado del jugador
   STATUS_X=640-148; // = 492
   STATUS_Y=0;
@@ -82,7 +89,7 @@ const
 
 global
   // **** Libreria de graficos
-  int fpgBlitter;
+  int fpgTileset;
   int fpgPlayer;
   int fpgShoots;
   int fpgEnemy;
@@ -155,6 +162,46 @@ global
   int playerShipEnergy;
   int score = 0;
 
+  // **** Usadas por el scroll de fondo de tilemap
+  int scrollX;
+  int scrollY;
+  tileMapGraph; // Buffer del tilemap
+
+  // Array temporal
+  int tiles[TILEMAP_ROWS, TILEMAP_COLUMNS] =
+  // 0    1    2    3    4    5    6    7     8    9   10   11   12   13   14   15    16   17   18   19   20   21   22   23   24
+    16,  16,   2,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
+    16,  16,   2,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
+     4,   4,   9,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
+    13,  13,  13,  13,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
+    13,  13,  13,  21,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
+    13,  13,  21,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
+    13,  21,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
+    20,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
+    20,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21, // 8
+    // 9 * 25 =225
+    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
+    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
+    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
+    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
+    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
+    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
+    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
+    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
+    13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21, // 8
+
+    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
+    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
+    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
+    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
+    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
+    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
+    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
+    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
+    13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21; // 8
+
+
+
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
   typeId = -1; // Usada en los procesos acceder a los datos de tipo de lo que sea
@@ -173,7 +220,7 @@ begin
 
   // **** Carga de recursos ****
   // Graficos
-  //fpgBlitter = load_fpg(pathResolve("fpg\tilemap.fpg"));
+  fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
@@ -301,10 +348,11 @@ begin
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
   xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
 
-  // Fondo dummy
-  //put_screen(fpgBack, 1);//, 0, 0);
+  // Creamos el buffer del tilemap
+  tileMapGraph = createTileBuffer(PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
-  // TODO procesar tilemapId y crear el scroll de fondo
+  // Creamos el proceso de scroll
+  backgroundScroll(tileMapGraph, offset tiles);
 
   // Crear al proceso jugador
   playerShipShield = PLAYER_MAX_SHIELD >> 1;
@@ -520,6 +568,10 @@ begin
         end
       end
     end
+
+    // TODO prueba
+    scrollX = x;
+    scrollY = y;
 
     _mainShootCounter++;
     ticksCounter++;
@@ -737,4 +789,91 @@ begin
   end;
   father.remaningChildrens--;
 end
+
+/**
+ * Crea el buffer de tilemap
+ */
+function createTileBuffer(regionWidth, regionHeight)
+private
+  bufferWidth;
+  buffer;
+begin
+
+  buffer = new_map(regionWidth, regionHeight,
+    0, 0, // regionWidth >> 1, regionHeight >> 1,
+    196); // Color negro
+  return(buffer);
+end
+
+/**
+ * Proceso que controla el scroll de fondo en la partida
+ * @param graph Buffer del grafico
+ * @param tilesPtr Ptr. al array con el tilemap
+ */
+process backgroundScroll(graph, int pointer tilesPtr)
+private
+  oldScrollX;
+  oldScrollY;
+begin
+  file = fpgTileset;
+  region = PLAYFIELD_REGION;
+  z = 512;
+  scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
+
+  oldScrollX = scrollX;
+  oldScrollY = scrollY;
+
+  drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0, 0);
+  loop
+    scrollX = clamp(mouse.x, 0, TILEMAP_MAX_X - PLAYFIELD_REGION_W);
+    scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
+    if (scrollX <> oldScrollX || scrollY <> oldScrollY)
+      drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, scrollX, scrollY);
+    end
+    oldScrollX = scrollX;
+    oldScrollY = scrollY;
+
+    frame(200);
+  end
+
+end
+
+/**
+ * Pinta un tilemap grande en un buffer
+ *
+ *
+ * El funcionamiento es el siguiente, determina las filas y columnas que van a estar dentro del buffer de destino
+ * a partir de inputX e inputY como desplazamientos.
+ * Recorre el array multidimensional del tileMap, pero solamente las parte visibles y las pinta en el buffer de destino
+ */
+function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight, inputX, inputY)
+private
+  tileIndex;
+  tileMap; // Grafico del tilemap a pintar
+  halfTileWidth; // Centro X del tilemap
+  halfTileHeight; // Centro Y del tilemap
+  x0; // Primera columna que se va a pintar
+  y0; // Primera fila que se va a pintar
+  xMax; // Ultima columna que se va a pintar
+  yMax; // Ultima fila que se va a pintar
+  putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
+begin
+  y=0; x=0;
+  x0 = inputX / tileWidth;
+  y0 = inputY / tileHeight;
+  xMax = clamp(((inputX + PLAYFIELD_REGION_W) / tileWidth) + 1, 0, mapColumns);
+  yMax = clamp(((inputY + PLAYFIELD_REGION_H) / tileHeight) + 1, 0, mapRows);
+  halfTileWidth = tileWidth >> 1;
+  halfTileHeight = tileHeight >> 1;
+
+  for (y = y0; y <= (mapRows); y++)
+    putY = (y * tileHeight) + halfTileHeight - inputY;
+    for (x = x0 ; x < xMax; x++)
+      tileIndex = mapColumns * y + x;
+      tileMap = tilesPtr[tileIndex];
+      map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth - inputX, putY);
+    end
+  end
+end
+
 

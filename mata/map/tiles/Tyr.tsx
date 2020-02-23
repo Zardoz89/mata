@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="63" columns="3">
+<tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="83" columns="3">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image width="24" height="28" source="png/bdw01.png"/>
@@ -189,5 +189,65 @@
  </tile>
  <tile id="62">
   <image width="24" height="28" source="png/gfor11.png"/>
+ </tile>
+ <tile id="63">
+  <image width="24" height="28" source="png/dw-06.png"/>
+ </tile>
+ <tile id="64">
+  <image width="24" height="28" source="png/dw-07.png"/>
+ </tile>
+ <tile id="65">
+  <image width="24" height="28" source="png/aroad-00.png"/>
+ </tile>
+ <tile id="66">
+  <image width="24" height="28" source="png/aroad-01.png"/>
+ </tile>
+ <tile id="67">
+  <image width="24" height="28" source="png/aroad-02.png"/>
+ </tile>
+ <tile id="68">
+  <image width="24" height="28" source="png/aroad-03.png"/>
+ </tile>
+ <tile id="69">
+  <image width="24" height="28" source="png/aroad-04.png"/>
+ </tile>
+ <tile id="70">
+  <image width="24" height="28" source="png/aroad-05.png"/>
+ </tile>
+ <tile id="71">
+  <image width="24" height="28" source="png/aroad-06.png"/>
+ </tile>
+ <tile id="72">
+  <image width="24" height="28" source="png/aroad-07.png"/>
+ </tile>
+ <tile id="73">
+  <image width="24" height="28" source="png/aroad-08.png"/>
+ </tile>
+ <tile id="74">
+  <image width="24" height="28" source="png/aroad-09.png"/>
+ </tile>
+ <tile id="75">
+  <image width="24" height="28" source="png/aroad-10.png"/>
+ </tile>
+ <tile id="76">
+  <image width="24" height="28" source="png/aroad-11.png"/>
+ </tile>
+ <tile id="77">
+  <image width="24" height="28" source="png/aroad-12.png"/>
+ </tile>
+ <tile id="78">
+  <image width="24" height="28" source="png/aroad-13.png"/>
+ </tile>
+ <tile id="79">
+  <image width="24" height="28" source="png/aroad-14.png"/>
+ </tile>
+ <tile id="80">
+  <image width="24" height="28" source="png/aroad-15.png"/>
+ </tile>
+ <tile id="81">
+  <image width="24" height="28" source="png/mebr03.png"/>
+ </tile>
+ <tile id="82">
+  <image width="24" height="28" source="png/mebr04.png"/>
  </tile>
 </tileset>

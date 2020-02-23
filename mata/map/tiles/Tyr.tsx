@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="83" columns="3">
+<tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="112" columns="3">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image width="24" height="28" source="png/bdw01.png"/>
@@ -249,5 +249,92 @@
  </tile>
  <tile id="82">
   <image width="24" height="28" source="png/mebr04.png"/>
+ </tile>
+ <tile id="83">
+  <image width="24" height="28" source="png/mebr05.png"/>
+ </tile>
+ <tile id="84">
+  <image width="24" height="28" source="png/mebr06.png"/>
+ </tile>
+ <tile id="85">
+  <image width="24" height="28" source="png/metal01.png"/>
+ </tile>
+ <tile id="86">
+  <image width="24" height="28" source="png/mebr07.png"/>
+ </tile>
+ <tile id="87">
+  <image width="24" height="28" source="png/mebr08.png"/>
+ </tile>
+ <tile id="88">
+  <image width="24" height="28" source="png/mebr09.png"/>
+ </tile>
+ <tile id="89">
+  <image width="24" height="28" source="png/mebr10.png"/>
+ </tile>
+ <tile id="90">
+  <image width="24" height="28" source="png/mebr11.png"/>
+ </tile>
+ <tile id="91">
+  <image width="24" height="28" source="png/metal02.png"/>
+ </tile>
+ <tile id="92">
+  <image width="24" height="28" source="png/metal03.png"/>
+ </tile>
+ <tile id="93">
+  <image width="24" height="28" source="png/m-01-02.png"/>
+ </tile>
+ <tile id="94">
+  <image width="24" height="28" source="png/m-01-03.png"/>
+ </tile>
+ <tile id="95">
+  <image width="24" height="28" source="png/m-01-04.png"/>
+ </tile>
+ <tile id="96">
+  <image width="24" height="28" source="png/m-01-05.png"/>
+ </tile>
+ <tile id="97">
+  <image width="24" height="28" source="png/m-01-06.png"/>
+ </tile>
+ <tile id="98">
+  <image width="24" height="28" source="png/m-01-07.png"/>
+ </tile>
+ <tile id="99">
+  <image width="24" height="28" source="png/m-02-02.png"/>
+ </tile>
+ <tile id="100">
+  <image width="24" height="28" source="png/m-03-02.png"/>
+ </tile>
+ <tile id="101">
+  <image width="24" height="28" source="png/m-03-03.png"/>
+ </tile>
+ <tile id="102">
+  <image width="24" height="28" source="png/m-03-04.png"/>
+ </tile>
+ <tile id="103">
+  <image width="24" height="28" source="png/m-03-05.png"/>
+ </tile>
+ <tile id="104">
+  <image width="24" height="28" source="png/m-03-06.png"/>
+ </tile>
+ <tile id="105">
+  <image width="24" height="28" source="png/wmc00.png"/>
+ </tile>
+ <tile id="106">
+  <image width="24" height="28" source="png/m-06-04.png"/>
+ </tile>
+ <tile id="107">
+  <image width="24" height="28" source="png/de0101.png"/>
+ </tile>
+ <tile id="108">
+  <image width="24" height="28" source="png/de0102.png"/>
+ </tile>
+ <tile id="109">
+  <image width="24" height="28" source="png/de0201.png"/>
+ </tile>
+ <tile id="110">
+  <image width="24" height="28" source="png/de0202.png"/>
+ </tile>
+ <tile id="111">
+  <image width="24" height="28" source="png/turr00.png"/>
  </tile>
 </tileset>

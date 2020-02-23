@@ -9,7 +9,7 @@ COMPILER_OPTIONS _case_sensitive;
 
 program mata;
 
-import "csv.dll";
+import "zardoz/mata/dll/csv.dll";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.

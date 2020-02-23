@@ -22,7 +22,7 @@ const
 
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
-  PLAYFIELD_REGION_H=448;//480;
+  PLAYFIELD_REGION_H=480;
 
   PLAYFIELD_MARGIN=17000;
   // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible
@@ -34,9 +34,9 @@ const
   TILE_WIDTH=24;
   TILE_HEIGHT=28;
   TILEMAP_COLUMNS=25;
-  TILEMAP_ROWS=26; // TODO Valor temporal, tiene que venir determinado del CSV de nivel
+  TILEMAP_ROWS=144; // TODO Valor temporal, tiene que venir determinado del CSV de nivel
   TILEMAP_MAX_X= 600; // TILEMAP_COLUMNS * TILEMAP_WIDTH
-  TILEMAP_MAX_Y= 768; // TILEMAP_ROWS * TILEMAP_HEIGHT TODO se tiene que calcular al vuelo
+  TILEMAP_MAX_Y= 4060; // TODO temporal TILEMAP_ROWS * TILEMAP_HEIGHT  se tiene que calcular al vuelo
 
   STATUS_REGION=2; // Region de la zona con el estado del jugador
   STATUS_X=640-148; // = 492
@@ -57,13 +57,11 @@ const
   STATUS_ENERGY_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
 
 
-
   PLAYER_MAX_HULL = 200;
   PLAYER_MAX_SHIELD = 200;
   PLAYER_MAX_ENERGY = 200;
   SHIELD_REGENERATION_RATE = 5;  // Cuanto regenera el escudo
   GENERATOR_RATE = 5; // Cuanto regenera la energia
-
 
 
   // **** Tipos de dispersion del disparo
@@ -167,40 +165,8 @@ global
   int scrollY;
   tileMapGraph; // Buffer del tilemap
 
-  // Array temporal
-  int tiles[TILEMAP_ROWS, TILEMAP_COLUMNS] =
-  // 0    1    2    3    4    5    6    7     8    9   10   11   12   13   14   15    16   17   18   19   20   21   22   23   24
-    16,  16,   2,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
-    16,  16,   2,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
-     4,   4,   9,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
-    13,  13,  13,  13,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
-    13,  13,  13,  21,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
-    13,  13,  21,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
-    13,  21,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
-    20,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
-    20,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21, // 8
-    // 9 * 25 =225
-    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
-    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
-    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
-    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
-    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
-    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
-    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
-    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
-    13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21, // 8
-
-    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
-    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
-    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 2
-    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 3
-    13,  13,  13,  21,  21,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 4
-    13,  13,  21,  13,  13,  21,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 5
-    13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
-    21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
-    13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21; // 8
-
-
+  // Array dinamico con el tilemap
+  int pointer tiles;
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
@@ -346,13 +312,20 @@ begin
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
+
+  // Pintamos el grafico de fondo de la zona de estado
   xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
+
+  // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
+  tiles = malloc((TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+  loadData("dat\tmap00", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+
 
   // Creamos el buffer del tilemap
   tileMapGraph = createTileBuffer(PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
   // Creamos el proceso de scroll
-  backgroundScroll(tileMapGraph, offset tiles);
+  backgroundScroll(tileMapGraph, tiles);
   scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
 
   // Crear al proceso jugador
@@ -364,6 +337,10 @@ begin
   playerEnergyStatus();
 
   loop
+    // TODO Romper el bucle cuando
+    // * El jugador muere -> Replay ?
+    // * El jefe muere -> Next level
+
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
     if (_actualGroupInd < level.numberOfGroups)
       if (ticksCounter >= level.groups[_actualGroupInd].spawnTime)
@@ -377,10 +354,10 @@ begin
     // Actualizamos el eje Y del scroll
     scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
 
-
     ticksCounter++;
     frame;
   end
+  free(tiles);
 end
 
 /**

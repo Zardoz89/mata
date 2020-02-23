@@ -9,6 +9,8 @@ COMPILER_OPTIONS _case_sensitive;
 
 program tiletest;
 
+import "zardoz/mata/dll/csv.dll";
+
 const
 
   // cte. para las rutas
@@ -22,9 +24,9 @@ const
   TILE_WIDTH=24;
   TILE_HEIGHT=28;
   TILEMAP_COLUMNS=25;
-  TILEMAP_ROWS=26;
+  TILEMAP_ROWS=145;//26;
   TILEMAP_MAX_X= 600; //TILEMAP_COLUMNS * TILEMAP_WIDTH - playfield_region_w;
-  TILEMAP_MAX_Y= 768; //TILEMAP_ROWS * TILEMAP_HEIGHT;
+  TILEMAP_MAX_Y= 4060; //768; //TILEMAP_ROWS * TILEMAP_HEIGHT;
 
 
 global
@@ -34,7 +36,8 @@ scrollY = 0;
 scrollX = 0;
 
 private
-  int tiles[TILEMAP_ROWS, TILEMAP_COLUMNS] =
+  int pointer tiles;
+  /*int tiles[(TILEMAP_ROWS+1) * TILEMAP_COLUMNS] =
   // 0    1    2    3    4    5    6    7     8    9   10   11   12   13   14   15    16   17   18   19   20   21   22   23   24
     16,  16,   2,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
     16,  16,   2,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  13, // 1
@@ -65,7 +68,7 @@ private
     13,  21,  13,  13,  13,  13,  21,  13,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  20,  13,  13, // 6
     21,  13,  13,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 7
     13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21; // 8
-
+  */
 
   tileMap;
 begin
@@ -75,24 +78,25 @@ begin
 
   load_fpg(pathResolve("fpg\tilemap.fpg"));
 
-  //ctype=c_scroll;
-  //scroll.camera = id;
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
   debugText();
 
+  tiles = malloc((TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+  loadData("dat\tmap00", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+
   tileMap = createTileBuffer(TILEMAP_COLUMNS, TILE_WIDTH, PLAYFIELD_REGION_H);
-  backgroundScroll(tileMap, offset tiles);
-  //drawTiles(tileMap, offset tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0);
-  //start_scroll(0, 0, tileMap, 0, PLAYFIELD_REGION, 0);
+  backgroundScroll(tileMap, tiles);
 
   loop
-    //scroll[0].x0 = mouse.x;
+    if (key(_q))
+      let_me_alone();
+      break;
+    end
 
-    //drawTiles(tileMap, offset tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, mouse.y);
-    //refresh_scroll(0);
     frame;
   end
+  free(tiles);
 end
 
 /**
@@ -120,6 +124,37 @@ begin
     frame(3000); // Actualiza a 2 FPS
   end
 end
+
+/**
+ * Lee un fichero CSV con datos de juego
+ */
+function loadData(dataFile, _offset, size)
+private
+  int _retVal = 0;
+  string _path;
+  string _msg;
+begin
+  _path = dataFile + ".csv";
+  _path = pathResolve(_path);
+  // Efectivamente rellena un array de structs
+  // La razon es que internamente DIV usa un array gigante para todas las variables
+  _retVal = readCSVToIntArray(_path, _offset, size);
+  if (_retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+    loop
+      // abortamos ejecuci¢n
+      if (key(_q) || key(_esc))
+        let_me_alone();
+        break;
+      end
+
+      frame;
+    end
+  end
+  return(_retVal);
+end
+
 
 function createTileBuffer(mapColumns, tileWidth, regionHeight)
 private
@@ -175,6 +210,15 @@ begin
   return(val);
 end
 
+function max(val, maxVal)
+begin
+  if (val < maxVal)
+    return(maxVal);
+  end
+  return(val);
+end
+
+
 /**
  * Pinta un tilemap grande en un buffer
  *
@@ -208,6 +252,7 @@ begin
     for (x = x0 ; x < xMax; x++)
       tileIndex = mapColumns * y + x;
       tileMap = tilesPtr[tileIndex];
+      tileMap = max(tileMap, 1);
       map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth - inputX, putY);
     end
   end

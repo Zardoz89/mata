@@ -35,8 +35,8 @@ const
   TILE_HEIGHT=28;
   TILEMAP_COLUMNS=25;
   TILEMAP_ROWS=26; // TODO Valor temporal, tiene que venir determinado del CSV de nivel
-  TILEMAP_MAX_X= 600; // TILEMAP_COLUMNS * TILEMAP_WIDTH - playfield_region_w;
-  TILEMAP_MAX_Y= 768; // TILEMAP_ROWS * TILEMAP_HEIGHT;
+  TILEMAP_MAX_X= 600; // TILEMAP_COLUMNS * TILEMAP_WIDTH
+  TILEMAP_MAX_Y= 768; // TILEMAP_ROWS * TILEMAP_HEIGHT TODO se tiene que calcular al vuelo
 
   STATUS_REGION=2; // Region de la zona con el estado del jugador
   STATUS_X=640-148; // = 492
@@ -206,8 +206,8 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
   typeId = -1; // Usada en los procesos acceder a los datos de tipo de lo que sea
   ticksCounter = 0; // Contador de ticks (frames)
-  xrel; // Posiciones relativas
-  yrel;
+  xrel = 0; // Posiciones relativas
+  yrel = 0;
   remaningChildrens = 0; // Numero de procesos hijos restantes
   killedChildrens = 0; // Numero de procesos hijos matados por el jugador
 private
@@ -353,6 +353,7 @@ begin
 
   // Creamos el proceso de scroll
   backgroundScroll(tileMapGraph, offset tiles);
+  scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
 
   // Crear al proceso jugador
   playerShipShield = PLAYER_MAX_SHIELD >> 1;
@@ -372,6 +373,10 @@ begin
         _actualGroupInd++;
       end
     end
+
+    // Actualizamos el eje Y del scroll
+    scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
+
 
     ticksCounter++;
     frame;
@@ -421,15 +426,15 @@ end
  */
 process debugText()
 private
-  int fpsTxtId = 0;
+  //int fpsTxtId = 0;
   string _msg;
 begin
   loop
-    if (fpsTxtId)
-      delete_text(fpsTxtId);
-    end
+    //if (fpsTxtId)
+    //  delete_text(fpsTxtId);
+    //end
     _msg = "FPS: " + itoa(fps);
-    fpsTxtId = write(0, 640, 0, 2, _msg);
+    /*fpsTxtId =*/ write(0, 640, 0, 2, _msg);
     frame(3000); // Actualiza a 2 FPS
   end
 end
@@ -547,7 +552,10 @@ begin
     end;
 
     // Calcula de nueva posicion
-    x = max(mouse.x * PLAYFIELD_RESOLUTION, PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
+    // TODO tener el tam¤o del sprite
+    x = clamp(mouse.x * PLAYFIELD_RESOLUTION,
+      0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
+      (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
     if (mouse.left )
@@ -569,9 +577,8 @@ begin
       end
     end
 
-    // TODO prueba
-    scrollX = x;
-    scrollY = y;
+    // scrollX en funcion de X (regla de tres)
+    scrollX = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
     _mainShootCounter++;
     ticksCounter++;
@@ -676,7 +683,7 @@ end
  * pathId : Patron de movimiento
  * typeId : Tipo de enemigo
  */
-process enemy(x, y, pathId, typeId)
+process enemy(x0, y0, pathId, typeId)
 private
   int _pathStep = 0;
   int _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
@@ -696,12 +703,17 @@ begin
   _aggressionAbs = abs(enemyType[typeId].aggression);
   _shootId = enemyType[typeId].shootTypeId;
 
+  xrel = x0;
+  yrel = y0;
+  x = xrel - (scrollX * PLAYFIELD_RESOLUTION);
+  y = yrel;
+
+
   // Aplicamos la velocidad inicial si hay un patron de mov.
   if (pathId <> -1)
     _vx = paths[pathId].vx0;
     _vy = paths[pathId].vy0;
   end;
-
 
   //while (! out_region(id, region) && hull > 0)
   while (! isOutsidePlayfield(x, y) && hull > 0)
@@ -719,8 +731,11 @@ begin
         _pathTick++;
       end
     end
-    x += _vx;
-    y += _vy;
+    xrel += _vx;
+    yrel += _vy;
+    // El movimiento horizontal es respecto al scroll de fondo
+    x = xrel - (scrollX * PLAYFIELD_RESOLUTION);
+    y = yrel;
 
     // **** Animacion
     if (!ticksCounter) // Se actualiza la animacion cada 2 frames
@@ -818,15 +833,12 @@ begin
   file = fpgTileset;
   region = PLAYFIELD_REGION;
   z = 512;
-  scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
 
   oldScrollX = scrollX;
   oldScrollY = scrollY;
 
   drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0, 0);
   loop
-    scrollX = clamp(mouse.x, 0, TILEMAP_MAX_X - PLAYFIELD_REGION_W);
-    scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
     if (scrollX <> oldScrollX || scrollY <> oldScrollY)
       drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, scrollX, scrollY);
     end

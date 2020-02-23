@@ -22,7 +22,7 @@ const
 
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
-  PLAYFIELD_REGION_H=480;
+  PLAYFIELD_REGION_H=448;//480;
 
   PLAYFIELD_MARGIN=17000;
   // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible

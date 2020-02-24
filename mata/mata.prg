@@ -162,6 +162,8 @@ global
     int shield;
     int energy;
     int score;
+    int mainWeapon = 2; // Vulcan tier 1
+    int secondWeapon = -1; // Nada
   end
 
   // **** Usadas por el scroll de fondo de tilemap
@@ -530,7 +532,6 @@ end
 process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
-  _mainWeapon = 1;
   _dispersionAngle = 0;
 begin
   // Asignacion grafico
@@ -554,18 +555,18 @@ begin
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
     if (mouse.left )
-      if (_mainShootCounter >= shootData[_mainWeapon].delay)
+      if (_mainShootCounter >= shootData[player.mainWeapon].delay)
         if (player.energy > 2)
-          // TODO meter el consumo de energia
+          // TODO meter el consumo de energia desde la tabla de armas
           player.energy = clamp(player.energy - 2, 0, PLAYER_MAX_ENERGY);
 
           _mainShootCounter = 0;
-          _dispersionAngle = calcDispersionAngle(shootData[_mainWeapon].disperseValue,
-            shootData[_mainWeapon].disperseType, ticksCounter);
-          if (shootData[_mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
-            shoot(x, y, 90000 + _dispersionAngle , _mainWeapon, MOVREL_NONE, false);
+          _dispersionAngle = calcDispersionAngle(shootData[player.mainWeapon].disperseValue,
+            shootData[player.mainWeapon].disperseType, ticksCounter);
+          if (shootData[player.mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
+            shoot(x, y, 90000 + _dispersionAngle , player.mainWeapon, MOVREL_NONE, false);
           else
-            shoot(x, y, 90000 + _dispersionAngle , _mainWeapon,
+            shoot(x, y, 90000 + _dispersionAngle , player.mainWeapon,
               MOVREL_SYNC_X || MOVREL_REL_Y, false);
           end
         end

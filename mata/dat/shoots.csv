@@ -1,6 +1,7 @@
 # Datos tipos de disparo
 # graph     ; damage  ; delay   ; speed ; dispersionValue ; dispersionType
-001         ; 2       ; 5       ; 50    ; 2000            ; 1
+001         ; 1       ; 5       ; 50    ; 2000            ; 0
+002         ; 2       ; 5       ; 50    ; 2000            ; 1
 # Vulcan
 100         ; 1       ; 1       ; 140   ; 5000            ; 2
 101         ; 2       ; 1       ; 140   ; 5000            ; 2
@@ -8,3 +9,5 @@
 103         ; 6       ; 1       ; 140   ; 5000            ; 2
 # Laser
 110         ; 1       ; 1       ; 140   ; 0               ; 3
+
+# vim: set fileencoding=cp850 :

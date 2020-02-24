@@ -45,12 +45,14 @@ Para esto me influencia bastante estos juegos :
     - [x] Regiones y zona de juego
     - [ ] Items para cambiar/mejorar el arma
     - [x] Tilemap de fondo de pantalla
-    - [ ] Mecanica de movimiento del scroll de fondo
+    - [x] Mecánica de movimiento del scroll de fondo
     - [x] Barra de salud, escudos y energía
     - [x] Mecánica de regeneración escudos, energía y consumo de energía
     - [ ] (WIP) Arma principal y secundaria
     - [ ] Pantalla de carga y menú
     - [ ] (WIP) Niveles
+    - [ ] Gestión efectos sonido
+    - [ ] Música
 - [ ] Refinar el prototipo hacia un diseño mas elaborado
 - [x] Librería DLL para extender el lenguaje y poder cargar datos de un fichero
     CSV. La idea es tener tablas en ficheros editables de texto con las
@@ -69,4 +71,5 @@ Para esto me influencia bastante estos juegos :
 
 ### Música
 
+- State of war Xtd : https://www.youtube.com/watch?v=JPTvkg-NxNo&t=3393s
 

@@ -22,7 +22,7 @@ const
 
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
-  PLAYFIELD_REGION_H=480;
+  PLAYFIELD_REGION_H=448;
 
   PLAYFIELD_MARGIN=17000;
   // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible
@@ -304,8 +304,9 @@ end
  */
 process gameLevel()
 private
- _destroyedAll = false;
- _actualGroupInd = 0;
+  _destroyedAll = false;
+  _actualGroupInd = 0;
+  int _scrollY;
 begin
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
@@ -325,18 +326,24 @@ begin
   // Creamos el scroll
   drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT);
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
-  scroll[0].y0 = TILEMAP_MAX_Y;
-
+  _scrollY = (TILEMAP_MAX_Y - PLAYFIELD_REGION_H - 28) * PLAYFIELD_RESOLUTION;
+  scroll[0].y0 = _scrollY / PLAYFIELD_RESOLUTION;
 
   // Crear al proceso jugador
   playerShipShield = PLAYER_MAX_SHIELD >> 1;
   playerShipEnergy = 25;
   playerShipId = playerShip(1);
+
+  // Procesos con el estado de casco, escudo y energia
   playerHullStatus();
   playerShieldStatus();
   playerEnergyStatus();
 
+
   loop
+    // TODO mostrar la puntuaci¢n de forma mas chula
+    write_int(0, 100, 470, 4, offset score);
+
     // TODO Romper el bucle cuando
     // * El jugador muere -> Replay ?
     // * El jefe muere -> Next level
@@ -352,7 +359,10 @@ begin
     end
 
     // Actualizamos el eje Y del scroll
-    scroll[0].y0 = scroll[0].y0 -1;
+    _scrollY = _scrollY - 5; // TODO La velocidad de scroll deberia de ser variable
+    // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
+    scroll[0].y0 = _scrollY / PLAYFIELD_RESOLUTION;
+
 
     ticksCounter++;
     frame;
@@ -403,15 +413,17 @@ end
  */
 process debugText()
 private
-  //int fpsTxtId = 0;
   string _msg;
+  string _msg2;
 begin
   loop
-    //if (fpsTxtId)
-    //  delete_text(fpsTxtId);
-    //end
     _msg = "FPS: " + itoa(fps);
-    /*fpsTxtId =*/ write(0, 640, 0, 2, _msg);
+    write(0, 640, 0, 2, _msg);
+
+    _msg2 = "scrollY: " + itoa(scroll[0].y0);
+    write(0, 640, 10, 2, _msg2);
+
+
     frame(3000); // Actualiza a 2 FPS
   end
 end
@@ -599,6 +611,7 @@ end
 process shoot(x, y, direction, typeId, moveRelativeToFather, enemyShoot)
 private
   hitId;
+  tmpScore;
 begin
   file = fpgShoots;
   region = PLAYFIELD_REGION;
@@ -624,9 +637,12 @@ begin
       hitId = collision(type enemy);
       if (hitId)
         hitId.hull = hitId.hull - shootData[typeId].damage;
-        score += enemyType[hitId.typeId].score;
-        hitId.father.killedChildrens++;
-        hitId.father.remaningChildrens--;
+        if (hitId.hull <= 0)
+          tmpScore = enemyType[hitId.typeId].score;
+          score = score + tmpScore;
+          hitId.father.killedChildrens++;
+          hitId.father.remaningChildrens--;
+        end
         break;
       end
     end

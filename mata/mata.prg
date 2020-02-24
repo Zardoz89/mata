@@ -18,6 +18,7 @@ const
   PATH_USER="zardoz";
   PATH_PROG="mata";
 
+  // Cte. referetnes a la regi¢n de juego
   PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
 
   PLAYFIELD_REGION=1; // Region de la zona de juego
@@ -27,17 +28,17 @@ const
   PLAYFIELD_MARGIN=17000;
   // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible
   PLAYFIELD_XMIN = 0 - PLAYFIELD_MARGIN;
-  PLAYFIELD_XMAX = 4920 + PLAYFIELD_MARGIN;
+  PLAYFIELD_XMAX = 6000 + PLAYFIELD_MARGIN;
   PLAYFIELD_YMIN = - PLAYFIELD_MARGIN;
-  PLAYFIELD_YMAX = 4800 + PLAYFIELD_MARGIN;
+  PLAYFIELD_YMAX = 4480 + PLAYFIELD_MARGIN;
 
+  // Cte. referentes al tilemap
   TILE_WIDTH=24;
   TILE_HEIGHT=28;
   TILEMAP_COLUMNS=25;
-  TILEMAP_ROWS=144; // TODO Valor temporal, tiene que venir determinado del CSV de nivel
   TILEMAP_MAX_X= 600; // TILEMAP_COLUMNS * TILEMAP_WIDTH
-  TILEMAP_MAX_Y= 4060; // TODO temporal TILEMAP_ROWS * TILEMAP_HEIGHT  se tiene que calcular al vuelo
 
+  // Cte. referentes a la region con el estado del jugador
   STATUS_REGION=2; // Region de la zona con el estado del jugador
   STATUS_X=640-148; // = 492
   STATUS_Y=0;
@@ -56,7 +57,7 @@ const
   STATUS_ENERGY_BAR_X = PLAYFIELD_REGION_W + 118 + 6;
   STATUS_ENERGY_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
 
-
+  // Cte. valores que afectan al jugador
   PLAYER_MAX_HULL = 200;
   PLAYER_MAX_SHIELD = 200;
   PLAYER_MAX_ENERGY = 200;
@@ -100,6 +101,7 @@ global
     int bossId;
     int bossSpawnTime;
     int numberOfGroups;
+    int tileMapRows;
     struct groups[64]
       int x0; int y0; // Posicion inicial del grupo
       int formationType; // Tipo de formacion asignada. -1 es no moverse respecto al scroll.
@@ -122,7 +124,7 @@ global
   // **** Tipos de disparo
   struct shootData[10]
     int graph; // Indice del grafico a usar de fpgShoots
-    int damage; // Daño del disparo
+    int damage; // Da¤o del disparo
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
     int disperseValue; // Angulo de dispersion
@@ -131,13 +133,13 @@ global
 
   // **** Patrones de movimiento [Id patron]
   struct paths[40]
-    byte maxSteps; // N§ de pasos
+    byte maxSteps; // Nõ de pasos
     int vx0; // Velocidad inicial eje X
     int vy0; // Velocidad inicial eje Y
     struct steps[10]
       int ax; // Aceleracion eje x
       int ay; // Aceleracion eje y
-      int ticks; // Nº de ticks que dura este paso
+      int ticks; // N§ de ticks que dura este paso
     end
   end
 
@@ -155,10 +157,12 @@ global
   end
 
   // **** Generales de la partida
-  int playerShipId;
-  int playerShipShield;
-  int playerShipEnergy;
-  int score = 0;
+  struct player
+    int sId; // Id del proceso de la nave del jugador
+    int shield;
+    int energy;
+    int score;
+  end
 
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
@@ -247,7 +251,7 @@ begin
     _msg = "Error al abrir fichero de datos: " + _path;
     write(0, 0, 0, 0, _msg);
     loop
-      // abortamos ejecuci¢n
+      // abortamos ejecuci½n
       if (key(_q) || key(_esc))
         let_me_alone();
         break;
@@ -307,8 +311,9 @@ private
   _destroyedAll = false;
   _actualGroupInd = 0;
   int _scrollY;
+  int _tilemapMaxY;
 begin
-  // Inicializaci¢n de las regiones
+  // Inicializaci½n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
 
@@ -316,23 +321,24 @@ begin
   xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
 
   // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
-  tiles = malloc((TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
-  loadData("dat\tmap00", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+  tiles = malloc(level.tileMapRows * TILEMAP_COLUMNS);
+  loadData("dat\tmap00", tiles, level.tileMapRows * TILEMAP_COLUMNS);
 
 
   // Creamos el buffer del tilemap
-  tileMapGraph = createTileBuffer(TILEMAP_ROWS, TILEMAP_COLUMNS);
+  tileMapGraph = createTileBuffer(level.tileMapRows, TILEMAP_COLUMNS);
 
   // Creamos el scroll
-  drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT);
+  drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, level.tileMapRows, TILE_WIDTH, TILE_HEIGHT);
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
-  _scrollY = (TILEMAP_MAX_Y - PLAYFIELD_REGION_H - 28) * PLAYFIELD_RESOLUTION;
+  _tilemapMaxY = level.tileMapRows * TILE_HEIGHT;
+  _scrollY = (_tilemapMaxY - PLAYFIELD_REGION_H) * PLAYFIELD_RESOLUTION;
   scroll[0].y0 = _scrollY / PLAYFIELD_RESOLUTION;
 
   // Crear al proceso jugador
-  playerShipShield = PLAYER_MAX_SHIELD >> 1;
-  playerShipEnergy = 25;
-  playerShipId = playerShip(1);
+  player.shield = PLAYER_MAX_SHIELD >> 1;
+  player.energy = 25;
+  player.sId = playerShip(1);
 
   // Procesos con el estado de casco, escudo y energia
   playerHullStatus();
@@ -342,7 +348,7 @@ begin
 
   loop
     // TODO mostrar la puntuaci¢n de forma mas chula
-    write_int(0, 100, 470, 4, offset score);
+    write_int(0, 100, 470, 4, offset player.score);
 
     // TODO Romper el bucle cuando
     // * El jugador muere -> Replay ?
@@ -442,7 +448,7 @@ begin
   file=fpgHud;
   graph=2; // Grafico vida
   loop
-    clampHull = clamp(playerShipId.hull, 0, PLAYER_MAX_HULL);
+    clampHull = clamp(player.sId.hull, 0, PLAYER_MAX_HULL);
     regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
     define_region(STATUS_HULL_BAR_REGION,
       STATUS_HULL_BAR_X - 6,
@@ -466,17 +472,17 @@ begin
   file=fpgHud;
   graph=3; // Grafico barra escudos
   loop
-    clampShield = clamp(playerShipShield, 0, PLAYER_MAX_SHIELD);
+    clampShield = clamp(player.shield, 0, PLAYER_MAX_SHIELD);
     regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampShield;
     define_region(STATUS_SHIELD_BAR_REGION,
       STATUS_SHIELD_BAR_X - 6,
       regionY,
       12, clampShield);
 
-    // Regeneraci¢n escudos
-    if (playerShipEnergy > 30 && ticksCounter > 30)
-      playerShipShield = clamp(playerShipShield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
-      playerShipEnergy -= (SHIELD_REGENERATION_RATE >> 1);
+    // Regeneraci½n escudos
+    if (player.energy > 30 && ticksCounter > 30)
+      player.shield = clamp(player.shield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
+      player.energy -= (SHIELD_REGENERATION_RATE >> 1);
       ticksCounter = 0;
     end
 
@@ -499,16 +505,16 @@ begin
   file=fpgHud;
   graph=4; // Grafico barra escudos
   loop
-    clampEnergy = clamp(playerShipEnergy, 0, PLAYER_MAX_ENERGY);
+    clampEnergy = clamp(player.energy, 0, PLAYER_MAX_ENERGY);
     regionY = STATUS_ENERGY_BAR_Y - 100 + 200 - clampEnergy;
     define_region(STATUS_ENERGY_BAR_REGION,
       STATUS_ENERGY_BAR_X - 6,
       regionY,
       12, clampEnergy);
 
-    // Regeneraci¢n energia
+    // Regeneraci½n energia
     if (ticksCounter > 4)
-      playerShipEnergy = clamp(playerShipEnergy + GENERATOR_RATE, 0, PLAYER_MAX_ENERGY);
+      player.energy = clamp(player.energy + GENERATOR_RATE, 0, PLAYER_MAX_ENERGY);
       ticksCounter = 0;
     end
 
@@ -541,7 +547,7 @@ begin
     end;
 
     // Calcula de nueva posicion
-    // TODO tener el tam¤o del sprite
+    // TODO tener el tamÏo del sprite
     x = clamp(mouse.x * PLAYFIELD_RESOLUTION,
       0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
       (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
@@ -549,9 +555,9 @@ begin
 
     if (mouse.left )
       if (_mainShootCounter >= shootData[_mainWeapon].delay)
-        if (playerShipEnergy > 2)
+        if (player.energy > 2)
           // TODO meter el consumo de energia
-          playerShipEnergy = clamp(playerShipEnergy - 2, 0, PLAYER_MAX_ENERGY);
+          player.energy = clamp(player.energy - 2, 0, PLAYER_MAX_ENERGY);
 
           _mainShootCounter = 0;
           _dispersionAngle = calcDispersionAngle(shootData[_mainWeapon].disperseValue,
@@ -625,10 +631,10 @@ begin
       // Colision con el jugador
       hitId = collision(type playerShip);
       if (hitId)
-        playerShipShield -= shootData[typeId].damage;
-        if (playerShipShield < 0)
-          hitId.hull += playerShipShield;
-          playerShipShield = 0;
+        player.shield -= shootData[typeId].damage;
+        if (player.shield < 0)
+          hitId.hull += player.shield;
+          player.shield = 0;
         end
         break;
       end
@@ -638,8 +644,7 @@ begin
       if (hitId)
         hitId.hull = hitId.hull - shootData[typeId].damage;
         if (hitId.hull <= 0)
-          tmpScore = enemyType[hitId.typeId].score;
-          score = score + tmpScore;
+          player.score += enemyType[hitId.typeId].score;
           hitId.father.killedChildrens++;
           hitId.father.remaningChildrens--;
         end
@@ -773,7 +778,7 @@ begin
             // Dispara hacia el jugador
 
             shoot(x, y,
-              fget_angle(x, y, playerShipId.x, playerShipId.y) + _dispersionAngle ,
+              fget_angle(x, y, player.sId.x, player.sId.y) + _dispersionAngle ,
               enemyType[typeId].shootTypeId, MOVREL_NONE, true);
           else
             // Dispara recto
@@ -808,7 +813,7 @@ private
   buffer;
 begin
   bufferWidth = TILE_WIDTH * columns;
-  bufferHeight = TILE_HEIGHT * rows + 1;
+  bufferHeight = TILE_HEIGHT * rows;
   buffer = new_map(bufferWidth, bufferHeight,
     bufferWidth >> 1, bufferHeight >> 1,
     196); // Color negro
@@ -842,4 +847,4 @@ begin
   end
 end
 
-
+// vim: set fileencoding=cp850 :

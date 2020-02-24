@@ -239,23 +239,107 @@
   0     ; 0     ; 0
   0     ; 0     ; 0      # 10
 
-
-
-# patron id 0 - Baja y tuerze a la Izq
+# patron id 14 - Baja recto v 20px
 # maxSteps ; vx0   ; vy0
-4          ; 0     ; 20
+  1        ; 0     ; 20
 # pasos id 0
-# ax  ; ay  ; ticks
-0     ; 0   ; 160    # 0
-0     ; -1  ; 20
-0     ; 0   ; 10
-20    ; 0   ; 1
-0     ; 0   ; 0
-0     ; 0   ; 0      # 5
-0     ; 0   ; 0
-0     ; 0   ; 0
-0     ; 0   ; 0
-0     ; 0   ; 0
-0     ; 0   ; 0      # 10
+# ax    ; ay    ; ticks
+  0     ; 0     ; 0      # 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 5
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 10
+
+# patron id 15 - Baja recto v 30px
+# maxSteps ; vx0   ; vy0
+  1        ; 0     ; 30
+# pasos id 0
+# ax    ; ay    ; ticks
+  0     ; 0     ; 0      # 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 5
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 10
+
+# patron id 16 - Recto derecha v 20px
+# maxSteps ; vx0   ; vy0
+  1        ; 20    ; 0
+# pasos id 0
+# ax    ; ay    ; ticks
+  0     ; 0     ; 0      # 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 5
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 10
+
+# patron id 17 - Recto derecha v 30px
+# maxSteps ; vx0   ; vy0
+  1        ; 30    ; 0
+# pasos id 0
+# ax    ; ay    ; ticks
+  0     ; 0     ; 0      # 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 5
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 10
+
+# patron id 18 - Recto izq v 20px
+# maxSteps ; vx0   ; vy0
+  1        ; -20   ; 0
+# pasos id 0
+# ax    ; ay    ; ticks
+  0     ; 0     ; 0      # 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 5
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 10
+
+# patron id 19 - Recto derecha v 30px
+# maxSteps ; vx0   ; vy0
+  1        ; -30   ; 0
+# pasos id 0
+# ax    ; ay    ; ticks
+  0     ; 0     ; 0      # 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 5
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0
+  0     ; 0     ; 0      # 10
 
 
+# vim: set fileencoding=cp850 :

@@ -161,8 +161,6 @@ global
   int score = 0;
 
   // **** Usadas por el scroll de fondo de tilemap
-  int scrollX;
-  int scrollY;
   tileMapGraph; // Buffer del tilemap
 
   // Array dinamico con el tilemap
@@ -281,12 +279,12 @@ begin
   return(false);
 end;
 
-function max(val, maxVal)
+function max(val, val2)
 begin
-  if (val > maxVal)
-    return(maxVal);
+  if (val >= val2)
+    return(val);
   end
-  return(val);
+  return(val2);
 end
 
 function clamp(val, minVal, maxVal)
@@ -322,11 +320,13 @@ begin
 
 
   // Creamos el buffer del tilemap
-  tileMapGraph = createTileBuffer(PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
+  tileMapGraph = createTileBuffer(TILEMAP_ROWS, TILEMAP_COLUMNS);
 
-  // Creamos el proceso de scroll
-  backgroundScroll(tileMapGraph, tiles);
-  scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
+  // Creamos el scroll
+  drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT);
+  start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
+  scroll[0].y0 = TILEMAP_MAX_Y;
+
 
   // Crear al proceso jugador
   playerShipShield = PLAYER_MAX_SHIELD >> 1;
@@ -352,7 +352,7 @@ begin
     end
 
     // Actualizamos el eje Y del scroll
-    scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
+    scroll[0].y0 = scroll[0].y0 -1;
 
     ticksCounter++;
     frame;
@@ -555,7 +555,7 @@ begin
     end
 
     // scrollX en funcion de X (regla de tres)
-    scrollX = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
+    scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
     _mainShootCounter++;
     ticksCounter++;
@@ -682,7 +682,7 @@ begin
 
   xrel = x0;
   yrel = y0;
-  x = xrel - (scrollX * PLAYFIELD_RESOLUTION);
+  x = xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
   y = yrel;
 
 
@@ -711,7 +711,7 @@ begin
     xrel += _vx;
     yrel += _vy;
     // El movimiento horizontal es respecto al scroll de fondo
-    x = xrel - (scrollX * PLAYFIELD_RESOLUTION);
+    x = xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
     y = yrel;
 
     // **** Animacion
@@ -785,82 +785,43 @@ end
 /**
  * Crea el buffer de tilemap
  */
-function createTileBuffer(regionWidth, regionHeight)
+function createTileBuffer(rows, columns)
 private
   bufferWidth;
+  bufferHeight;
   buffer;
 begin
-
-  buffer = new_map(regionWidth, regionHeight,
-    0, 0, // regionWidth >> 1, regionHeight >> 1,
+  bufferWidth = TILE_WIDTH * columns;
+  bufferHeight = TILE_HEIGHT * rows + 1;
+  buffer = new_map(bufferWidth, bufferHeight,
+    bufferWidth >> 1, bufferHeight >> 1,
     196); // Color negro
   return(buffer);
 end
 
 /**
- * Proceso que controla el scroll de fondo en la partida
- * @param graph Buffer del grafico
- * @param tilesPtr Ptr. al array con el tilemap
- */
-process backgroundScroll(graph, int pointer tilesPtr)
-private
-  oldScrollX;
-  oldScrollY;
-begin
-  file = fpgTileset;
-  region = PLAYFIELD_REGION;
-  z = 512;
-
-  oldScrollX = scrollX;
-  oldScrollY = scrollY;
-
-  drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0, 0);
-  loop
-    if (scrollX <> oldScrollX || scrollY <> oldScrollY)
-      drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, scrollX, scrollY);
-    end
-    oldScrollX = scrollX;
-    oldScrollY = scrollY;
-
-    frame(200);
-  end
-
-end
-
-/**
  * Pinta un tilemap grande en un buffer
- *
- *
- * El funcionamiento es el siguiente, determina las filas y columnas que van a estar dentro del buffer de destino
- * a partir de inputX e inputY como desplazamientos.
- * Recorre el array multidimensional del tileMap, pero solamente las parte visibles y las pinta en el buffer de destino
  */
-function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight, inputX, inputY)
+function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
 private
   tileIndex;
   tileMap; // Grafico del tilemap a pintar
   halfTileWidth; // Centro X del tilemap
   halfTileHeight; // Centro Y del tilemap
-  x0; // Primera columna que se va a pintar
-  y0; // Primera fila que se va a pintar
-  xMax; // Ultima columna que se va a pintar
-  yMax; // Ultima fila que se va a pintar
   putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
 begin
-  y=0; x=0;
-  x0 = inputX / tileWidth;
-  y0 = inputY / tileHeight;
-  xMax = clamp(((inputX + PLAYFIELD_REGION_W) / tileWidth) + 1, 0, mapColumns);
-  yMax = clamp(((inputY + PLAYFIELD_REGION_H) / tileHeight) + 1, 0, mapRows);
   halfTileWidth = tileWidth >> 1;
   halfTileHeight = tileHeight >> 1;
 
-  for (y = y0; y <= (mapRows); y++)
-    putY = (y * tileHeight) + halfTileHeight - inputY;
-    for (x = x0 ; x < xMax; x++)
+  for (y = 0; y < mapRows; y++)
+    putY = (y * tileHeight) + halfTileHeight;
+    for (x = 0; x < mapColumns; x++)
       tileIndex = mapColumns * y + x;
       tileMap = tilesPtr[tileIndex];
-      map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth - inputX, putY);
+      tileMap = max(tileMap, 1);
+      map_put(0, buffer, tileMap,
+        (x * tileWidth) + halfTileWidth,
+        putY);
     end
   end
 end

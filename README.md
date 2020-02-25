@@ -37,7 +37,7 @@ Para esto me influencia bastante estos juegos :
     de un matamarcianos.
     - [x] Movimiento de un sprite placeholder
     - [x] Disparos usando un arma asignada
-    - [ ] (WIP) Control de colisión básico
+    - [x] Control de colisión básico
     - [x] Patrón de movimiento de enemigo
     - [x] Tipos de arma y dispersión de armas
     - [x] Animaciones de enemigos y disparos enemigos

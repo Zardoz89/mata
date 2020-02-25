@@ -169,10 +169,11 @@ global
   end
 
   // **** Definici¢n animaciones de explosiones
-  struct exploFx[1]
+  struct exploFx[2]
     int graph[5]; // Id del grafico de explosion
   end = 001, 002, 003, 004, 005, 006,
-        007, 008, 009, 010, 011, 012;
+        007, 008, 009, 010, 011, 012,
+        013, 014, 015, 016, 017, 018;
 
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
@@ -684,7 +685,7 @@ begin
           player.score += enemyType[hitId.typeId].score;
           hitId.father.killedChildrens++;
           hitId.father.remaningChildrens--;
-          explosion(rand(0, 1), x, y);
+          explosion(rand(0, 2), x, y);
         end
         break;
       end

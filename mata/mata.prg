@@ -93,7 +93,7 @@ global
   int fpgShoots;
   int fpgEnemy;
   int fpgHud;
-  int fpgBack;
+  int fpgExplosion;
 
   // **** Definicion de un "nivel"
   struct level
@@ -168,6 +168,12 @@ global
     int secondWeapon = -1; // Nada
   end
 
+  // **** Definici¢n animaciones de explosiones
+  struct exploFx[1]
+    int graph[5]; // Id del grafico de explosion
+  end = 001, 002, 003, 004, 005, 006,
+        007, 008, 009, 010, 011, 012;
+
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
 
@@ -196,7 +202,7 @@ begin
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
-  fpgBack = load_fpg(pathResolve("fpg\back.fpg"));
+  fpgExplosion = load_fpg(pathResolve("fpg\explo.fpg"));
   fpgHud = load_fpg(pathResolve("fpg\hud.fpg"));
 
   // Carga tipos de disparo
@@ -678,6 +684,7 @@ begin
           player.score += enemyType[hitId.typeId].score;
           hitId.father.killedChildrens++;
           hitId.father.remaningChildrens--;
+          explosion(rand(0, 1), x, y);
         end
         break;
       end
@@ -875,6 +882,20 @@ begin
         (x * tileWidth) + halfTileWidth,
         putY);
     end
+  end
+end
+
+process explosion(explosionId, x, y)
+private
+  int i;
+begin
+  file = fpgExplosion;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+
+  for (i = 0; i <= 5; i++)
+    graph = exploFx[explosionId].graph[i];
+    frame(200); // Actualiza a 30fps
   end
 end
 

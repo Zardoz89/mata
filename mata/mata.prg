@@ -61,6 +61,7 @@ const
   PLAYER_MAX_HULL = 200;
   PLAYER_MAX_SHIELD = 200;
   PLAYER_MAX_ENERGY = 200;
+  PLAYER_SPEED = 30;
   SHIELD_REGENERATION_RATE = 5;  // Cuanto regenera el escudo
   INTIAL_GENERATOR_RATE = 5; // Cuanto regenera la energia
 
@@ -164,7 +165,7 @@ global
     int energy;
     int generatorRate = 5;//INTIAL_GENERATOR_RATE;
     int score;
-    int mainWeapon = 3; // Vulcan tier 1
+    int mainWeapon = 2; // Vulcan tier 1
     int secondWeapon = -1; // Nada
   end
 
@@ -570,6 +571,10 @@ process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
   _dispersionAngle = 0;
+  _oldMouseX;
+  _oldMouseY;
+  _deltaX;
+  _deltaY;
 begin
   // Asignacion grafico
   file = fpgPlayer;
@@ -580,18 +585,52 @@ begin
   hull = 100;
 
   loop
-    if (hull < 0)
+    if (hull <= 0)
       break;
     end;
 
+    // Movimiento TODO volver a usar el raton y modiciar el raton cuando choque con un enemigo
+    if (key(_left))
+      x = clamp(x - PLAYER_SPEED,
+        0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
+        (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
+
+    else if (key(_right))
+      x = clamp(x + PLAYER_SPEED,
+        0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
+        (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
+    end
+    end
+
+    if (key(_up))
+      y = clamp(y - PLAYER_SPEED,
+        0,
+        PLAYFIELD_REGION_H * PLAYFIELD_RESOLUTION);
+
+    else if (key(_down))
+      y = clamp(y + PLAYER_SPEED,
+        0,
+        PLAYFIELD_REGION_H * PLAYFIELD_RESOLUTION);
+    end
+    end
+
     // Calcula de nueva posicion
     // TODO tener el tama¤o del sprite
+    /*
     x = clamp(mouse.x * PLAYFIELD_RESOLUTION,
       0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
       (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
     y = mouse.y * PLAYFIELD_RESOLUTION;
+    */
 
-    if (mouse.left )
+    // Colision con naves enemigas
+    if (collision(type enemy))
+      damagePlayer(1);
+      // TODO Spawn efecto escudo si escudos >= 0
+    end
+
+    // Disparo arma principal y secundaria
+    if (key(_control))
       if (_mainShootCounter >= shootData[player.mainWeapon].delay)
         if (player.energy > shootData[player.mainWeapon].energy )
           // TODO meter el consumo de energia desde la tabla de armas
@@ -617,6 +656,8 @@ begin
     ticksCounter++;
     frame;
   end
+
+  // TODO Si hull <= 0 parar el juego y mostrar el game over
 end
 
 /**
@@ -669,11 +710,7 @@ begin
       // Colision con el jugador
       hitId = collision(type playerShip);
       if (hitId)
-        player.shield -= shootData[typeId].damage;
-        if (player.shield < 0)
-          hitId.hull += player.shield;
-          player.shield = 0;
-        end
+        damagePlayer(shootData[typeId].damage);
         break;
       end
     else
@@ -710,6 +747,16 @@ begin
     end
     frame;
   end;
+end
+
+function damagePlayer(damage)
+private
+begin
+  player.shield -= damage;
+  if (player.shield < 0)
+    player.sId.hull += player.shield;
+    player.shield = 0;
+  end
 end
 
 /**

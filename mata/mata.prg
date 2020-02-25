@@ -62,7 +62,7 @@ const
   PLAYER_MAX_SHIELD = 200;
   PLAYER_MAX_ENERGY = 200;
   SHIELD_REGENERATION_RATE = 5;  // Cuanto regenera el escudo
-  GENERATOR_RATE = 5; // Cuanto regenera la energia
+  INTIAL_GENERATOR_RATE = 5; // Cuanto regenera la energia
 
 
   // **** Tipos de dispersion del disparo
@@ -125,6 +125,7 @@ global
   struct shootData[10]
     int graph; // Indice del grafico a usar de fpgShoots
     int damage; // Da¤o del disparo
+    int energy; // Energia consumida (solo jugador)
     int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
     int speed; // Velocidad en pixels
     int disperseValue; // Angulo de dispersion
@@ -161,8 +162,9 @@ global
     int sId; // Id del proceso de la nave del jugador
     int shield;
     int energy;
+    int generatorRate = 5;//INTIAL_GENERATOR_RATE;
     int score;
-    int mainWeapon = 2; // Vulcan tier 1
+    int mainWeapon = 3; // Vulcan tier 1
     int secondWeapon = -1; // Nada
   end
 
@@ -349,6 +351,34 @@ begin
 
 
   loop
+    // TODO quitar esto *************************
+    if (key(_1))
+      player.mainWeapon = 2;
+    else
+    if (key(_2))
+      player.mainWeapon = 3;
+    else
+    if (key(_3))
+      player.mainWeapon = 4;
+    else
+    if (key(_4))
+      player.mainWeapon = 5;
+    else
+    if (key(_5))
+      player.mainWeapon = 6;
+    else
+    if (key(_6))
+      player.mainWeapon = 7;
+    else
+    end
+    end
+    end
+    end
+    end
+    end
+
+    // ******************************************
+
     // TODO mostrar la puntuaci¢n de forma mas chula
     write_int(0, 100, 470, 4, offset player.score);
 
@@ -516,7 +546,7 @@ begin
 
     // Regeneraci½n energia
     if (ticksCounter > 4)
-      player.energy = clamp(player.energy + GENERATOR_RATE, 0, PLAYER_MAX_ENERGY);
+      player.energy = clamp(player.energy + player.generatorRate, 0, PLAYER_MAX_ENERGY);
       ticksCounter = 0;
     end
 
@@ -548,7 +578,7 @@ begin
     end;
 
     // Calcula de nueva posicion
-    // TODO tener el tamÏo del sprite
+    // TODO tener el tama¤o del sprite
     x = clamp(mouse.x * PLAYFIELD_RESOLUTION,
       0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
       (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
@@ -556,9 +586,9 @@ begin
 
     if (mouse.left )
       if (_mainShootCounter >= shootData[player.mainWeapon].delay)
-        if (player.energy > 2)
+        if (player.energy > shootData[player.mainWeapon].energy )
           // TODO meter el consumo de energia desde la tabla de armas
-          player.energy = clamp(player.energy - 2, 0, PLAYER_MAX_ENERGY);
+          player.energy = clamp(player.energy - shootData[player.mainWeapon].energy, 0, PLAYER_MAX_ENERGY);
 
           _mainShootCounter = 0;
           _dispersionAngle = calcDispersionAngle(shootData[player.mainWeapon].disperseValue,

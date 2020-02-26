@@ -575,6 +575,8 @@ private
   _oldMouseY;
   _deltaX;
   _deltaY;
+  _hitId;
+  _collisionAngle;
 begin
   // Asignacion grafico
   file = fpgPlayer;
@@ -583,54 +585,48 @@ begin
   resolution = PLAYFIELD_RESOLUTION;
 
   hull = 100;
+  mouse.x = PLAYFIELD_REGION_W >> 1;
+  mouse.y = PLAYFIELD_REGION_H >> 1;
+  mouse.cursor = 1;
+  _oldMouseX = mouse.x;
+  _oldMouseY = mouse.y;
+
 
   loop
     if (hull <= 0)
       break;
     end;
 
-    // Movimiento TODO volver a usar el raton y modiciar el raton cuando choque con un enemigo
-    if (key(_left))
-      x = clamp(x - PLAYER_SPEED,
-        0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
-        (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
-
-    else if (key(_right))
-      x = clamp(x + PLAYER_SPEED,
-        0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
-        (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
-    end
-    end
-
-    if (key(_up))
-      y = clamp(y - PLAYER_SPEED,
+    // Movimiento
+    mouse.x = clamp(mouse.x ,
+        0 /* - (ancho_sprite >> 1) */,
+        PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */);
+    mouse.y = clamp(mouse.y,
         0,
-        PLAYFIELD_REGION_H * PLAYFIELD_RESOLUTION);
-
-    else if (key(_down))
-      y = clamp(y + PLAYER_SPEED,
-        0,
-        PLAYFIELD_REGION_H * PLAYFIELD_RESOLUTION);
-    end
-    end
-
-    // Calcula de nueva posicion
-    // TODO tener el tama¤o del sprite
-    /*
-    x = clamp(mouse.x * PLAYFIELD_RESOLUTION,
-      0 /* - (ancho_sprite >> 1) * PLAYFIELD_RESOLUTION */,
-      (PLAYFIELD_REGION_W /* - ancho_sprite >> 1 */) * PLAYFIELD_RESOLUTION);
+        PLAYFIELD_REGION_H);
+    _deltaX = _oldMouseX - mouse.x;
+    _deltaY = _oldMouseY - mouse.y;
+    x = mouse.x * PLAYFIELD_RESOLUTION;
     y = mouse.y * PLAYFIELD_RESOLUTION;
-    */
 
     // Colision con naves enemigas
-    if (collision(type enemy))
+    _hitId = collision(type enemy);
+    if (_hitId)
       damagePlayer(1);
+      // Hacemos que le cueste penetrar mas en el enemigo
+      _collisionAngle = get_angle(_hitId);
+      mouse.x -= cos(_collisionAngle) / 500;
+      mouse.x -= sin(_collisionAngle) / 500;
+
       // TODO Spawn efecto escudo si escudos >= 0
     end
 
+    _oldMouseX = mouse.x;
+    _oldMouseY = mouse.y;
+
+
     // Disparo arma principal y secundaria
-    if (key(_control))
+    if (key(_control) || mouse.left)
       if (_mainShootCounter >= shootData[player.mainWeapon].delay)
         if (player.energy > shootData[player.mainWeapon].energy )
           // TODO meter el consumo de energia desde la tabla de armas

@@ -170,11 +170,13 @@ global
   end
 
   // **** Definici¢n animaciones de explosiones
-  struct exploFx[2]
+  struct exploFx[3]
+    int frames;
     int graph[5]; // Id del grafico de explosion
-  end = 001, 002, 003, 004, 005, 006,
-        007, 008, 009, 010, 011, 012,
-        013, 014, 015, 016, 017, 018;
+  end = 5,     001, 002, 003, 004, 005, 006,
+        5,     007, 008, 009, 010, 011, 012,
+        5,     013, 014, 015, 016, 017, 018,
+        4,     019, 020, 021, 022, 023, 023;
 
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
@@ -693,6 +695,7 @@ begin
       // Colision con el jugador
       hitId = collision(type playerShip);
       if (hitId)
+        explosion(3, x, y); // Mini explosion por impacto
         damagePlayer(shootData[typeId].damage);
         break;
       end
@@ -700,12 +703,15 @@ begin
       // Colision con un enemigo
       hitId = collision(type enemy);
       if (hitId)
+        // Da¤amos al enemigo
         hitId.hull = hitId.hull - shootData[typeId].damage;
-        if (hitId.hull <= 0)
+        if (hitId.hull <= 0) // Si se queda sin vida, contamos la muerte y aumentamos la puntuaci¢n
           player.score += enemyType[hitId.typeId].score;
           hitId.father.killedChildrens++;
           hitId.father.remaningChildrens--;
-          explosion(rand(0, 2), x, y);
+          explosion(rand(0, 2), x, y); // Efecto de explosion
+        else
+          explosion(3, x, y); // Mini explosion por impacto
         end
         break;
       end
@@ -923,6 +929,7 @@ begin
   file = fpgExplosion;
   region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
+  flags = 4; // Transparencia
 
   for (i = 0; i <= 5; i++)
     graph = exploFx[explosionId].graph[i];

@@ -48,6 +48,7 @@ Para esto me influencia bastante estos juegos :
     - [x] Mecánica de movimiento del scroll de fondo
     - [x] Barra de salud, escudos y energía
     - [x] Mecánica de regeneración escudos, energía y consumo de energía
+    - [x] Efecto explosiones y escudos
     - [ ] (WIP) Arma principal y secundaria
     - [ ] Pantalla de carga y menú
     - [ ] (WIP) Niveles

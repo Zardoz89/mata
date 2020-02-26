@@ -581,6 +581,7 @@ begin
   graph = graph;
   region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
+  z = min_int + 3;
 
   hull = 100;
   mouse.x = PLAYFIELD_REGION_W >> 1;
@@ -696,6 +697,7 @@ begin
       hitId = collision(type playerShip);
       if (hitId)
         explosion(3, x, y); // Mini explosion por impacto
+
         damagePlayer(shootData[typeId].damage);
         break;
       end
@@ -745,6 +747,8 @@ begin
   if (player.shield < 0)
     player.sId.hull += player.shield;
     player.shield = 0;
+  else
+    shieldFx(); // Hacemos el efecto del escudo
   end
 end
 
@@ -930,11 +934,33 @@ begin
   region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
   flags = 4; // Transparencia
+  z = min_int + 1;
+
 
   for (i = 0; i <= 5; i++)
     graph = exploFx[explosionId].graph[i];
     frame(200); // Actualiza a 30fps
   end
+end
+
+process shieldFx()
+private
+  int i;
+begin
+  file = fpgPlayer;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  flags = 4; // Transparencia
+  graph = 6;
+  z = min_int + 2;
+
+  for (i = 0; i <= 4; i++)
+    x = player.sId.x;
+    y = player.sId.y;
+    frame;
+  end
+
+
 end
 
 // vim: set fileencoding=cp850 :

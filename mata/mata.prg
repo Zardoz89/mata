@@ -571,10 +571,6 @@ process playerShip(graph)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
   _dispersionAngle = 0;
-  _oldMouseX;
-  _oldMouseY;
-  _deltaX;
-  _deltaY;
   _hitId;
   _collisionAngle;
 begin
@@ -588,9 +584,6 @@ begin
   mouse.x = PLAYFIELD_REGION_W >> 1;
   mouse.y = PLAYFIELD_REGION_H >> 1;
   mouse.cursor = 1;
-  _oldMouseX = mouse.x;
-  _oldMouseY = mouse.y;
-
 
   loop
     if (hull <= 0)
@@ -604,8 +597,6 @@ begin
     mouse.y = clamp(mouse.y,
         0,
         PLAYFIELD_REGION_H);
-    _deltaX = _oldMouseX - mouse.x;
-    _deltaY = _oldMouseY - mouse.y;
     x = mouse.x * PLAYFIELD_RESOLUTION;
     y = mouse.y * PLAYFIELD_RESOLUTION;
 
@@ -620,10 +611,6 @@ begin
 
       // TODO Spawn efecto escudo si escudos >= 0
     end
-
-    _oldMouseX = mouse.x;
-    _oldMouseY = mouse.y;
-
 
     // Disparo arma principal y secundaria
     if (key(_control) || mouse.left)

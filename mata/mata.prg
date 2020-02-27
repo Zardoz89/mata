@@ -137,7 +137,7 @@ global
 
   // **** Patrones de movimiento [Id patron]
   struct paths[40]
-    byte maxSteps; // Nõ de pasos
+    byte maxSteps; // N§ de pasos
     int vx0; // Velocidad inicial eje X
     int vy0; // Velocidad inicial eje Y
     struct steps[10]
@@ -200,6 +200,8 @@ private
   _loadingMsgId;
 
 begin
+
+
   set_mode(m640x480);
   set_fps(60, 0);
   vsync=1;
@@ -215,7 +217,7 @@ begin
   frame();
 
   // **** Carga de recursos ****
-  // Graficos
+  // Gr ficos
   fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
   _loading = 10;
   _loadingMsg = "Cargando... " + itoa(_loading) + "%";
@@ -326,7 +328,7 @@ begin
     _msg = "Error al abrir fichero de datos: " + _path;
     write(0, 0, 0, 0, _msg);
     loop
-      // abortamos ejecuci½n
+      // abortamos ejecuci¢n
       if (key(_q) || key(_esc))
         let_me_alone();
         break;
@@ -585,7 +587,7 @@ begin
       regionY,
       12, clampShield);
 
-    // Regeneraci½n escudos
+    // Regeneraci¢n escudos
     if (player.energy > 30 && ticksCounter > 30)
       player.shield = clamp(player.shield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
       player.energy -= (SHIELD_REGENERATION_RATE >> 1);
@@ -618,7 +620,7 @@ begin
       regionY,
       12, clampEnergy);
 
-    // Regeneraci½n energia
+    // Regeneraci¢n energia
     if (ticksCounter > 4)
       player.energy = clamp(player.energy + player.generatorRate, 0, PLAYER_MAX_ENERGY);
       ticksCounter = 0;
@@ -1027,4 +1029,4 @@ begin
 
 end
 
-// vim: set fileencoding=cp850 :
+// vim: set fileencoding=cp858 :

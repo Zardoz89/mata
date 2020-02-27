@@ -18,6 +18,8 @@ const
   PATH_USER="zardoz";
   PATH_PROG="mata";
 
+  BLACK_COLOR_PAL_INDEX = 196; // Indice del color negro en la paleta
+
   // Cte. referetnes a la regi¢n de juego
   PLAYFIELD_RESOLUTION=10; // Valor de resolution en la zona de juego
 
@@ -193,6 +195,9 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   remaningChildrens = 0; // Numero de procesos hijos restantes
   killedChildrens = 0; // Numero de procesos hijos matados por el jugador
 private
+  int _loading = 0;
+  string _loadingMsg;
+  _loadingMsgId;
 
 begin
   set_mode(m640x480);
@@ -200,28 +205,84 @@ begin
   vsync=1;
   rand_seed(1234);
 
+  // **** Carga de paleta
+  load_pal(pathResolve("pal\tyrian.pal"));
+  set_color(0, 0, 0 ,0); // Hack para que el color transparente sea el negro
+  clear_screen();
+
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsgId = write(0, 320, 240, 4, _loadingMsg);
+  frame();
+
   // **** Carga de recursos ****
   // Graficos
   fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
+  _loading = 10;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
+  _loading = 20;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
+  _loading = 30;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
+  _loading = 40;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   fpgExplosion = load_fpg(pathResolve("fpg\explo.fpg"));
+  _loading = 50;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   fpgHud = load_fpg(pathResolve("fpg\hud.fpg"));
+  _loading = 60;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
 
   // Carga tipos de disparo
   loadData("dat\shoots", offset shootData, sizeof(shootData));
+  _loading = 70;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   // Carga las formaciones
   loadData("dat\formatio", offset formations, sizeof(formations));
+  _loading = 80;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   // Carga patrones de movimiento
   loadData("dat\movpaths", offset paths, sizeof(paths));
+  _loading = 90;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
+
   // Carga tipo de enemigos
   loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
+  _loading = 100;
+  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  frame();
 
-  // Carga de datos del nivel 1
-  loadLevelData("level_01");
+  frame(600); // Espera 6 frames -> 1/6 de segundo
+  fade_off();
+  while(fading)
+    frame;
+  end
+  delete_text(_loadingMsgId);
+  fade_on();
+  while(fading)
+    frame;
+  end
+
   // Proceso nivel de juego
-  gameLevel();
+  gameLevel("level_01");
 
   if (DEBUG_MODE == 1)
     debugText();
@@ -320,14 +381,17 @@ end
 /**
  * Proceso que representa un nivel del juego
  */
-process gameLevel()
+process gameLevel(levelName)
 private
   _destroyedAll = false;
   _actualGroupInd = 0;
   int _scrollY;
   int _tilemapMaxY;
 begin
-  // Inicializaci½n de las regiones
+  // Carga de datos del nivel
+  loadLevelData(levelName);
+
+  // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
   define_region(STATUS_REGION, STATUS_X, STATUS_Y, STATUS_W, STATUS_H);
 

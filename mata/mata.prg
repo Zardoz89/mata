@@ -1029,4 +1029,4 @@ begin
 
 end
 
-// vim: set fileencoding=cp858 :
+/* vim: set ts=2 sw=2 tw=0 et fileencoding=cp858 :*/

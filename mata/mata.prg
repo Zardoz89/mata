@@ -182,9 +182,7 @@ global
 
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
-
-  // Array dinamico con el tilemap
-  int pointer tiles;
+  int pointer tiles; // Array dinamico con el tilemap
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
@@ -194,14 +192,13 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   yrel = 0;
   remaningChildrens = 0; // Numero de procesos hijos restantes
   killedChildrens = 0; // Numero de procesos hijos matados por el jugador
+
 private
-  int _loading = 0;
   string _loadingMsg;
   _loadingMsgId;
 
 begin
-
-
+  // **** Configuraci¢n pantalla
   set_mode(m640x480);
   set_fps(60, 0);
   vsync=1;
@@ -212,64 +209,54 @@ begin
   set_color(0, 0, 0 ,0); // Hack para que el color transparente sea el negro
   clear_screen();
 
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 0%";
   _loadingMsgId = write(0, 320, 240, 4, _loadingMsg);
   frame();
 
   // **** Carga de recursos ****
   // Gr ficos
   fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
-  _loading = 10;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 10%";
   frame();
 
   fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
-  _loading = 20;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 20%";
   frame();
 
   fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
-  _loading = 30;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 30%";
   frame();
 
   fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
-  _loading = 40;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 40%";
   frame();
 
   fpgExplosion = load_fpg(pathResolve("fpg\explo.fpg"));
-  _loading = 50;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 50%";
   frame();
 
   fpgHud = load_fpg(pathResolve("fpg\hud.fpg"));
-  _loading = 60;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 60%";
   frame();
 
   // Carga tipos de disparo
   loadData("dat\shoots", offset shootData, sizeof(shootData));
-  _loading = 70;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 70%";
   frame();
 
   // Carga las formaciones
   loadData("dat\formatio", offset formations, sizeof(formations));
-  _loading = 80;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 80%";
   frame();
 
   // Carga patrones de movimiento
   loadData("dat\movpaths", offset paths, sizeof(paths));
-  _loading = 90;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 90%";
   frame();
 
   // Carga tipo de enemigos
   loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
-  _loading = 100;
-  _loadingMsg = "Cargando... " + itoa(_loading) + "%";
+  _loadingMsg = "Cargando... 100%";
   frame();
 
   frame(600); // Espera 6 frames -> 1/6 de segundo
@@ -278,17 +265,9 @@ begin
     frame;
   end
   delete_text(_loadingMsgId);
-  fade_on();
-  while(fading)
-    frame;
-  end
 
   // Proceso nivel de juego
   gameLevel("level_01");
-
-  if (DEBUG_MODE == 1)
-    debugText();
-  end
 
   // Main loop
   loop
@@ -340,15 +319,6 @@ begin
   return(_retVal);
 end
 
-/**
- * Lee el fichero con los datos de nivel
- */
-function loadLevelData(string levelName)
-private
-begin
-   return(loadData("lvl\" + levelName, offset level, sizeof(level)));
-end;
-
 function isOutsidePlayfield(x, y)
 begin
   if (x < PLAYFIELD_XMIN || x > PLAYFIELD_XMAX)
@@ -385,10 +355,11 @@ end
  */
 process gameLevel(levelName)
 private
-  _destroyedAll = false;
   _actualGroupInd = 0;
-  int _scrollY;
-  int _tilemapMaxY;
+  int _scrollY; // Temporal para calcular el valor de y0 del scroll
+  int _tilemapMaxY; // Temporal del tama¤o maximo vertical
+  _playerEnergyStatusId; // Id del proceso que muestra y regenera la energia
+  _playerShieldStatusId; // Id del proceso que muestra y regenera los escudos
 begin
   // Carga de datos del nivel
   loadLevelData(levelName);
@@ -404,28 +375,55 @@ begin
   tiles = malloc(level.tileMapRows * TILEMAP_COLUMNS);
   loadData("dat\tmap00", tiles, level.tileMapRows * TILEMAP_COLUMNS);
 
-
   // Creamos el buffer del tilemap
   tileMapGraph = createTileBuffer(level.tileMapRows, TILEMAP_COLUMNS);
 
-  // Creamos el scroll
+  // Rellenamos el buffer con el tilemap
   drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, level.tileMapRows, TILE_WIDTH, TILE_HEIGHT);
+  free(tiles); // Y liberamos el tilemap
+
+  // Inicializamos el scroll
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
   _tilemapMaxY = level.tileMapRows * TILE_HEIGHT;
   _scrollY = (_tilemapMaxY - PLAYFIELD_REGION_H) * PLAYFIELD_RESOLUTION;
   scroll[0].y0 = _scrollY / PLAYFIELD_RESOLUTION;
 
-  // Crear al proceso jugador
+  // Crear al proceso jugador e inicializamos sus valores
   player.shield = PLAYER_MAX_SHIELD >> 1;
   player.energy = 25;
-  player.sId = playerShip(1);
+  player.sId = playerShip(1, 100);
+  signal(player.sId, s_sleep); // Dormimos al proceso para que no se pueda mover ni hacer nada
 
   // Procesos con el estado de casco, escudo y energia
   playerHullStatus();
-  playerShieldStatus();
-  playerEnergyStatus();
+  _playerShieldStatusId = playerShieldStatus();
+  _playerEnergyStatusId = playerEnergyStatus();
+  signal(_playerEnergyStatusId, s_sleep); // Dormimos al proceso para que no regenere
+  signal(_playerShieldStatusId, s_sleep); // Dormimos al proceso para que no regenere
 
+  // Antes de empezar el bucle y el juego, hacemos un fade
+  fade(100, 100, 100, 1);
+  while(fading)
+    mouse.x = PLAYFIELD_REGION_W >> 1;
+    mouse.y = PLAYFIELD_REGION_H >> 1;
+    frame;
+  end
 
+  // Centramos el cursor del rat¢n en el centro y forzamos activar la emulaci¢n de rat¢n
+  mouse.x = PLAYFIELD_REGION_W >> 1;
+  mouse.y = PLAYFIELD_REGION_H >> 1;
+  mouse.cursor = 1;
+
+  // Y despertamos a los procesos
+  signal(player.sId, s_wakeup);
+  signal(_playerEnergyStatusId, s_wakeup);
+  signal(_playerShieldStatusId, s_wakeup);
+
+  if (DEBUG_MODE == 1)
+    debugText();
+  end
+
+  // Bucle principal del nivel
   loop
     // TODO quitar esto *************************
     if (key(_1))
@@ -452,7 +450,6 @@ begin
     end
     end
     end
-
     // ******************************************
 
     // TODO mostrar la puntuaci¢n de forma mas chula
@@ -461,6 +458,15 @@ begin
     // TODO Romper el bucle cuando
     // * El jugador muere -> Replay ?
     // * El jefe muere -> Next level
+    if (player.sId.hull <= 0)
+      break;
+    end
+
+    // En modo debug, mostramos el contador de ticks
+    if (DEBUG_MODE == 1)
+      write_int(0, 640, 35, 5, offset ticksCounter);
+      write_int(0, 590, 35, 5, offset _actualGroupInd);
+    end
 
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
     if (_actualGroupInd < level.numberOfGroups)
@@ -481,161 +487,111 @@ begin
     ticksCounter++;
     frame;
   end
-  free(tiles);
+
+  signal(_playerEnergyStatusId, s_sleep); // Dormimos al proceso para que no regenere
+  signal(_playerShieldStatusId, s_sleep); // Dormimos al proceso para que no regenere
+
+  // El jugador muri¢. Se muestra la pantalla de game over
+  if (player.sId.hull <= 0)
+      //showGameOver();
+      frame(6000); // Esperamos ~1 segundo
+      loop
+    if (key(_enter) || key(_esc) || mouse.left)
+              break;
+          end;
+          frame;
+      end
+  end
+
+  // Fade off
+  fade_off();
+  while(fading)
+    frame;
+  end
+
+  unload_map(tileMapGraph); // Liberamos el graph
+  signal(id, s_kill_tree); // Matamos cualquier proceso descendiente del nivel
 end
 
 /**
- * Crea a u ngrupo de enemigos y gestiona el spawn del bonus si es necesario
+ * Lee el fichero con los datos de nivel
  */
-process enemyGroup(groupInd)
-private
- i;
- _formationType;
- _enemyType;
- _totalChildrens = 0;
+function loadLevelData(string levelName)
 begin
-  _formationType = level.groups[groupInd].formationType;
-
-  for (i=0; i <= 6; i++)
-    _enemyType = level.groups[groupInd].enemyType[i];
-    if (_enemyType <> -1)
-      enemy(
-        level.groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
-        level.groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
-        level.groups[groupInd].pathId[i],
-        _enemyType);
-      remaningChildrens++;
-    end
-  end
-  _totalChildrens = remaningChildrens;
-
-  loop
-    if (remaningChildrens <= 0)
-      if (killedChildrens == _totalChildrens)
-        // TODO Hacer aparece el bonus si es necesario
-      end
-      break;
-    end
-
-    frame;
-  end
-end
-
+   return(loadData("lvl\" + levelName, offset level, sizeof(level)));
+end;
 
 /**
  * Proceso que muestra informacion de debug como los FPS
  */
 process debugText()
 private
-  string _msg;
-  string _msg2;
+  string _msgFps;
+  string _msgScrollY;
+  string _msgPlayerXY;
 begin
   loop
-    _msg = "FPS: " + itoa(fps);
-    write(0, 640, 0, 2, _msg);
+    _msgFps = "FPS: " + itoa(fps);
+    write(0, 640, 0, 2, _msgFps);
 
-    _msg2 = "scrollY: " + itoa(scroll[0].y0);
-    write(0, 640, 10, 2, _msg2);
+    _msgScrollY = "scrollY: " + itoa(scroll[0].y0);
+    write(0, 640, 15, 5, _msgScrollY);
 
+    _msgPlayerXY = "x: " + itoa(player.sId.x) + " y: " + itoa(player.sId.y);
+    write(0, 640, 25, 5, _msgPlayerXY);
 
     frame(3000); // Actualiza a 2 FPS
   end
 end
 
 /**
- * Proceso que muestra el estado del casco del jugador
+ * Crea el buffer de tilemap
  */
-process playerHullStatus()
+function createTileBuffer(rows, columns)
 private
-  int clampHull;
-  int regionY;
+  bufferWidth;
+  bufferHeight;
+  buffer;
 begin
-  region=STATUS_HULL_BAR_REGION;
-  x = STATUS_HULL_BAR_X;
-  y = STATUS_HULL_BAR_Y;
-  file=fpgHud;
-  graph=2; // Grafico vida
-  loop
-    clampHull = clamp(player.sId.hull, 0, PLAYER_MAX_HULL);
-    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
-    define_region(STATUS_HULL_BAR_REGION,
-      STATUS_HULL_BAR_X - 6,
-      regionY,
-      12, clampHull);
-    frame(200);
-  end
+  bufferWidth = TILE_WIDTH * columns;
+  bufferHeight = TILE_HEIGHT * rows;
+  buffer = new_map(bufferWidth, bufferHeight,
+    bufferWidth >> 1, bufferHeight >> 1,
+    196); // Color negro
+  return(buffer);
 end
 
 /**
- * Proceso que muestra el estado del escudo del jugador
+ * Pinta un tilemap grande en un buffer
  */
-process playerShieldStatus()
+function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
 private
-  int clampShield;
-  int regionY;
+  tileIndex;
+  tileMap; // Grafico del tilemap a pintar
+  halfTileWidth; // Centro X del tilemap
+  halfTileHeight; // Centro Y del tilemap
+  putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
 begin
-  region=STATUS_SHIELD_BAR_REGION;
-  x = STATUS_SHIELD_BAR_X;
-  y = STATUS_SHIELD_BAR_Y;
-  file=fpgHud;
-  graph=3; // Grafico barra escudos
-  loop
-    clampShield = clamp(player.shield, 0, PLAYER_MAX_SHIELD);
-    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampShield;
-    define_region(STATUS_SHIELD_BAR_REGION,
-      STATUS_SHIELD_BAR_X - 6,
-      regionY,
-      12, clampShield);
+  halfTileWidth = tileWidth >> 1;
+  halfTileHeight = tileHeight >> 1;
 
-    // Regeneraci¢n escudos
-    if (player.energy > 30 && ticksCounter > 30)
-      player.shield = clamp(player.shield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
-      player.energy -= (SHIELD_REGENERATION_RATE >> 1);
-      ticksCounter = 0;
+  for (y = 0; y < mapRows; y++)
+    putY = (y * tileHeight) + halfTileHeight;
+    for (x = 0; x < mapColumns; x++)
+      tileIndex = mapColumns * y + x;
+      tileMap = tilesPtr[tileIndex];
+      tileMap = max(tileMap, 1);
+      map_put(0, buffer, tileMap,
+        (x * tileWidth) + halfTileWidth,
+        putY);
     end
-
-    ticksCounter++;
-    frame;
   end
 end
-
-/**
- * Proceso que muestra la energia del jugador
- */
-process playerEnergyStatus()
-private
-  int clampEnergy;
-  int regionY;
-begin
-  region=STATUS_ENERGY_BAR_REGION;
-  x = STATUS_ENERGY_BAR_X;
-  y = STATUS_ENERGY_BAR_Y;
-  file=fpgHud;
-  graph=4; // Grafico barra escudos
-  loop
-    clampEnergy = clamp(player.energy, 0, PLAYER_MAX_ENERGY);
-    regionY = STATUS_ENERGY_BAR_Y - 100 + 200 - clampEnergy;
-    define_region(STATUS_ENERGY_BAR_REGION,
-      STATUS_ENERGY_BAR_X - 6,
-      regionY,
-      12, clampEnergy);
-
-    // Regeneraci¢n energia
-    if (ticksCounter > 4)
-      player.energy = clamp(player.energy + player.generatorRate, 0, PLAYER_MAX_ENERGY);
-      ticksCounter = 0;
-    end
-
-    ticksCounter++;
-    frame;
-  end
-end
-
 
 /**
  * Nave del juegador
  */
-process playerShip(graph)
+process playerShip(graph, hull)
 private
   _mainShootCounter = 0; // Utilizamos para meter retardos entre los disparos
   _dispersionAngle = 0;
@@ -649,15 +605,13 @@ begin
   resolution = PLAYFIELD_RESOLUTION;
   z = min_int + 3;
 
-  hull = 100;
-  mouse.x = PLAYFIELD_REGION_W >> 1;
-  mouse.y = PLAYFIELD_REGION_H >> 1;
-  mouse.cursor = 1;
+  // Inicializaci¢n posici¢n y scroll
+  x = mouse.x * PLAYFIELD_RESOLUTION;
+  y = mouse.y * PLAYFIELD_RESOLUTION;
+  // scrollX en funcion de X (regla de tres)
+  scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
-  loop
-    if (hull <= 0)
-      break;
-    end;
+  while(hull > 0)
 
     // Movimiento
     mouse.x = clamp(mouse.x ,
@@ -668,6 +622,10 @@ begin
         PLAYFIELD_REGION_H);
     x = mouse.x * PLAYFIELD_RESOLUTION;
     y = mouse.y * PLAYFIELD_RESOLUTION;
+    // scrollX en funcion de X (regla de tres)
+    scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
+
+
 
     // Colision con naves enemigas
     _hitId = collision(type enemy);
@@ -678,17 +636,19 @@ begin
       mouse.x -= cos(_collisionAngle) / 500;
       mouse.x -= sin(_collisionAngle) / 500;
 
-      // TODO Spawn efecto escudo si escudos >= 0
     end
 
     // Disparo arma principal y secundaria
     if (key(_control) || mouse.left)
+      // Si ha pasado suficiente delay...
       if (_mainShootCounter >= shootData[player.mainWeapon].delay)
+        // Si tenemos suficiente energia...
         if (player.energy > shootData[player.mainWeapon].energy )
-          // TODO meter el consumo de energia desde la tabla de armas
+          // Consumismos energia
           player.energy = clamp(player.energy - shootData[player.mainWeapon].energy, 0, PLAYER_MAX_ENERGY);
-
           _mainShootCounter = 0;
+
+          // Calculo dispersi¢n del disparo si aplica
           _dispersionAngle = calcDispersionAngle(shootData[player.mainWeapon].disperseValue,
             shootData[player.mainWeapon].disperseType, ticksCounter);
           if (shootData[player.mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
@@ -701,15 +661,47 @@ begin
       end
     end
 
-    // scrollX en funcion de X (regla de tres)
-    scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
-
     _mainShootCounter++;
     ticksCounter++;
     frame;
   end
 
-  // TODO Si hull <= 0 parar el juego y mostrar el game over
+end
+
+/**
+ * Funci¢n auxiliar que aplica da¤o a la nave del jugador
+ */
+function damagePlayer(damage)
+private
+begin
+  player.shield -= damage;
+  if (player.shield < 0)
+    player.sId.hull += player.shield;
+    player.shield = 0;
+  else
+    shieldFx(); // Hacemos el efecto del escudo
+  end
+end
+
+/**
+ * Proceso que muestra el efecto de escudos de la nave del jugador
+ */
+process shieldFx()
+private
+  int i;
+begin
+  file = fpgPlayer;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  flags = 4; // Transparencia
+  graph = 6;
+  z = min_int + 2;
+
+  for (i = 0; i <= 4; i++)
+    x = player.sId.x;
+    y = player.sId.y;
+    frame;
+  end
 end
 
 /**
@@ -724,8 +716,7 @@ begin
       _dispersionAngle = rand(- weaponDispersionAngle, weaponDispersionAngle);
     end
     case DIS_SIN:
-      _dispersionAngle = (weaponDispersionAngle / 1000)
-              * sin(ticks * DIS_TICKS_SIN_MULTIPLIER);
+      _dispersionAngle = (weaponDispersionAngle / 1000) * sin(ticks * DIS_TICKS_SIN_MULTIPLIER);
     end
     default:
       _dispersionAngle = 0;
@@ -735,7 +726,7 @@ begin
 end
 
 /**
- * Disparo del jugador
+ * Proceso que representa un disparo
  *
  * Parametros:
  * x
@@ -743,7 +734,7 @@ end
  * direction Angulo de movimiento
  * typeId Tipo de disparo
  * moveRelativeToFather Cte. que indica el tipo de movimiento relativo
- * enemyshoot True si es disparado por un enemigo
+ * enemyShoot True si es disparado por un enemigo
  */
 process shoot(x, y, direction, typeId, moveRelativeToFather, enemyShoot)
 private
@@ -767,6 +758,7 @@ begin
         damagePlayer(shootData[typeId].damage);
         break;
       end
+
     else
       // Colision con un enemigo
       hitId = collision(type enemy);
@@ -806,15 +798,152 @@ begin
   end;
 end
 
-function damagePlayer(damage)
+/**
+ * Proceso de efecto de explosion
+ *
+ * Usa una tabla global para saber los Ids de la explosi¢n
+ */
+process explosion(explosionId, x, y)
 private
+  int i;
+  int _totalFrames;
 begin
-  player.shield -= damage;
-  if (player.shield < 0)
-    player.sId.hull += player.shield;
-    player.shield = 0;
-  else
-    shieldFx(); // Hacemos el efecto del escudo
+  file = fpgExplosion;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  flags = 4; // Transparencia
+  z = min_int + 1;
+  _totalFrames = exploFx[explosionId].frames;
+
+  for (i = 0; i <= _totalFrames; i++)
+    graph = exploFx[explosionId].graph[i];
+    frame(200); // Actualiza a 30fps
+  end
+end
+
+/**
+ * Proceso que muestra el estado del casco del jugador
+ */
+process playerHullStatus()
+private
+  int clampHull;
+  int regionY;
+begin
+  region=STATUS_HULL_BAR_REGION;
+  x = STATUS_HULL_BAR_X;
+  y = STATUS_HULL_BAR_Y;
+  file=fpgHud;
+  graph=2; // Grafico vida
+  loop
+    clampHull = clamp(player.sId.hull, 0, PLAYER_MAX_HULL);
+    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
+    define_region(STATUS_HULL_BAR_REGION,
+      STATUS_HULL_BAR_X - 6,
+      regionY,
+      12, clampHull);
+    frame(200);
+  end
+end
+
+/**
+ * Proceso que muestra el estado del escudo del jugador y los regenera
+ */
+process playerShieldStatus()
+private
+  int clampShield;
+  int regionY;
+begin
+  region=STATUS_SHIELD_BAR_REGION;
+  x = STATUS_SHIELD_BAR_X;
+  y = STATUS_SHIELD_BAR_Y;
+  file=fpgHud;
+  graph=3; // Grafico barra escudos
+  loop
+    clampShield = clamp(player.shield, 0, PLAYER_MAX_SHIELD);
+    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampShield;
+    define_region(STATUS_SHIELD_BAR_REGION,
+      STATUS_SHIELD_BAR_X - 6,
+      regionY,
+      12, clampShield);
+
+    // Regeneraci¢n escudos
+    if (player.energy > 30 && ticksCounter > 30)
+      player.shield = clamp(player.shield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
+      player.energy -= (SHIELD_REGENERATION_RATE >> 1);
+      ticksCounter = 0;
+    end
+
+    ticksCounter++;
+    frame;
+  end
+end
+
+/**
+ * Proceso que muestra la energia del jugador y la regenera
+ */
+process playerEnergyStatus()
+private
+  int clampEnergy;
+  int regionY;
+begin
+  region=STATUS_ENERGY_BAR_REGION;
+  x = STATUS_ENERGY_BAR_X;
+  y = STATUS_ENERGY_BAR_Y;
+  file=fpgHud;
+  graph=4; // Grafico barra escudos
+  loop
+    clampEnergy = clamp(player.energy, 0, PLAYER_MAX_ENERGY);
+    regionY = STATUS_ENERGY_BAR_Y - 100 + 200 - clampEnergy;
+    define_region(STATUS_ENERGY_BAR_REGION,
+      STATUS_ENERGY_BAR_X - 6,
+      regionY,
+      12, clampEnergy);
+
+    // Regeneraci¢n energia
+    if (ticksCounter > 4)
+      player.energy = clamp(player.energy + player.generatorRate, 0, PLAYER_MAX_ENERGY);
+      ticksCounter = 0;
+    end
+
+    ticksCounter++;
+    frame;
+  end
+end
+
+/**
+ * Crea a un grupo de enemigos y gestiona el spawn del bonus si es necesario
+ */
+process enemyGroup(groupInd)
+private
+ i;
+ _formationType;
+ _enemyType;
+ _totalChildrens = 0;
+begin
+  _formationType = level.groups[groupInd].formationType;
+
+  for (i=0; i <= 6; i++)
+    _enemyType = level.groups[groupInd].enemyType[i];
+    if (_enemyType <> -1)
+      enemy(
+        level.groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
+        level.groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
+        level.groups[groupInd].pathId[i],
+        _enemyType);
+      remaningChildrens++;
+    end
+  end
+  _totalChildrens = remaningChildrens;
+
+  loop
+    if (remaningChildrens <= 0)
+      if (killedChildrens == _totalChildrens)
+        // TODO Hacer aparece el bonus si es necesario
+      end
+      break;
+    end
+
+    frame;
   end
 end
 
@@ -948,85 +1077,5 @@ begin
   father.remaningChildrens--;
 end
 
-/**
- * Crea el buffer de tilemap
- */
-function createTileBuffer(rows, columns)
-private
-  bufferWidth;
-  bufferHeight;
-  buffer;
-begin
-  bufferWidth = TILE_WIDTH * columns;
-  bufferHeight = TILE_HEIGHT * rows;
-  buffer = new_map(bufferWidth, bufferHeight,
-    bufferWidth >> 1, bufferHeight >> 1,
-    196); // Color negro
-  return(buffer);
-end
-
-/**
- * Pinta un tilemap grande en un buffer
- */
-function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
-private
-  tileIndex;
-  tileMap; // Grafico del tilemap a pintar
-  halfTileWidth; // Centro X del tilemap
-  halfTileHeight; // Centro Y del tilemap
-  putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
-begin
-  halfTileWidth = tileWidth >> 1;
-  halfTileHeight = tileHeight >> 1;
-
-  for (y = 0; y < mapRows; y++)
-    putY = (y * tileHeight) + halfTileHeight;
-    for (x = 0; x < mapColumns; x++)
-      tileIndex = mapColumns * y + x;
-      tileMap = tilesPtr[tileIndex];
-      tileMap = max(tileMap, 1);
-      map_put(0, buffer, tileMap,
-        (x * tileWidth) + halfTileWidth,
-        putY);
-    end
-  end
-end
-
-process explosion(explosionId, x, y)
-private
-  int i;
-begin
-  file = fpgExplosion;
-  region = PLAYFIELD_REGION;
-  resolution = PLAYFIELD_RESOLUTION;
-  flags = 4; // Transparencia
-  z = min_int + 1;
-
-
-  for (i = 0; i <= 5; i++)
-    graph = exploFx[explosionId].graph[i];
-    frame(200); // Actualiza a 30fps
-  end
-end
-
-process shieldFx()
-private
-  int i;
-begin
-  file = fpgPlayer;
-  region = PLAYFIELD_REGION;
-  resolution = PLAYFIELD_RESOLUTION;
-  flags = 4; // Transparencia
-  graph = 6;
-  z = min_int + 2;
-
-  for (i = 0; i <= 4; i++)
-    x = player.sId.x;
-    y = player.sId.y;
-    frame;
-  end
-
-
-end
 
 /* vim: set ts=2 sw=2 tw=0 et fileencoding=cp858 :*/

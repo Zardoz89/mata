@@ -275,22 +275,22 @@ begin
 
   // Carga tipos de disparo
   loadData("dat\shoots", offset shootData, sizeof(shootData));
-  _loadingMsg = "Cargando... 70%";
+  _loadingMsg = "Cargando... 65%";
   frame();
 
   // Carga las formaciones
   loadData("dat\formatio", offset formations, sizeof(formations));
-  _loadingMsg = "Cargando... 80%";
+  _loadingMsg = "Cargando... 70%";
   frame();
 
   // Carga patrones de movimiento
   loadData("dat\movpaths", offset paths, sizeof(paths));
-  _loadingMsg = "Cargando... 90%";
+  _loadingMsg = "Cargando... 80%";
   frame();
 
   // Carga tipo de enemigos
   loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
-  _loadingMsg = "Cargando... 100%";
+  _loadingMsg = "Cargando... 90%";
   frame();
 
   // Carga de FX de sonido
@@ -300,7 +300,14 @@ begin
   //snd.eShoot;
   snd.vulcan = load_wav(pathResolve("\snd\vulcan.wav"), 0);
   //snd.laser;
+  _loadingMsg = "Cargando... 100%";
+  frame();
 
+  // NPI de como va regular el volumen de la m£sica
+  //setup.master = 50;
+  //setup.sound_fx = 90;
+  //setup.cd_audio = 50;
+  //set_volume();
 
   frame(600); // Espera 6 frames -> 1/6 de segundo
   fade_off();

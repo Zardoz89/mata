@@ -64,6 +64,7 @@ Para esto me influencia bastante estos juegos :
     - [x] Efecto explosiones y escudos
     - [x] Arma principal
     - [ ] (WIP) Arma secundaria
+    - [x] Pantalla de carga inicial
     - [ ] Pantalla de carga y menú
     - [ ] (WIP) Niveles
     - [ ] Gestión efectos sonido
@@ -74,6 +75,7 @@ Para esto me influencia bastante estos juegos :
     características de las armas, enemigos, patrones de movimiento, oleadas y
     tilemaps.
 - [x] Ponerle un nombre en condiciones
+- [x] Un poco de lore...
 
 
 ## Recursos usados

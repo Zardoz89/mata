@@ -86,6 +86,10 @@ Para esto me influencia bastante estos juegos :
 
 ### Audio
 
+- DeathFlash.flac (CC-BY 3.0) : https://opengameart.org/content/big-explosion
+- Chunky Explosion (CC0) : https://opengameart.org/content/chunky-explosion
+- Assault Rifle (CC-BY-SA 3.0) : https://opengameart.org/content/futuristic-weapons-assault-rifle
+
 ### Música
 
 - State of war Xtd : https://www.youtube.com/watch?v=JPTvkg-NxNo&t=3393s

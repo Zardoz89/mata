@@ -105,6 +105,7 @@ global
   // **** Efectos de sonido
   struct snd
     explosion;
+    bigExplosion;
     pickUp;
     eShoot;
     vulcan;
@@ -291,6 +292,15 @@ begin
   loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
   _loadingMsg = "Cargando... 100%";
   frame();
+
+  // Carga de FX de sonido
+  snd.explosion = load_wav(pathResolve("\snd\bigexpl0.wav"), 0);
+  snd.bigExplosion = load_wav(pathResolve("\snd\bigexpl1.wav"), 0);
+  //snd.pickUp;
+  //snd.eShoot;
+  snd.vulcan = load_wav(pathResolve("\snd\vulcan.wav"), 0);
+  //snd.laser;
+
 
   frame(600); // Espera 6 frames -> 1/6 de segundo
   fade_off();
@@ -680,6 +690,9 @@ begin
             shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId,
               MOVREL_SYNC_X || MOVREL_REL_Y, false);
           end
+
+          // Y metemos el FX de sonido
+          sound(snd.vulcan, 256, 256);
         end
       end
     end

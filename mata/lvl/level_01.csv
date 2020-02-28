@@ -5,7 +5,7 @@
 # Grupos de naves (hasta 64)
 # grupo 0
 # x0    ; y0    ; formationType ; spawnTime ; bonusType
-  1320   ; -1680 ; 0             ; 50        ; -1
+  1320  ; -1680 ; 0             ; 50        ; 0
 # enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
   1             ; 1             ; 1             ; 1             ; 1             ; 1             ; 1
 # pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]
@@ -29,7 +29,7 @@
 
 # grupo 3
 # x0    ; y0    ; formationType ; spawnTime ; bonusType
-  -60   ; 450   ; 5             ; 250       ; -1
+  -60   ; 450   ; 5             ; 250       ; 1
 # enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
   1             ; 1             ; 1             ; 1             ; 1             ; 1             ; 1
 # pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]
@@ -37,7 +37,7 @@
 
 # grupo 4
 # x0    ; y0    ; formationType ; spawnTime ; bonusType
-  3000  ; -1960 ; 13            ; 250       ; -1
+  3000  ; -1960 ; 13            ; 250       ; 1
 # enemyType[0]  ; enemyType[1]  ; enemyType[2]  ; enemyType[3]  ; enemyType[4]  ; enemyType[5]  ; enemyType[6]
   1             ; 1             ; 1             ; -1            ; 1             ; 1             ; -1
 # pathId[0]     ; pathId[1]     ; pathId[2]     ; pathId[3]     ; pathId[4]     ; pathId[5]     ; pathId[6]

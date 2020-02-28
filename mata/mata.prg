@@ -171,9 +171,23 @@ global
     int energy;
     int generatorRate = 5;//INTIAL_GENERATOR_RATE;
     int score;
-    int mainWeapon = 2; // Vulcan tier 1
-    int secondWeapon = -1; // Nada
+    struct mainWeapon
+      int tier = 0;
+      int weapon = 1; // Vulcan
+    end
+    struct secondaryWeapon
+      int tier = 0;
+      int weapon = -1; // Nada todavia
+    end
+
   end
+
+  // **** Tabla de armas del jugador
+  struct playerWeapons[1]
+    itemGraph; // Grafico del item que da dicha arma
+    weaponId[4];
+  end = 109,   2,  3,  4,  5,  6, // Vulcan tier 0 a tier 4
+        119,   7,  8,  9, 10, 11; // Laser tier 0 a tier 4
 
   // **** Definici¢n animaciones de explosiones
   struct exploFx[3]
@@ -347,6 +361,14 @@ begin
   end
   return(val2);
 end
+function min(val, val2)
+begin
+  if (val <= val2)
+    return(val);
+  end
+  return(val2);
+end
+
 
 function clamp(val, minVal, maxVal)
 begin
@@ -435,33 +457,6 @@ begin
 
   // Bucle principal del nivel
   loop
-    // TODO quitar esto *************************
-    if (key(_1))
-      player.mainWeapon = 2;
-    else
-    if (key(_2))
-      player.mainWeapon = 3;
-    else
-    if (key(_3))
-      player.mainWeapon = 4;
-    else
-    if (key(_4))
-      player.mainWeapon = 5;
-    else
-    if (key(_5))
-      player.mainWeapon = 6;
-    else
-    if (key(_6))
-      player.mainWeapon = 7;
-    else
-    end
-    end
-    end
-    end
-    end
-    end
-    // ******************************************
-
     // Mostramos la puntuaci¢n
     write_int(fntScore, 0, 480, 6, offset player.score);
 
@@ -532,6 +527,7 @@ private
   string _msgFps;
   string _msgScrollY;
   string _msgPlayerXY;
+  string _msgMWeapon;
 begin
   loop
     _msgFps = "FPS: " + itoa(fps);
@@ -542,6 +538,10 @@ begin
 
     _msgPlayerXY = "x: " + itoa(player.sId.x) + " y: " + itoa(player.sId.y);
     write(0, 640, 25, 5, _msgPlayerXY);
+
+    _msgMWeapon = "w: " + itoa(player.mainWeapon.weapon) + " t: " + itoa(player.mainWeapon.tier);
+    write(0, 640, 45, 5, _msgMWeapon);
+
 
     frame(3000); // Actualiza a 2 FPS
   end
@@ -600,6 +600,8 @@ private
   _dispersionAngle = 0;
   _hitId;
   _collisionAngle;
+  _mainWeaponId;
+  _secondaryWeaponId;
 begin
   // Asignacion grafico
   file = fpgPlayer;
@@ -628,8 +630,6 @@ begin
     // scrollX en funcion de X (regla de tres)
     scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
-
-
     // Colision con naves enemigas
     _hitId = collision(type enemy);
     if (_hitId)
@@ -641,23 +641,25 @@ begin
 
     end
 
-    // Disparo arma principal y secundaria
+    _mainWeaponId = getMainWeaponIdFromPlayerWeapon();
+
+    // Disparo arma principal
     if (key(_control) || mouse.left)
       // Si ha pasado suficiente delay...
-      if (_mainShootCounter >= shootData[player.mainWeapon].delay)
+      if (_mainShootCounter >= shootData[_mainWeaponId].delay)
         // Si tenemos suficiente energia...
-        if (player.energy > shootData[player.mainWeapon].energy )
+        if (player.energy > shootData[_mainWeaponId].energy )
           // Consumismos energia
-          player.energy = clamp(player.energy - shootData[player.mainWeapon].energy, 0, PLAYER_MAX_ENERGY);
+          player.energy = clamp(player.energy - shootData[_mainWeaponId].energy, 0, PLAYER_MAX_ENERGY);
           _mainShootCounter = 0;
 
           // Calculo dispersi¢n del disparo si aplica
-          _dispersionAngle = calcDispersionAngle(shootData[player.mainWeapon].disperseValue,
-            shootData[player.mainWeapon].disperseType, ticksCounter);
-          if (shootData[player.mainWeapon].disperseType <> DIS_FOLLOW_Y_FATHER)
-            shoot(x, y, 90000 + _dispersionAngle , player.mainWeapon, MOVREL_NONE, false);
+          _dispersionAngle = calcDispersionAngle(shootData[_mainWeaponId].disperseValue,
+            shootData[_mainWeaponId].disperseType, ticksCounter);
+          if (shootData[_mainWeaponId].disperseType <> DIS_FOLLOW_Y_FATHER)
+            shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId, MOVREL_NONE, false);
           else
-            shoot(x, y, 90000 + _dispersionAngle , player.mainWeapon,
+            shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId,
               MOVREL_SYNC_X || MOVREL_REL_Y, false);
           end
         end
@@ -708,6 +710,26 @@ begin
 end
 
 /**
+ * Devuelve el ID de la tabla de armas a partir del arma actual del jugador
+ */
+function getMainWeaponIdFromPlayerWeapon()
+begin
+  return(playerWeapons[player.mainWeapon.weapon].weaponId[player.mainWeapon.tier]);
+end
+
+/**
+ * Devuelve el ID de la tabla de armas a partir del arma secundartia actual del jugador
+ */
+function getSecundaryWeaponIdFromPlayerWeapon()
+begin
+  if (player.secondaryWeapon.weapon == -1)
+    return(-1);
+  end
+  return(playerWeapons[player.secondaryWeapon.weapon].weaponId[player.secondaryWeapon.tier]);
+end
+
+
+/**
  * Calcula el nuevo angulo de dispersion a partir del tipo, angulo maximo y ticks
  */
 function calcDispersionAngle(weaponDispersionAngle, dispersionType, ticks)
@@ -743,6 +765,8 @@ process shoot(x, y, direction, typeId, moveRelativeToFather, enemyShoot)
 private
   hitId;
   tmpScore;
+  tmpK;
+  tmpR;
 begin
   file = fpgShoots;
   region = PLAYFIELD_REGION;
@@ -766,15 +790,21 @@ begin
       // Colision con un enemigo
       hitId = collision(type enemy);
       if (hitId)
-        // Da¤amos al enemigo
-        hitId.hull = hitId.hull - shootData[typeId].damage;
-        if (hitId.hull <= 0) // Si se queda sin vida, contamos la muerte y aumentamos la puntuaci¢n
-          player.score += enemyType[hitId.typeId].score;
-          hitId.father.killedChildrens++;
-          hitId.father.remaningChildrens--;
-          explosion(rand(0, 2), x, y); // Efecto de explosion
-        else
-          explosion(3, x, y); // Mini explosion por impacto
+        if (hitId.hull > 0) // Evitamos que se cuente multiples veces la muerte
+          // Da¤amos al enemigo
+          hitId.hull = hitId.hull - shootData[typeId].damage;
+          if (hitId.hull <= 0) // Si se queda sin vida, contamos la muerte y aumentamos la puntuaci¢n
+            debug;
+            player.score += enemyType[hitId.typeId].score;
+            hitId.father.killedChildrens++;
+            hitId.father.remaningChildrens--;
+            // Asignamos X e Y para que el grupo de enemigos pueda dropear el bonus en donde muere el ultimo miembro del grupo
+            hitId.father.x = x;
+            hitId.father.y = y;
+            explosion(rand(0, 2), x, y); // Efecto de explosion
+          else
+            explosion(3, x, y); // Mini explosion por impacto
+          end
         end
         break;
       end
@@ -937,11 +967,12 @@ begin
     end
   end
   _totalChildrens = remaningChildrens;
-
   loop
     if (remaningChildrens <= 0)
-      if (killedChildrens == _totalChildrens)
+      debug;
+      if (killedChildrens == _totalChildrens && level.groups[groupInd].bonusType <> -1)
         // TODO Hacer aparece el bonus si es necesario
+        mainWeaponBonus(level.groups[groupInd].bonusType, x ,y);
       end
       break;
     end
@@ -990,7 +1021,6 @@ begin
     _vy = paths[pathId].vy0;
   end;
 
-  //while (! out_region(id, region) && hull > 0)
   while (! isOutsidePlayfield(x, y) && hull > 0)
 
     // **** Movimiento
@@ -1077,8 +1107,39 @@ begin
     ticksCounter++;
     frame;
   end;
-  father.remaningChildrens--;
+
+  // Evitamos contar dos veces una muerte
+  if (hull > 0)
+    father.remaningChildrens--;
+  end
 end
+
+/**
+ * Item bonus que cambia/mejora el arma del jugador
+ */
+process mainWeaponBonus(playerWeaponId, x, y)
+private
+begin
+  file = fpgShoots;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  graph = playerWeapons[playerWeaponId];
+
+  while (! out_region(id, region))
+    if (collision(type playerShip))
+      // El jugador ha recogido el item. Mejoramos o cambiamos el arma
+      if (player.mainWeapon.weapon == playerWeaponId)
+        // Aumentamos el tier
+        player.mainWeapon.tier = min(player.mainWeapon + 1, 4);
+      else
+        // Cambiamos el arma
+        player.mainWeapon.weapon = playerWeaponId;
+      end
+      break;
+    end
+    frame;
+  end;
+end;
 
 /**
  * Muestra el rotulo de game over

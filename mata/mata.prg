@@ -25,7 +25,7 @@ const
 
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
-  PLAYFIELD_REGION_H=448;
+  PLAYFIELD_REGION_H=480;//448;
 
   PLAYFIELD_MARGIN=17000;
   // TODO Retocar el tama¤o del playfield para poder hace spawn de enemigos fuera del area visible
@@ -97,6 +97,10 @@ global
   int fpgEnemy;
   int fpgHud;
   int fpgExplosion;
+
+  // **** Fuentes
+  int fntScore;
+  int fntGameover;
 
   // **** Definicion de un "nivel"
   struct level
@@ -214,25 +218,31 @@ begin
   frame();
 
   // **** Carga de recursos ****
-  // Gr ficos
-  fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
+  // Fuentes
+  fntScore = load_fnt(pathResolve("fnt\score.fnt"));
+  fntGameover = load_fnt(pathResolve("fnt\gameover.fnt"));
   _loadingMsg = "Cargando... 10%";
   frame();
 
-  fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
-  _loadingMsg = "Cargando... 20%";
+  // Gr ficos
+  fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
+  _loadingMsg = "Cargando... 25%";
   frame();
 
-  fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
+  fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
   _loadingMsg = "Cargando... 30%";
   frame();
 
-  fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
+  fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
   _loadingMsg = "Cargando... 40%";
   frame();
 
-  fpgExplosion = load_fpg(pathResolve("fpg\explo.fpg"));
+  fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
   _loadingMsg = "Cargando... 50%";
+  frame();
+
+  fpgExplosion = load_fpg(pathResolve("fpg\explo.fpg"));
+  _loadingMsg = "Cargando... 55%";
   frame();
 
   fpgHud = load_fpg(pathResolve("fpg\hud.fpg"));
@@ -452,8 +462,8 @@ begin
     end
     // ******************************************
 
-    // TODO mostrar la puntuaci¢n de forma mas chula
-    write_int(0, 100, 470, 4, offset player.score);
+    // Mostramos la puntuaci¢n
+    write_int(fntScore, 0, 480, 6, offset player.score);
 
     // TODO Romper el bucle cuando
     // * El jugador muere -> Replay ?
@@ -493,14 +503,7 @@ begin
 
   // El jugador muri¢. Se muestra la pantalla de game over
   if (player.sId.hull <= 0)
-      //showGameOver();
-      frame(6000); // Esperamos ~1 segundo
-      loop
-    if (key(_enter) || key(_esc) || mouse.left)
-              break;
-          end;
-          frame;
-      end
+    gameOverScreen();
   end
 
   // Fade off
@@ -557,7 +560,7 @@ begin
   bufferHeight = TILE_HEIGHT * rows;
   buffer = new_map(bufferWidth, bufferHeight,
     bufferWidth >> 1, bufferHeight >> 1,
-    196); // Color negro
+    BLACK_COLOR_PAL_INDEX); // Color negro
   return(buffer);
 end
 
@@ -1075,6 +1078,26 @@ begin
     frame;
   end;
   father.remaningChildrens--;
+end
+
+/**
+ * Muestra el rotulo de game over
+ * TODO Mostrar si el jugador desea volver a jugar el mapa o volver al men£. Retornar valor seg£n la opci¢n.
+ */
+function gameOverScreen()
+private
+  _gameoverId;
+begin
+  _gameoverId = write(fntGameover, 320, 240, 4, "GAME OVER");
+  frame(6000); // Esperamos ~1 segundo
+  loop
+    if (key(_enter) || key(_esc) || mouse.left)
+      break;
+    end;
+    frame;
+  end
+  delete_text(_gameoverId);
+  return(false);
 end
 
 

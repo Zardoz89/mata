@@ -102,6 +102,15 @@ global
   int fntScore;
   int fntGameover;
 
+  // **** Efectos de sonido
+  struct snd
+    explosion;
+    pickUp;
+    eShoot;
+    vulcan;
+    laser;
+  end
+
   // **** Definicion de un "nivel"
   struct level
     int tileMapId; // Id del tilemap que se va usar para el fondo
@@ -173,7 +182,7 @@ global
     int score;
     struct mainWeapon
       int tier = 0;
-      int weapon = 1; // Vulcan
+      int weapon = 0; // Vulcan
     end
     struct secondaryWeapon
       int tier = 0;
@@ -392,9 +401,13 @@ private
   int _tilemapMaxY; // Temporal del tama¤o maximo vertical
   _playerEnergyStatusId; // Id del proceso que muestra y regenera la energia
   _playerShieldStatusId; // Id del proceso que muestra y regenera los escudos
+  _levelSong;
 begin
   // Carga de datos del nivel
   loadLevelData(levelName);
+
+  // Cargamos la musica del nivel
+  _levelSong = load_song(pathResolve("\mus\statewar.mod"), 1);
 
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
@@ -440,6 +453,9 @@ begin
     mouse.y = PLAYFIELD_REGION_H >> 1;
     frame;
   end
+
+  // Ponemos la musica
+  song(_levelSong);
 
   // Centramos el cursor del rat¢n en el centro y forzamos activar la emulaci¢n de rat¢n
   mouse.x = PLAYFIELD_REGION_W >> 1;
@@ -507,6 +523,8 @@ begin
     frame;
   end
 
+  stop_song();
+  unload_song(_levelSong);
   unload_map(tileMapGraph); // Liberamos el graph
   signal(id, s_kill_tree); // Matamos cualquier proceso descendiente del nivel
 end
@@ -794,7 +812,6 @@ begin
           // Da¤amos al enemigo
           hitId.hull = hitId.hull - shootData[typeId].damage;
           if (hitId.hull <= 0) // Si se queda sin vida, contamos la muerte y aumentamos la puntuaci¢n
-            debug;
             player.score += enemyType[hitId.typeId].score;
             hitId.father.killedChildrens++;
             hitId.father.remaningChildrens--;
@@ -969,7 +986,6 @@ begin
   _totalChildrens = remaningChildrens;
   loop
     if (remaningChildrens <= 0)
-      debug;
       if (killedChildrens == _totalChildrens && level.groups[groupInd].bonusType <> -1)
         // TODO Hacer aparece el bonus si es necesario
         mainWeaponBonus(level.groups[groupInd].bonusType, x ,y);

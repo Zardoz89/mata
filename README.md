@@ -5,10 +5,23 @@ Matamarcianos en un mes usando DIV Games Studio 2 para la [DIV Compo 2020](https
 
 ## Lore
 
-WIP...
+Año 2274
 
-Eres un piloto que acaba de iniciar su carrera de mercenario con un caza
-recién comprado de segunda mano...
+La Tierra, después de salir de la era oscura, ha vuelto a recuperar en gran
+medida el nivel tecnológico que tenia antes de la Gran Crisis y la Tercera
+Guerra Mundial. El mundo actual, esta dividido entre ciudades estado, señores de
+la guerra que controlan las regiones desoladas por la Tercera Guerra Mundial y
+algún que otro estado con aspiraciones de imperio mundial.
+
+Una de las reliquias tecnológicas de la Tercera Guerra Mundial, son los
+vehículos móviles de asalto táctico "Mobile Assault Tactical Aircraft" o
+"M.A.T.A." . En manos de un experimentado piloto, pueden destruir todo un
+ejercito o cambiar el curso de una guerra.
+
+Todo esto es caldo de cultivo perfecto para que un mercenario haga su carrera,
+ofreciendo sus dotes de piloto en un M.A.T.A.
+
+
 
 ## ¿Qué es DIV Games Studio?
 
@@ -43,13 +56,14 @@ Para esto me influencia bastante estos juegos :
     - [x] Animaciones de enemigos y disparos enemigos
     - [x] Generador de oleadas de enemigos
     - [x] Regiones y zona de juego
-    - [ ] Items para cambiar/mejorar el arma
+    - [x] Items para cambiar/mejorar el arma
     - [x] Tilemap de fondo de pantalla
     - [x] Mecánica de movimiento del scroll de fondo
     - [x] Barra de salud, escudos y energía
     - [x] Mecánica de regeneración escudos, energía y consumo de energía
     - [x] Efecto explosiones y escudos
-    - [ ] (WIP) Arma principal y secundaria
+    - [x] Arma principal
+    - [ ] (WIP) Arma secundaria
     - [ ] Pantalla de carga y menú
     - [ ] (WIP) Niveles
     - [ ] Gestión efectos sonido

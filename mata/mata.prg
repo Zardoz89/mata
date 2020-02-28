@@ -830,6 +830,7 @@ begin
             hitId.father.remaningChildrens--;
             // Asignamos X e Y para que el grupo de enemigos pueda dropear el bonus en donde muere el ultimo miembro del grupo
             hitId.father.x = x;
+            hitId.father.xrel = hitId.xrel;
             hitId.father.y = y;
             explosion(rand(0, 2), x, y); // Efecto de explosion
           else
@@ -1001,7 +1002,7 @@ begin
     if (remaningChildrens <= 0)
       if (killedChildrens == _totalChildrens && level.groups[groupInd].bonusType <> -1)
         // TODO Hacer aparece el bonus si es necesario
-        mainWeaponBonus(level.groups[groupInd].bonusType, x ,y);
+        mainWeaponBonus(level.groups[groupInd].bonusType, x ,y, xrel);
       end
       break;
     end
@@ -1146,7 +1147,7 @@ end
 /**
  * Item bonus que cambia/mejora el arma del jugador
  */
-process mainWeaponBonus(playerWeaponId, x, y)
+process mainWeaponBonus(playerWeaponId, x, y, xrel)
 private
 begin
   file = fpgShoots;
@@ -1154,7 +1155,10 @@ begin
   resolution = PLAYFIELD_RESOLUTION;
   graph = playerWeapons[playerWeaponId];
 
-  while (! out_region(id, region))
+  while (! isOutsidePlayfield(x, y))
+    x = xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
+
+
     if (collision(type playerShip))
       // El jugador ha recogido el item. Mejoramos o cambiamos el arma
       if (player.mainWeapon.weapon == playerWeaponId)

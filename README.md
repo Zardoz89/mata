@@ -44,6 +44,16 @@ Para esto me influencia bastante estos juegos :
 * [Major Striker](https://es.wikipedia.org/wiki/William_Stryker)
 * [19XX The war against destiny](https://en.wikipedia.org/wiki/19XX:_The_War_Against_Destiny)
 
+## Antes de lanzarlo desde DIV2...
+
+El repositorio usa submodulos para las DLLs que usa para extender DIV, con lo
+que es importante ejecutar esto después de hacer un clone del repositorio :
+
+```bash
+git submodule init
+git submodule update
+```
+
 ## Roadmap
 
 - [ ] Refamiliazar con el lenguaje y el entorno, improvisando algunos conceptos

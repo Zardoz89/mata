@@ -2,7 +2,7 @@
 <tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="112" columns="3">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
-  <image width="24" height="28" source="png/bdw01.png"/>
+  <image width="24" height="28" source="png/novalid.png"/>
  </tile>
  <tile id="1">
   <image width="24" height="28" source="png/bdw01.png"/>

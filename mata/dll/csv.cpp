@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Tipos de tama¤o predeterminado */
+/* Tipos de tamaÏo predeterminado */
 #if __STDC_VERSION__ >= 199901L
 #include <stdint.h>
 #else
@@ -37,7 +37,7 @@ void dropBufferFrom(char *buf,char dropCharacter)
 {
   char* position = strchr(buf, dropCharacter);
   if (position != NULL) {
-    // Insertamos un caracter nulo en dicha posici½n para "cortar" la cadena por ahi
+    // Insertamos un caracter nulo en dicha posici«n para "cortar" la cadena por ahi
     *position = 0;
   }
 }
@@ -53,7 +53,9 @@ void tokenizeLine(char *buf, uint_32_t offset, uint_32_t numberOfElements, uint_
 {
   const char* token = strtok(buf, VALUE_SEPARATOR);
   while (*index < numberOfElements && token != NULL && *token != 0) {
-    putValue(token, offset, *index);
+    if (offset != 0) {
+      putValue(token, offset, *index);
+    }
     token = strtok(NULL, VALUE_SEPARATOR_WITH_EOL);
     // El indice lo aumentamos desde aqui para contar solo los tokens validos
     *index = *index + 1;
@@ -78,7 +80,7 @@ void putValue(const char *token, uint_32_t offset, uint_32_t index)
 
 // Importante: Para cada funci¢n se debe indicar el retval(int), y hacer
 // siempre un getparm() por cada par metro de llamada (el retval() es
-// imprescindible incluso si la funci?n no necesita devolver un valor).
+// imprescindible incluso si la funci¢n no necesita devolver un valor).
 
 // Funci¢n DIV readCSVToArray(fileName ,offset array, numberOfElements)
 void readCSVToIntArray() {
@@ -90,7 +92,7 @@ void readCSVToIntArray() {
 
   OPEN_LOG();
 
-  // Los par metros se leen en el orden inverso en que se declaran, al
+  // Los parÿmetros se leen en el orden inverso en que se declaran, al
   // provenir del stack del interprete de DIV
   int numberOfElements = getparm();
   int offset = getparm();
@@ -129,7 +131,7 @@ void readCSVToIntArray() {
 }
 
 void __export divlibrary(LIBRARY_PARAMS) {
-  //          Nombre en DIV,      ptr a funci¢n,     n§ de par metros
+  //          Nombre en DIV,      ptr a funci½n,     nõ de parÿmetros
   COM_export("readCSVToIntArray", readCSVToIntArray, 3);
 }
 

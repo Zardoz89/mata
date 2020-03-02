@@ -210,7 +210,7 @@ global
 
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
-  int pointer tiles; // Array dinamico con el tilemap
+  word pointer tiles; // Array dinamico con el tilemap
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
@@ -340,7 +340,7 @@ begin
 end
 
 /**
- * Lee un fichero CSV con datos de juego
+ * Lee un fichero CSV con datos de juego, rellenando un array de Ints o una estructura
  */
 function loadData(dataFile, _offset, size)
 private
@@ -368,6 +368,38 @@ begin
   end
   return(_retVal);
 end
+
+/**
+ * Lee un fichero CSV con datos de juego, rellenando un array de Words
+ */
+function loadDataWord(dataFile, _offset, size)
+private
+  int _retVal = 0;
+  string _path;
+  string _msg;
+begin
+  _path = dataFile + ".csv";
+  _path = pathResolve(_path);
+  // Efectivamente rellena un array de structs
+  // La razon es que internamente DIV usa un array gigante para todas las variables
+  _retVal = readCSVToWordArray(_path, _offset, size);
+  if (_retVal <= 0)
+    _msg = "Error al abrir fichero de datos: " + _path;
+    write(0, 0, 0, 0, _msg);
+    loop
+      // abortamos ejecuci¢n
+      if (key(_q) || key(_esc))
+        let_me_alone();
+        break;
+      end
+
+      frame;
+    end
+  end
+  return(_retVal);
+end
+
+
 
 function isOutsidePlayfield(x, y)
 begin
@@ -435,7 +467,7 @@ begin
 
   // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
   tiles = malloc(level.tileMapRows * TILEMAP_COLUMNS);
-  loadData("dat\tmap00", tiles, level.tileMapRows * TILEMAP_COLUMNS);
+  loadDataWord("dat\tmap00", tiles, level.tileMapRows * TILEMAP_COLUMNS);
 
   // Creamos el buffer del tilemap
   tileMapGraph = createTileBuffer(level.tileMapRows, TILEMAP_COLUMNS);
@@ -602,7 +634,7 @@ end
 /**
  * Pinta un tilemap grande en un buffer
  */
-function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
+function drawTiles(buffer, word pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
 private
   tileIndex;
   tileMap; // Grafico del tilemap a pintar

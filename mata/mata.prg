@@ -467,7 +467,7 @@ begin
 
   // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
   tiles = malloc(level.tileMapRows * TILEMAP_COLUMNS);
-  loadDataWord("dat\tmap00", tiles, level.tileMapRows * TILEMAP_COLUMNS);
+  loadDataWord("lvl\" + levelName + "\tilemap", tiles, level.tileMapRows * TILEMAP_COLUMNS);
 
   // Creamos el buffer del tilemap
   tileMapGraph = createTileBuffer(level.tileMapRows, TILEMAP_COLUMNS);
@@ -583,7 +583,7 @@ end
  */
 function loadLevelData(string levelName)
 begin
-   return(loadData("lvl\" + levelName, offset level, sizeof(level)));
+   return(loadData("lvl\" + levelName + "\level", offset level, sizeof(level)));
 end;
 
 /**

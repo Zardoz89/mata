@@ -456,7 +456,7 @@ begin
   loadLevelData(levelName);
 
   // Cargamos la musica del nivel
-  _levelSong = load_song(pathResolve("\mus\statewar.mod"), 1);
+  _levelSong = load_song(pathResolve("\mus\statewar.mod"), 0);
 
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="112" columns="3">
+<tileset version="1.2" tiledversion="1.3.2" name="Tyr" tilewidth="24" tileheight="28" tilecount="143" columns="3">
  <grid orientation="orthogonal" width="1" height="1"/>
  <terraintypes>
   <terrain name="Dirt" tile="13"/>
@@ -9,6 +9,8 @@
   <terrain name="Water" tile="21"/>
   <terrain name="Light Grey Tech" tile="46"/>
   <terrain name="Light Gret Tech Wall" tile="91"/>
+  <terrain name="Dark Water" tile="112"/>
+  <terrain name="Light Brown" tile="15"/>
  </terraintypes>
  <tile id="0">
   <image width="24" height="28" source="png/novalid.png"/>
@@ -55,22 +57,22 @@
  <tile id="14">
   <image width="24" height="28" source="png/brown00.png"/>
  </tile>
- <tile id="15">
+ <tile id="15" terrain="8,8,8,8">
   <image width="24" height="28" source="png/brownr00.png"/>
  </tile>
  <tile id="16" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-00.png"/>
  </tile>
- <tile id="17">
+ <tile id="17" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-01.png"/>
  </tile>
- <tile id="18">
+ <tile id="18" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-02.png"/>
  </tile>
- <tile id="19">
+ <tile id="19" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-03.png"/>
  </tile>
- <tile id="20">
+ <tile id="20" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-04.png"/>
  </tile>
  <tile id="21" terrain="4,4,4,4">
@@ -163,7 +165,7 @@
  <tile id="50" terrain="2,2,2,2">
   <image width="24" height="28" source="png/green-00.png"/>
  </tile>
- <tile id="51">
+ <tile id="51" terrain="2,2,2,2">
   <image width="24" height="28" source="png/green-02.png"/>
  </tile>
  <tile id="52" terrain="2,2,2,3">
@@ -181,7 +183,7 @@
  <tile id="56" terrain="3,3,3,3">
   <image width="24" height="28" source="png/gfor05.png"/>
  </tile>
- <tile id="57" terrain="3,3,,">
+ <tile id="57" terrain="3,3,2,2">
   <image width="24" height="28" source="png/gfor06.png"/>
  </tile>
  <tile id="58" terrain="2,2,3,2">
@@ -193,16 +195,16 @@
  <tile id="60" terrain="3,2,2,2">
   <image width="24" height="28" source="png/gfor09.png"/>
  </tile>
- <tile id="61" terrain="3,3,,3">
+ <tile id="61" terrain="3,3,2,3">
   <image width="24" height="28" source="png/gfor10.png"/>
  </tile>
  <tile id="62" terrain="3,3,2,2">
   <image width="24" height="28" source="png/gfor11.png"/>
  </tile>
- <tile id="63">
+ <tile id="63" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-06.png"/>
  </tile>
- <tile id="64">
+ <tile id="64" terrain="1,1,1,1">
   <image width="24" height="28" source="png/dw-07.png"/>
  </tile>
  <tile id="65">
@@ -277,10 +279,10 @@
  <tile id="88" terrain="0,6,0,0">
   <image width="24" height="28" source="png/mebr09.png"/>
  </tile>
- <tile id="89" terrain="0,,0,">
+ <tile id="89" terrain="0,6,0,6">
   <image width="24" height="28" source="png/mebr10.png"/>
  </tile>
- <tile id="90" terrain=",0,,0">
+ <tile id="90" terrain="6,0,6,0">
   <image width="24" height="28" source="png/mebr11.png"/>
  </tile>
  <tile id="91" terrain="6,6,6,6">
@@ -331,19 +333,112 @@
  <tile id="106" terrain="6,6,4,4">
   <image width="24" height="28" source="png/m-06-04.png"/>
  </tile>
- <tile id="107" terrain="0,,0,">
+ <tile id="107">
   <image width="24" height="28" source="png/de0101.png"/>
  </tile>
- <tile id="108" terrain="0,,0,">
+ <tile id="108">
   <image width="24" height="28" source="png/de0102.png"/>
  </tile>
- <tile id="109" terrain=",0,,0">
+ <tile id="109">
   <image width="24" height="28" source="png/de0201.png"/>
  </tile>
- <tile id="110" terrain=",0,,0">
+ <tile id="110">
   <image width="24" height="28" source="png/de0202.png"/>
  </tile>
  <tile id="111">
   <image width="24" height="28" source="png/turr00.png"/>
+ </tile>
+ <tile id="112" terrain="7,7,7,7">
+  <image width="24" height="28" source="png/dwater00.png"/>
+ </tile>
+ <tile id="113" terrain="7,4,7,7">
+  <image width="24" height="28" source="png/dwater01.png"/>
+ </tile>
+ <tile id="114" terrain="4,7,7,7">
+  <image width="24" height="28" source="png/dwater02.png"/>
+ </tile>
+ <tile id="115" terrain="7,7,4,7">
+  <image width="24" height="28" source="png/dwater03.png"/>
+ </tile>
+ <tile id="116" terrain="7,7,7,4">
+  <image width="24" height="28" source="png/dwater04.png"/>
+ </tile>
+ <tile id="117" terrain="7,4,7,4">
+  <image width="24" height="28" source="png/dwater05.png"/>
+ </tile>
+ <tile id="118" terrain="4,7,4,7">
+  <image width="24" height="28" source="png/dwater06.png"/>
+ </tile>
+ <tile id="119" terrain="4,4,7,7">
+  <image width="24" height="28" source="png/dwater07.png"/>
+ </tile>
+ <tile id="120" terrain="7,7,4,4">
+  <image width="24" height="28" source="png/dwater08.png"/>
+ </tile>
+ <tile id="121" terrain="4,4,4,7">
+  <image width="24" height="28" source="png/dwater09.png"/>
+ </tile>
+ <tile id="122" terrain="4,7,4,4">
+  <image width="24" height="28" source="png/dwater10.png"/>
+ </tile>
+ <tile id="123" terrain="4,4,7,4">
+  <image width="24" height="28" source="png/dwater11.png"/>
+ </tile>
+ <tile id="124" terrain="7,4,4,4">
+  <image width="24" height="28" source="png/dwater12.png"/>
+ </tile>
+ <tile id="125" terrain="1,8,8,8">
+  <image width="24" height="28" source="png/dwcli-00.png"/>
+ </tile>
+ <tile id="126" terrain="8,8,1,8">
+  <image width="24" height="28" source="png/dwcli-01.png"/>
+ </tile>
+ <tile id="127" terrain="8,1,8,8">
+  <image width="24" height="28" source="png/dwcli-03.png"/>
+ </tile>
+ <tile id="128" terrain="8,8,8,1">
+  <image width="24" height="28" source="png/dwcli-04.png"/>
+ </tile>
+ <tile id="129" terrain="1,1,1,8">
+  <image width="24" height="28" source="png/dwcli-05.png"/>
+ </tile>
+ <tile id="130" terrain="1,8,1,8">
+  <image width="24" height="28" source="png/dwcli-06.png"/>
+ </tile>
+ <tile id="131" terrain="1,8,1,1">
+  <image width="24" height="28" source="png/dwcli-07.png"/>
+ </tile>
+ <tile id="132" terrain="1,1,8,8">
+  <image width="24" height="28" source="png/dwcli-08.png"/>
+ </tile>
+ <tile id="133" terrain="8,8,1,1">
+  <image width="24" height="28" source="png/dwcli-10.png"/>
+ </tile>
+ <tile id="134" terrain="1,1,8,1">
+  <image width="24" height="28" source="png/dwcli-11.png"/>
+ </tile>
+ <tile id="135" terrain="8,1,8,1">
+  <image width="24" height="28" source="png/dwcli-12.png"/>
+ </tile>
+ <tile id="136" terrain="8,1,1,1">
+  <image width="24" height="28" source="png/dwcli-13.png"/>
+ </tile>
+ <tile id="137" terrain="3,3,3,2">
+  <image width="24" height="28" source="png/forest02.png"/>
+ </tile>
+ <tile id="138" terrain="3,3,3,3">
+  <image width="24" height="28" source="png/forest03.png"/>
+ </tile>
+ <tile id="139" terrain="5,5,,">
+  <image width="24" height="28" source="png/m-06-02.png"/>
+ </tile>
+ <tile id="140">
+  <image width="24" height="28" source="png/m-06-03.png"/>
+ </tile>
+ <tile id="141" terrain="1,1,1,1">
+  <image width="24" height="28" source="png/tile-10-08.png"/>
+ </tile>
+ <tile id="142">
+  <image width="24" height="28" source="png/turr01.png"/>
  </tile>
 </tileset>

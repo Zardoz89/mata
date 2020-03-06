@@ -2,11 +2,11 @@
 
 # patron id 0 - Baja 182f (13blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 182    # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -19,11 +19,11 @@
 
 # patron id 1 - Baja 168f (12blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 168    # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -36,11 +36,11 @@
 
 # patron id 2 - Baja 154f (11blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 154    # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -53,11 +53,11 @@
 
 # patron id 3 - Baja 140f (10blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 140    # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -70,11 +70,11 @@
 
 # patron id 4 - Baja 126f (9blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 126    # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -87,11 +87,11 @@
 
 # patron id 5 - Baja 112f (8blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 112    # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -104,11 +104,11 @@
 
 # patron id 6 - Baja 98f (7blq) y tuerze a la Der
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 98     # 0
-  20    ; -20   ; 1
+  20    ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -122,11 +122,11 @@
 
 # patron id 7 - Baja 182f (13blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 182    # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -139,11 +139,11 @@
 
 # patron id 8 - Baja 168f (12blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 168    # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -156,11 +156,11 @@
 
 # patron id 9 - Baja 154f (11blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 154    # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -173,11 +173,11 @@
 
 # patron id 10 - Baja 140f (10blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 140    # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -190,11 +190,11 @@
 
 # patron id 11 - Baja 126f (9blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 126    # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -207,11 +207,11 @@
 
 # patron id 12 - Baja 112f (8blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 112    # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -224,11 +224,11 @@
 
 # patron id 13 - Baja 98f (7blq) y tuerze a la Izq
 # maxSteps ; vx0   ; vy0
-  2        ; 0     ; 20
+  2        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 98     # 0
-  -20   ; -20   ; 1
+  -20   ; -15   ; 1
   0     ; 0     ; 0
   0     ; 0     ; 0
   0     ; 0     ; 0
@@ -241,7 +241,7 @@
 
 # patron id 14 - Baja recto v 20px
 # maxSteps ; vx0   ; vy0
-  1        ; 0     ; 20
+  1        ; 0     ; 15
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 0      # 0
@@ -258,7 +258,7 @@
 
 # patron id 15 - Baja recto v 30px
 # maxSteps ; vx0   ; vy0
-  1        ; 0     ; 30
+  1        ; 0     ; 25
 # pasos id 0
 # ax    ; ay    ; ticks
   0     ; 0     ; 0      # 0

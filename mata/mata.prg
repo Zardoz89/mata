@@ -155,7 +155,7 @@ global
     int vx0; // Velocidad inicial eje X
     int vy0; // Velocidad inicial eje Y
     struct steps[10]
-      int ax; // Aceleracion eje x
+       int ax; // Aceleracion eje x
       int ay; // Aceleracion eje y
       int ticks; // N§ de ticks que dura este paso
     end
@@ -211,6 +211,11 @@ global
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
   word pointer tiles; // Array dinamico con el tilemap
+
+  // **** Control del scroll
+  int tilemapMaxY; // Tama¤o vertical del tilemap/scroll
+  int scrollY; // El valor y0 del scroll multiplicado por PLAYFIELD_RESOLUTION
+
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
@@ -293,7 +298,7 @@ begin
   _loadingMsg = "Cargando... 90%";
   frame();
 
-  // Carga de FX de sonido
+  // TODO Carga de FX de sonido
   snd.explosion = load_wav(pathResolve("\snd\bigexpl0.wav"), 0);
   snd.bigExplosion = load_wav(pathResolve("\snd\bigexpl1.wav"), 0);
   //snd.pickUp;
@@ -400,7 +405,9 @@ begin
 end
 
 
-
+/**
+ * Verifica si un proceso est  dentro del area de juego, que es mas grande que la regi¢n visible
+ */
 function isOutsidePlayfield(x, y)
 begin
   if (x < PLAYFIELD_XMIN || x > PLAYFIELD_XMAX)
@@ -419,6 +426,7 @@ begin
   end
   return(val2);
 end
+
 function min(val, val2)
 begin
   if (val <= val2)
@@ -426,7 +434,6 @@ begin
   end
   return(val2);
 end
-
 
 function clamp(val, minVal, maxVal)
 begin
@@ -439,6 +446,47 @@ begin
   return(val);
 end
 
+/**
+ * Conversi¢n coordeandas de scroll a pantalla
+ */
+function scrollXToScreenX(int x)
+private
+  int _screenX;
+begin
+  // FIXME Creo que esto esta mal, pero el resultado que da es el correctom, asi que tirando...
+  // Regla de tres para convertir el espacio de coordenadas
+  _screenX = (x * PLAYFIELD_REGION_W) / TILEMAP_MAX_X;
+  // Aplicamos el offset
+  return(_screenX - scroll[0].x0);
+end
+function scrollYToScreenY(int y)
+private
+  int _screenY;
+begin
+  // Aplicamos el offset
+  _screenY = y - scrollY;
+  // Regla de tres para convertir el espacio de coordenadas
+  _screenY = (_screenY * PLAYFIELD_REGION_H  * PLAYFIELD_RESOLUTION ) / tilemapMaxY;
+  return(_screenY);
+end
+
+/**
+ * Conversion coordenadas de pantalla a scroll
+ */
+function screenXToScrollX(int x)
+begin
+  // FIXME Creo que esto esta mal, pero el resultado que da es el correctom, asi que tirando...
+  return(((x + scroll[0].x0) * TILEMAP_MAX_X) / PLAYFIELD_REGION_W );
+end
+function screenYToScrollY(int y)
+private
+  int __y;
+begin
+  // Regla de tes para convetir el espacio de coordenadas
+  __y = (y  * tilemapMaxY) / (PLAYFIELD_REGION_H * PLAYFIELD_RESOLUTION);
+  // Aplicamos offset
+  return(__y + scrollY);
+end
 
 /**
  * Proceso que representa un nivel del juego
@@ -446,8 +494,6 @@ end
 process gameLevel(levelName)
 private
   _actualGroupInd = 0;
-  int _scrollY; // Temporal para calcular el valor de y0 del scroll
-  int _tilemapMaxY; // Temporal del tama¤o maximo vertical
   _playerEnergyStatusId; // Id del proceso que muestra y regenera la energia
   _playerShieldStatusId; // Id del proceso que muestra y regenera los escudos
   _levelSong;
@@ -456,7 +502,7 @@ begin
   loadLevelData(levelName);
 
   // Cargamos la musica del nivel
-  _levelSong = load_song(pathResolve("\mus\statewar.mod"), 0);
+  //_levelSong = load_song(pathResolve("\mus\statewar.mod"), 0);
 
   // Inicializaci¢n de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
@@ -478,9 +524,9 @@ begin
 
   // Inicializamos el scroll
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
-  _tilemapMaxY = level.tileMapRows * TILE_HEIGHT;
-  _scrollY = (_tilemapMaxY - PLAYFIELD_REGION_H) * PLAYFIELD_RESOLUTION;
-  scroll[0].y0 = _scrollY / PLAYFIELD_RESOLUTION;
+  tilemapMaxY = level.tileMapRows * TILE_HEIGHT;
+  scrollY = (tilemapMaxY - PLAYFIELD_REGION_H) * PLAYFIELD_RESOLUTION;
+  scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
 
   // Crear al proceso jugador e inicializamos sus valores
   player.shield = PLAYER_MAX_SHIELD >> 1;
@@ -504,7 +550,7 @@ begin
   end
 
   // Ponemos la musica
-  song(_levelSong);
+  //song(_levelSong);
 
   // Centramos el cursor del rat¢n en el centro y forzamos activar la emulaci¢n de rat¢n
   mouse.x = PLAYFIELD_REGION_W >> 1;
@@ -549,9 +595,9 @@ begin
     end
 
     // Actualizamos el eje Y del scroll
-    _scrollY = _scrollY - 5; // TODO La velocidad de scroll deberia de ser variable
+    scrollY = scrollY - 5; // TODO La velocidad de scroll deberia de ser variable
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
-    scroll[0].y0 = _scrollY / PLAYFIELD_RESOLUTION;
+    scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
 
 
     ticksCounter++;
@@ -592,7 +638,7 @@ end;
 process debugText()
 private
   string _msgFps;
-  string _msgScrollY;
+  string _msgScrollXY;
   string _msgPlayerXY;
   string _msgMWeapon;
 begin
@@ -600,8 +646,8 @@ begin
     _msgFps = "FPS: " + itoa(fps);
     write(0, 640, 0, 2, _msgFps);
 
-    _msgScrollY = "scrollY: " + itoa(scroll[0].y0);
-    write(0, 640, 15, 5, _msgScrollY);
+    _msgScrollXY = "scrollX: " + itoa(scroll[0].x0) + " scrollY: " + itoa(scroll[0].y0);
+    write(0, 640, 15, 5, _msgScrollXY);
 
     _msgPlayerXY = "x: " + itoa(player.sId.x) + " y: " + itoa(player.sId.y);
     write(0, 640, 25, 5, _msgPlayerXY);
@@ -1080,8 +1126,8 @@ begin
 
   xrel = x0;
   yrel = y0;
-  x = xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
-  y = yrel;
+  x = scrollXToScreenX(xrel); //xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
+  y = scrollYToScreenY(yrel); //yrel;
 
 
   // Aplicamos la velocidad inicial si hay un patron de mov.
@@ -1108,8 +1154,8 @@ begin
     xrel += _vx;
     yrel += _vy;
     // El movimiento horizontal es respecto al scroll de fondo
-    x = xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
-    y = yrel;
+    x = scrollXToScreenX(xrel); //xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
+    y = scrollYToScreenY(yrel); //yrel;
 
     // **** Animacion
     if (!ticksCounter) // Se actualiza la animacion cada 2 frames

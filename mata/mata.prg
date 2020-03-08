@@ -37,8 +37,6 @@ const
   // Cte. referentes al tilemap
   TILE_WIDTH=24;
   TILE_HEIGHT=28;
-  TILEMAP_COLUMNS=25;
-  TILEMAP_MAX_X= 600; // TILEMAP_COLUMNS * TILEMAP_WIDTH
 
   // Cte. referentes a la region con el estado del jugador
   STATUS_REGION=2; // Region de la zona con el estado del jugador
@@ -114,10 +112,8 @@ global
 
   // **** Definicion de un "nivel"
   struct level
-    int tileMapId; // Id del tilemap que se va usar para el fondo
-    int bossId;
-    int bossSpawnTime;
     int numberOfGroups;
+    int tileMapColumns;
     int tileMapRows;
   end
 
@@ -212,6 +208,7 @@ global
   word pointer tiles; // Array dinamico con el tilemap
 
   // **** Control del scroll
+  int tilemapMaxX; // Tama¤o horizonal del tilemap/scroll
   int tilemapMaxY; // Tama¤o vertical del tilemap/scroll
   int scrollY; // El valor y0 del scroll multiplicado por PLAYFIELD_RESOLUTION
 
@@ -454,7 +451,7 @@ private
 begin
   // FIXME Creo que esto esta mal, pero el resultado que da es el correctom, asi que tirando...
   // Regla de tres para convertir el espacio de coordenadas
-  _screenX = (x * PLAYFIELD_REGION_W) / TILEMAP_MAX_X;
+  _screenX = (x * PLAYFIELD_REGION_W) / tilemapMaxX;
   // Aplicamos el offset
   return(_screenX - scroll[0].x0);
 end
@@ -475,7 +472,7 @@ end
 function screenXToScrollX(int x)
 begin
   // FIXME Creo que esto esta mal, pero el resultado que da es el correctom, asi que tirando...
-  return(((x + scroll[0].x0) * TILEMAP_MAX_X) / PLAYFIELD_REGION_W );
+  return(((x + scroll[0].x0) * tilemapMaxX) / PLAYFIELD_REGION_W );
 end
 function screenYToScrollY(int y)
 private
@@ -512,18 +509,19 @@ begin
   xput(fpgHud, 1, PLAYFIELD_REGION_W + 74, 240, 0, 100, 0, STATUS_REGION);
 
   // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
-  tiles = malloc(level.tileMapRows * TILEMAP_COLUMNS);
-  loadDataWord("lvl\" + levelName + "\tilemap", tiles, level.tileMapRows * TILEMAP_COLUMNS);
+  tiles = malloc(level.tileMapRows * level.tileMapColumns);
+  loadDataWord("lvl\" + levelName + "\tilemap", tiles, level.tileMapRows * level.tileMapColumns);
 
   // Creamos el buffer del tilemap
-  tileMapGraph = createTileBuffer(level.tileMapRows, TILEMAP_COLUMNS);
+  tileMapGraph = createTileBuffer(level.tileMapRows, level.tileMapColumns);
 
   // Rellenamos el buffer con el tilemap
-  drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, level.tileMapRows, TILE_WIDTH, TILE_HEIGHT);
+  drawTiles(tileMapGraph, tiles, level.tileMapColumns, level.tileMapRows, TILE_WIDTH, TILE_HEIGHT);
   free(tiles); // Y liberamos el tilemap
 
   // Inicializamos el scroll
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
+  tilemapMaxX = level.tileMapColumns * TILE_WIDTH;
   tilemapMaxY = level.tileMapRows * TILE_HEIGHT;
   scrollY = (tilemapMaxY - PLAYFIELD_REGION_H) * PLAYFIELD_RESOLUTION;
   scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
@@ -727,7 +725,7 @@ begin
   x = mouse.x * PLAYFIELD_RESOLUTION;
   y = mouse.y * PLAYFIELD_RESOLUTION;
   // scrollX en funcion de X (regla de tres)
-  scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
+  scroll[0].x0 = x * (tilemapMaxX - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
   while(hull > 0)
 
@@ -741,7 +739,7 @@ begin
     x = mouse.x * PLAYFIELD_RESOLUTION;
     y = mouse.y * PLAYFIELD_RESOLUTION;
     // scrollX en funcion de X (regla de tres)
-    scroll[0].x0 = x * (TILEMAP_MAX_X - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
+    scroll[0].x0 = x * (tilemapMaxX - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
     // Colision con naves enemigas
     _hitId = collision(type enemy);

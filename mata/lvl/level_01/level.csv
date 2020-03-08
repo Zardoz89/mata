@@ -1,5 +1,5 @@
 # Nivel 01
-# tileMapId ,  bossId , bossSpawnTime , numberOfGroups  , tileMapRows
-  1         ,  -1     , 0             , 10              , 144
+# numberOfGroups  , tileMapColumns  , tileMapRows
+  10              , 25              , 144
 
 # vim: set fileencoding=cp850 :

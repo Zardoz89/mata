@@ -453,14 +453,16 @@ begin
   // Regla de tres para convertir el espacio de coordenadas
   _screenX = (x * PLAYFIELD_REGION_W) / tilemapMaxX;
   // Aplicamos el offset
-  return(_screenX - scroll[0].x0);
+  _screenX = _screenX - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
+  return(_screenX);
+
 end
 function scrollYToScreenY(int y)
 private
   int _screenY;
 begin
   // Aplicamos el offset
-  _screenY = y - scrollY;
+  _screenY = y - scrollY; // scrollY ya va multiplicado por 10
   // Regla de tres para convertir el espacio de coordenadas
   _screenY = (_screenY * PLAYFIELD_REGION_H  * PLAYFIELD_RESOLUTION ) / tilemapMaxY;
   return(_screenY);

@@ -119,16 +119,16 @@ global
     int bossSpawnTime;
     int numberOfGroups;
     int tileMapRows;
-    struct groups[64]
-      int x0; int y0; // Posicion inicial del grupo
-      int formationType; // Tipo de formacion asignada. -1 es no moverse respecto al scroll.
-      int spawnTime; // Tiempo en ticks de cuando hace spawn este grupo
-      int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
-      int enemyType[6]; // -1 no hay enemigo
-      int pathId[6]; // -1 esta fijo respecto al scroll de fondo
-      //byte _destroyed = 0; // Indicador si el grupo ha sido destruido
-      //byte _bonusFlag:
-    end
+  end
+
+  // **** Grupos en un "nivel"
+  struct groups[64]
+    int x0; int y0; // Posicion inicial del grupo
+    int formationType; // Tipo de formacion asignada. -1 es no moverse respecto al scroll.
+    int spawnTime; // Tiempo en ticks de cuando hace spawn este grupo
+    int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
+    int enemyType[6]; // -1 no hay enemigo
+    int pathId[6]; // -1 esta fijo respecto al scroll de fondo
   end
 
   // **** Formaciones de naves enemigas
@@ -500,6 +500,7 @@ private
 begin
   // Carga de datos del nivel
   loadLevelData(levelName);
+  loadData("lvl\" + levelName + "\enemies", offset groups, sizeof(groups));
 
   // Cargamos la musica del nivel
   //_levelSong = load_song(pathResolve("\mus\statewar.mod"), 0);
@@ -586,8 +587,8 @@ begin
 
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
     if (_actualGroupInd < level.numberOfGroups)
-      if (ticksCounter >= level.groups[_actualGroupInd].spawnTime)
-        ticksCounter -= level.groups[_actualGroupInd].spawnTime;
+      if (ticksCounter >= groups[_actualGroupInd].spawnTime)
+        ticksCounter -= groups[_actualGroupInd].spawnTime;
 
         enemyGroup(_actualGroupInd);
         _actualGroupInd++;
@@ -1069,15 +1070,15 @@ private
  _enemyType;
  _totalChildrens = 0;
 begin
-  _formationType = level.groups[groupInd].formationType;
+  _formationType = groups[groupInd].formationType;
 
   for (i=0; i <= 6; i++)
-    _enemyType = level.groups[groupInd].enemyType[i];
+    _enemyType = groups[groupInd].enemyType[i];
     if (_enemyType <> -1)
       enemy(
-        level.groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
-        level.groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
-        level.groups[groupInd].pathId[i],
+        groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
+        groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
+        groups[groupInd].pathId[i],
         _enemyType);
       remaningChildrens++;
     end
@@ -1085,9 +1086,9 @@ begin
   _totalChildrens = remaningChildrens;
   loop
     if (remaningChildrens <= 0)
-      if (killedChildrens == _totalChildrens && level.groups[groupInd].bonusType <> -1)
-        // TODO Hacer aparece el bonus si es necesario
-        mainWeaponBonus(level.groups[groupInd].bonusType, x ,y, xrel);
+      if (killedChildrens == _totalChildrens && groups[groupInd].bonusType <> -1)
+        // TODO Hacer espan de diferente tipos de bonus
+        mainWeaponBonus(groups[groupInd].bonusType, x ,y, xrel);
       end
       break;
     end

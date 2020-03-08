@@ -163,15 +163,14 @@ global
 
   // **** Tipos de enemigos del juego
   struct enemyType[10]
-    // Sprite y animacion
-    byte nFrames;
-    byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
-    int graphId[10];
     int hull; // Vidia inicial
     int shootTypeId; // Tipo de disparo
     int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
     // Abs es la frecuencia de disparo -> rand(0, 1000) <= abs(aggresion)
     word score; // Puntos que da al ser destruido
+    byte nFrames; // N§ de frames de la animaci¢n
+    byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
+    int graphId[10];
   end
 
   // **** Generales de la partida

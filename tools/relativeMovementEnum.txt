@@ -1,0 +1,8 @@
+// Ctes. para los tipos de movimiento relativo - MOVREL_
+[
+  "NONE":   0, // Movimiento normal
+  "SYNC_X": 1, // Movimiento sincronizado eje X con el padre
+  "SYNC_Y": 2, // Movimiento sincronizado eje Y con el padre
+  "REL_X":  4, // Movimiento relativo eje X
+  "REL_Y":  8  // Movimiento relativo eje X
+]

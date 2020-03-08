@@ -1,0 +1,6 @@
+// Ctes. para los tipos de animaciones - ANI_
+[
+  "SINGLE": 0, // Al terminar los frames, no hace nada mas
+  "LOOP":   1, // Hace un bucle
+  "SPRING": 2  // Avanza-restrocede en los frames
+]

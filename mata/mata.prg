@@ -65,7 +65,7 @@ const
   SHIELD_REGENERATION_RATE = 5;  // Cuanto regenera el escudo
   INTIAL_GENERATOR_RATE = 5; // Cuanto regenera la energia
 
-
+  // **** Enumerados **********************************************************
   // **** Tipos de dispersion del disparo
   DIS_NONE = 0; // No dispersa
   DIS_RAND = 1; // Dispersion aleatoria

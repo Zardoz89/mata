@@ -13,7 +13,7 @@ insert_final_newline = true
 end_of_line = crlf
 insert_final_newline = true
 
-[*.{sh,md,conf}]
+[*.{sh,md,conf,d}]
 end_of_line = lf
 charset = utf-8
 

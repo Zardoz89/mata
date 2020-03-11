@@ -1,7 +1,5 @@
 // Ctes. para los tipos de dispersión de disparos - DIS_
-[
-  "NONE":             0, // No dispersa
-  "RAND":             1, // Dispersion aleatoria
-  "SINE":             2, // Dispersion senoidal
-  "FOLLOW_Y_FATHER":  3  // Se mantiene en el mismo eje Y que el proceso padre
-]
+NONE             0 // No dispersa
+RAND             1 // Dispersion aleatoria
+SINE             2 // Dispersion senoidal
+FOLLOW_Y_FATHER  3 // Se mantiene en el mismo eje Y que el proceso padre

@@ -4,6 +4,30 @@
 module process;
 import std.stdio;
 
+public int[string] readConstantsFile(string path) {
+  import std.array;
+  import std.algorithm;
+  import std.file : readText;
+  import std.conv : to;
+  
+  int[string] constants;
+  auto lines = readText(path).split('\n');
+  foreach (string line ; lines) {
+    if (line.length <= 0) {
+      continue;
+    }
+    line = line.split("//")[0];
+    if (line.length <= 0) {
+      continue;
+    }
+    auto columns = line.split();
+    if (columns.length >= 2) {
+      constants[columns[0]] = to!int(columns[1]);
+    }
+  }
+  return constants;
+}
+
 /**
  * Remplaza los textos dados por un diccionario, por sus valores, en una cadena.
  */

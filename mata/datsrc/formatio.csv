@@ -1,0 +1,157 @@
+# Tipos de formaciones
+# Formatión 0 - Linea vertical
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                   0
+  0     , 280   # 1                   1
+  0     , 560   # 2                   2
+  0     , 840   # 3                   3
+  0     , 1120  # 4                   4
+  0     , 1400  # 5                   5
+  0     , 1680  # 6                   6
+
+# Formatión 1 - Linea horizontal
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                   6420135
+  240   , 0     # 1
+  -240  , 0     # 2
+  480   , 0     # 3
+  -480  , 0     # 4
+  720   , 0     # 5
+  -720  , 0     # 6
+
+# Formatión 2 - Escalera derecha
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                   0
+  240   , 280   # 1                    1
+  480   , 560   # 2                     2
+  720   , 840   # 3                      3
+  960   , 1120  # 4                       4
+  1200  , 1400  # 5                        5
+  1440  , 1680  # 6                         6
+
+# Formatión 3 - Escalera izquierda
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                   0
+  -240  , 280   # 1                  1
+  -480  , 560   # 2                 2
+  -720  , 840   # 3                3
+  -960  , 1120  # 4               4
+  -1200 , 1400  # 5              5
+  -1440 , 1680  # 6             6
+
+# Formatión 4 - Escalera aplanada derecha
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                  0
+  240   , 140   # 1                    1
+  480   , 280   # 2                      2
+  720   , 420   # 3                        3
+  960   , 560   # 4                          4
+  1200  , 700   # 5                            5
+  1440  , 840   # 6                              6
+
+# Formatión 5 - Escalera aplanda izquierda
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                           0
+  -240  , 140   # 1                         1
+  -480  , 280   # 2                       2
+  -720  , 420   # 3                     3
+  -960  , 560   # 4                   4
+  -1200 , 700   # 5                 5
+  -1440 , 840   # 6               6
+
+# Formatión 6 - V
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0
+  240   , 140   # 1            6           5
+  -240  , 140   # 2              4       3
+  480   , 280   # 3                2   1
+  -480  , 280   # 4                  0
+  720   , 420   # 5
+  720   , 420   # 6
+
+# Formatión 7 - V invertida
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0
+  240   , -140   # 1                  0
+  -240  , -140   # 2                2   1
+  480   , -280   # 3              4       3
+  -480  , -280   # 4            6           5
+  720   , -420   # 5
+  720   , -420   # 6
+
+# Formatión 8 - Finger four
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0
+  240   , -140  # 1                          6
+  -240  , -140  # 2                        4
+  480   , -280  # 3              5       3
+  720   , -420  # 4                2   1
+  -480  , -280  # 5                  0
+  960   , -560  # 6
+
+# Formatión 9 - ZigZag vertical
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                   0
+  120   , 280   # 1                    1
+  0     , 560   # 2                   2
+  120     , 840   # 3                  3
+  0     , 1120  # 4                   4
+  120     , 1400  # 5                  5
+  0     , 1680  # 6                   6
+
+
+# Formatión 10 - ZigZag horizontal
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                   0 2 4 6
+  240   , 140   # 1                    1 3 5
+  480   , 0     # 2
+  720   , 140   # 3
+  960   , 0     # 4
+  1200  , 140   # 5
+  1440  , 0     # 6
+
+# Formatión 11 - >
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                  6
+  -240  , 140   # 1                    4
+  -240  , -140  # 2                      2
+  -480  , 280   # 3                        0
+  -480  , -280  # 4                      1
+  -720  , 560   # 5                    3
+  -720  , -560  # 6                  5
+
+# Formatión 12 - <
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0                        6
+  240   , 140   # 1                      4
+  240   , -140  # 2                    2
+  480   , 280   # 3                  0
+  480   , -280  # 4                    1
+  720   , 560   # 5                      3
+  720   , -560  # 6                        5
+
+# Formatión 13 - Wedge
+# Posiciones y patrones (hasta 6)
+# x     , y
+  0     , 0     # 0
+  240   , -140  # 1
+  -240  , -140  # 2              4   6   5
+  0     , -140  # 3                2 3 1
+  -480  , -280  # 4                  0
+  480   , -280  # 5
+  0     , -280  # 6
+
+# vim: set fileencoding=cp850 :

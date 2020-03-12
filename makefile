@@ -1,4 +1,4 @@
-TOOLS_PATH := ../tools
+TOOLS_PATH := tools
 SHOOTS_TYPE_PROCESSOR := $(TOOLS_PATH)/processShoots.d
 ENEMY_TYPE_PROCESSOR := $(TOOLS_PATH)/processEnemType.d
 

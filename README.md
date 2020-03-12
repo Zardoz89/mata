@@ -46,6 +46,15 @@ Para esto me influencia bastante estos juegos :
 
 ## Antes de lanzarlo desde DIV2...
 
+Se debe de instalar en una subcarpeta dentro de donde esté instalado DIV2 de la
+siguiente forma :
+
+```bash
+mkdir zardoz
+cd zardoz
+git clone git@github.com:Zardoz89/mata.git
+```
+
 El repositorio usa submodulos para las DLLs que usa para extender DIV, con lo
 que es importante ejecutar esto después de hacer un clone del repositorio :
 
@@ -53,40 +62,6 @@ que es importante ejecutar esto después de hacer un clone del repositorio :
 git submodule init
 git submodule update
 ```
-
-## Roadmap
-
-- [ ] Refamiliazar con el lenguaje y el entorno, improvisando algunos conceptos
-    de un matamarcianos.
-    - [x] Movimiento de un sprite placeholder
-    - [x] Disparos usando un arma asignada
-    - [x] Control de colisión básico
-    - [x] Patrón de movimiento de enemigo
-    - [x] Tipos de arma y dispersión de armas
-    - [x] Animaciones de enemigos y disparos enemigos
-    - [x] Generador de oleadas de enemigos
-    - [x] Regiones y zona de juego
-    - [x] Items para cambiar/mejorar el arma
-    - [x] Tilemap de fondo de pantalla
-    - [x] Mecánica de movimiento del scroll de fondo
-    - [x] Barra de salud, escudos y energía
-    - [x] Mecánica de regeneración escudos, energía y consumo de energía
-    - [x] Efecto explosiones y escudos
-    - [x] Arma principal
-    - [ ] (WIP) Arma secundaria
-    - [x] Pantalla de carga inicial
-    - [ ] Pantalla de carga y menú
-    - [ ] (WIP) Niveles
-    - [ ] Gestión efectos sonido
-    - [ ] Música
-- [ ] Refinar el prototipo hacia un diseño mas elaborado
-- [x] Librería DLL para extender el lenguaje y poder cargar datos de un fichero
-    CSV. La idea es tener tablas en ficheros editables de texto con las
-    características de las armas, enemigos, patrones de movimiento, oleadas y
-    tilemaps.
-- [x] Ponerle un nombre en condiciones
-- [x] Un poco de lore...
-
 
 ## Recursos usados
 

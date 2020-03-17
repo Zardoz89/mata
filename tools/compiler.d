@@ -1,16 +1,21 @@
+/**
+ * Compilador de comandos de nivel a "wordcode"
+ */
 import pegged.grammar;
 import process;
 
-enum short[string] COMMAND = [
+enum ushort[string] COMMAND = [
   "SpawnEnemy"              : 0x0001,
-  "SpawnEnemyScreenCoords"  : 0x0002
+  "SpawnEnemyScreenCoords"  : 0x0002,
+  "WaitTicks"               : 0x0003
 ];
 
 enum string g = `
 LevelProgram:
-  Program     < Command+ :Spacing
-  Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' /
-                SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')'
+  Program     < Command+ :Spacing :eoi
+  Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
+                SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
+                WaitTicks '(' Integer ')' ';'
 
 
   Id          < Number
@@ -21,6 +26,7 @@ LevelProgram:
 # Commands
   SpawnEnemy  < "SpawnEnemy"
   SpawnEnemyScreenCoords  < "SpawnEnemyScreenCoords"
+  WaitTicks   < "WaitTicks"
 
 # Numbers
   Number      <~ digit+
@@ -60,10 +66,11 @@ ushort[] toShortArray(ParseTree p)
         return result;
 
       case "LevelProgram.SpawnEnemy":
-        return [0x0001];
-
       case "LevelProgram.SpawnEnemyScreenCoords":
-        return [0x0002];
+      case "LevelProgram.WaitTicks":
+        return [COMMAND[getCommand(p.name)]]; // [0x0001];
+
+       // return [0x0002];
 
       case "LevelProgram.Integer":
       case "LevelProgram.Id":
@@ -77,22 +84,11 @@ ushort[] toShortArray(ParseTree p)
   return parseToCode(p);
 }
 
-/+
-    Term     < Factor (Add / Sub)*
-    Add      < "+" Factor
-    Sub      < "-" Factor
-    Factor   < Primary (Mul / Div)*
-    Mul      < "*" Primary
-    Div      < "/" Primary
-    Primary  < Parens / Neg / Pos / Number / Variable
-    Parens   < "(" Term ")"
-    Neg      < "-" Primary
-    Pos      < "+" Primary
-    Number   < ~([0-9]+)
+string getCommand(string parseNodeName) {
+  import std.array : split;
+  return parseNodeName.split(".")[1];
+}
 
-    Variable <- identifier
-`));
-+/
 void main(string[] args)
 {
   import pegged.tohtml;
@@ -100,23 +96,26 @@ void main(string[] args)
 
   auto fileStreams = processArgs!true(args);
   scope(exit) fileStreams["fout"].close();
-  
+
   string program;
   foreach (line; fileStreams["fin"].byLine) {
     program ~= line ~ '\n';
   }
-  writeln(program);
+  //writeln(program);
 
   // Parseo
   auto parseTree = LevelProgram(program);
+  if (parseTree.successful) {
+    writeln("Generando 'wordcode'...");
 
-  //toHTML(parseTree, "tree.html");
-  writeln(parseTree);
-  auto wordCode = toShortArray(parseTree);
+    auto wordCode = toShortArray(parseTree);
 
-  int arrayDivLength = cast(int) wordCode.length;
-  // El fichero generado contiene un word con la longitud, seguido del "wordCode"
-  fileStreams["fout"].rawWrite([arrayDivLength]);
-  fileStreams["fout"].rawWrite(wordCode);
-
+    int arrayDivLength = cast(int) wordCode.length;
+    // El fichero generado contiene un int con la longitud, seguido del "wordCode"
+    fileStreams["fout"].rawWrite([arrayDivLength]);
+    fileStreams["fout"].rawWrite(wordCode);
+  } else {
+    //toHTML(parseTree, "tree.html");
+    writeln(parseTree);
+  }
 }

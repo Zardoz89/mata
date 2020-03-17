@@ -2,6 +2,7 @@
  * Procesador simple de ficheros de texto que remplaza textos por valores númericos
  */
 module process;
+
 import std.stdio;
 
 public int[string] readConstantsFile(string path) {
@@ -9,7 +10,7 @@ public int[string] readConstantsFile(string path) {
   import std.algorithm;
   import std.file : readText;
   import std.conv : to;
-  
+
   int[string] constants;
   auto lines = readText(path).split('\n');
   foreach (string line ; lines) {
@@ -65,7 +66,7 @@ public void processFile(ref File fin, ref File fout, int[string] constants) {
  * args[1] -> fichero de entrada
  * args[2] -> fichero de salida
  */
-public void processArgs(string[] args, int[string] constants) {
+public auto processArgs(bool binaryOutput = false )(string[] args) {
   import std.stdio;
   import std.array;
   import std.algorithm;
@@ -77,8 +78,15 @@ public void processArgs(string[] args, int[string] constants) {
   }
 
   if (args.length >= 3) {
-    fout = File(args[2], "w");
+    if (binaryOutput) {
+      fout = File(args[2], "wb");
+    } else {
+      fout = File(args[2], "w");
+    }
   }
 
-  processFile(fin, fout, constants);
+  File[string] fileStreams;
+  fileStreams["fin"] = fin;
+  fileStreams["fout"] = fout;
+  return fileStreams;
 }

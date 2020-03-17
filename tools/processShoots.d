@@ -10,5 +10,6 @@ void main(string[] args) {
 
   auto basePath = "../tools/"; //dirName(thisExePath());
   int[string] constants = readConstantsFile(buildPath(basePath, "shootDispersionEnum.txt"));
-  processArgs(args, constants);
+  auto fileStreams = processArgs(args);
+  processFile(fileStreams["fin"], fileStreams["fout"], constants);
 }

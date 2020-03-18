@@ -45,7 +45,8 @@ mixin(grammar(g));
  */
 ushort[] toShortArray(ParseTree p)
 {
-  import std.conv : to;
+  import std.conv : to, castFrom, parse;
+  import std.stdio;
 
   ushort[] parseToCode(ParseTree p) {
     switch(p.name) {
@@ -74,7 +75,7 @@ ushort[] toShortArray(ParseTree p)
 
       case "LevelProgram.Integer":
       case "LevelProgram.Id":
-        ushort tmp = to!short(p.matches[0]);
+        ushort tmp = castFrom!long.to!ushort(parse!long(p.matches[0]));
         return [tmp];
 
       default:

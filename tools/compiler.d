@@ -111,9 +111,9 @@ void main(string[] args)
 
     auto wordCode = toShortArray(parseTree);
 
-    int arrayDivLength = cast(int) wordCode.length;
+    //int arrayDivLength = cast(int) wordCode.length;
     // El fichero generado contiene un int con la longitud, seguido del "wordCode"
-    fileStreams["fout"].rawWrite([arrayDivLength]);
+    //fileStreams["fout"].rawWrite([arrayDivLength]);
     fileStreams["fout"].rawWrite(wordCode);
   } else {
     //toHTML(parseTree, "tree.html");

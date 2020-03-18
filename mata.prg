@@ -496,10 +496,14 @@ private
   _playerEnergyStatusId; // Id del proceso que muestra y regenera la energia
   _playerShieldStatusId; // Id del proceso que muestra y regenera los escudos
   _levelSong;
+  int _commandsArraySize;
+  word pointer _commands;
 begin
   // Carga de datos del nivel
   loadLevelData(levelName);
-  loadData("lvl\" + levelName + "\enemies", offset groups, sizeof(groups));
+  _commands = loadLevelCommands(levelName, offset _commandsArraySize);
+  debug;
+  //loadData("lvl\" + levelName + "\enemies", offset groups, sizeof(groups));
 
   // Cargamos la musica del nivel
   //_levelSong = load_song(pathResolve("\mus\statewar.mod"), 0);
@@ -586,6 +590,7 @@ begin
     end
 
     // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
+    /*
     if (_actualGroupInd < level.numberOfGroups)
       if (ticksCounter >= groups[_actualGroupInd].spawnTime)
         ticksCounter -= groups[_actualGroupInd].spawnTime;
@@ -594,6 +599,7 @@ begin
         _actualGroupInd++;
       end
     end
+    */
 
     // Actualizamos el eje Y del scroll
     scrollY = scrollY - 5; // TODO La velocidad de scroll deberia de ser variable
@@ -622,6 +628,11 @@ begin
   stop_song();
   unload_song(_levelSong);
   unload_map(tileMapGraph); // Liberamos el graph
+
+  if (_commands != 0)
+    free(_commands);
+  end
+
   signal(id, s_kill_tree); // Matamos cualquier proceso descendiente del nivel
 end
 
@@ -631,7 +642,38 @@ end
 function loadLevelData(string levelName)
 begin
    return(loadData("lvl\" + levelName + "\level", offset level, sizeof(level)));
-end;
+end
+
+/**
+ * Lee los comandos de un fichero de datos binario
+ */
+function loadLevelCommands(string levelName, int pointer arraySize)
+private
+  string _path;
+  _file;
+  word pointer _commands;
+begin
+  *arraySize = 0;
+  _path = "lvl\" + levelName + "\commands.dat";
+  _path = pathResolve(_path);
+
+  debug;
+  _file = fopen(_path, "r");
+  if (_file == 0)
+    return(0);
+  end
+
+  fseek(_file, 0, seek_end);
+  *arraySize = ftell(_file);
+  fclose(_file);
+  if (*arraySize <= 0)
+    return(0);
+  end
+
+  _commands = malloc(*arraySize); // TODO verificar que no devuelve 0 por out of memory
+  load(_path, _commands);
+  return(_commands);
+end
 
 /**
  * Proceso que muestra informacion de debug como los FPS

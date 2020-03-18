@@ -221,6 +221,7 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   yrel = 0;
   remaningChildrens = 0; // Numero de procesos hijos restantes
   killedChildrens = 0; // Numero de procesos hijos matados por el jugador
+  groupProcess = 0; // Id del proceso grupo padre de un enemigo
 
 private
   string _loadingMsg;
@@ -911,12 +912,15 @@ begin
           hitId.hull = hitId.hull - shootData[typeId].damage;
           if (hitId.hull <= 0) // Si se queda sin vida, contamos la muerte y aumentamos la puntuaci¢n
             player.score += enemyType[hitId.typeId].score;
-            hitId.father.killedChildrens++;
-            hitId.father.remaningChildrens--;
-            // Asignamos X e Y para que el grupo de enemigos pueda dropear el bonus en donde muere el ultimo miembro del grupo
-            hitId.father.x = x;
-            hitId.father.xrel = hitId.xrel;
-            hitId.father.y = y;
+            if (hitId.groupProcess)
+              hitId.groupProcess.killedChildrens++;
+              hitId.groupProcess.remaningChildrens--;
+              // Asignamos X e Y para que el grupo de enemigos pueda dropear el bonus en donde muere el ultimo miembro del grupo
+              hitId.groupProcess.x = x;
+              hitId.groupProcess.xrel = hitId.xrel;
+              hitId.groupProcess.y = y;
+              hitId.groupProcess.yrel = hitId.yrel;
+            end
             explosion(rand(0, 2), x, y); // Efecto de explosion
           else
             explosion(3, x, y); // Mini explosion por impacto
@@ -1078,7 +1082,8 @@ begin
         groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
         groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
         groups[groupInd].pathId[i],
-        _enemyType);
+        _enemyType,
+        id);
       remaningChildrens++;
     end
   end
@@ -1103,8 +1108,9 @@ end
  * y
  * pathId : Patron de movimiento
  * typeId : Tipo de enemigo
+ * groupProcess : Id del proceso grupo asociados a este enemigo
  */
-process enemy(x0, y0, pathId, typeId)
+process enemy(x0, y0, pathId, typeId, groupProcess)
 private
   int _pathStep = 0;
   int _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
@@ -1224,8 +1230,8 @@ begin
   end;
 
   // Evitamos contar dos veces una muerte
-  if (hull > 0)
-    father.remaningChildrens--;
+  if (hull > 0 && groupProcess)
+    groupProcess.remaningChildrens--;
   end
 end
 

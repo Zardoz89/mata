@@ -5,6 +5,7 @@ import pegged.grammar;
 import process;
 
 enum ushort[string] COMMAND = [
+  "EndLevel"                : 0x0000,
   "SpawnEnemy"              : 0x0001,
   "SpawnEnemyScreenCoords"  : 0x0002,
   "WaitTicks"               : 0x0003
@@ -13,7 +14,8 @@ enum ushort[string] COMMAND = [
 enum string g = `
 LevelProgram:
   Program     < Command+ :Spacing :eoi
-  Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
+  Command     < EndLevel ';' /
+								SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 WaitTicks '(' Integer ')' ';'
 
@@ -24,6 +26,7 @@ LevelProgram:
 # Terminals *****************************************************
 
 # Commands
+  EndLevel    < "EndLevel"
   SpawnEnemy  < "SpawnEnemy"
   SpawnEnemyScreenCoords  < "SpawnEnemyScreenCoords"
   WaitTicks   < "WaitTicks"
@@ -66,6 +69,7 @@ ushort[] toShortArray(ParseTree p)
         }
         return result;
 
+      case "LevelProgram.EndLevel":
       case "LevelProgram.SpawnEnemy":
       case "LevelProgram.SpawnEnemyScreenCoords":
       case "LevelProgram.WaitTicks":

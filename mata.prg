@@ -87,6 +87,12 @@ const
   ANI_LOOP = 1; // Hace bucle
   ANI_SPRING = 2; // avanza-retrocede en la animacion
 
+  // **** Comandos
+  CMD_END_LEVEL        = 0;
+  CMD_SPAWN_ENEMY      = 1;
+  CMD_SPAWN_ENEMY_SCR  = 2;
+  CMD_WAIT_TICKS       = 3;
+
 global
   // **** Libreria de graficos
   int fpgTileset;
@@ -502,7 +508,6 @@ begin
   // Carga de datos del nivel
   loadLevelData(levelName);
   _commands = loadLevelCommands(levelName, offset _commandsArraySize);
-  debug;
   //loadData("lvl\" + levelName + "\enemies", offset groups, sizeof(groups));
 
   // Cargamos la musica del nivel
@@ -561,6 +566,9 @@ begin
   mouse.x = PLAYFIELD_REGION_W >> 1;
   mouse.y = PLAYFIELD_REGION_H >> 1;
   mouse.cursor = 1;
+
+  // Inicializamos el procesador de comandos
+  levelCommands(_commands);
 
   // Y despertamos a los procesos
   signal(player.sId, s_wakeup);
@@ -656,8 +664,6 @@ begin
   *arraySize = 0;
   _path = "lvl\" + levelName + "\commands.dat";
   _path = pathResolve(_path);
-
-  debug;
   _file = fopen(_path, "r");
   if (_file == 0)
     return(0);
@@ -674,6 +680,61 @@ begin
   load(_path, _commands);
   return(_commands);
 end
+
+/**
+ * Procesa el 'wordcode' y ejecuta los comandos
+ */
+process levelCommands(word pointer commands)
+private
+  _finished = false;
+  _waitTicks = 0;
+  _waitScrollY = 0;
+  int _pc = 0;
+  word _val, _arg0, _arg1, _arg2, _arg3;
+begin
+  while (!_finished)
+    _val = commands[_pc];
+
+    switch (_val)
+      case CMD_END_LEVEL:
+        _finished = 1;
+      end
+
+      case CMD_SPAWN_ENEMY:
+        debug;
+        // 4 argumentos
+        _arg0 = commands[++_pc];
+        _arg1 = commands[++_pc];
+        _arg2 = commands[++_pc];
+        _arg3 = commands[++_pc];
+
+        enemy(_arg0, _arg1, _arg2, _arg3, 0);
+        ticksCounter = 0;
+      end
+
+      case CMD_WAIT_TICKS:
+        _arg0 = commands[++_pc];
+        ticksCounter = 0;
+        _waitTicks = _arg0; // Inicializamos el contador de ticks
+      end
+
+      default:
+      end
+    end
+
+    // Esperamos a que pase los ticks
+    while (_waitTicks != 0)
+      ticksCounter++;
+      if (ticksCounter >= _waitTicks)
+        ticksCounter -= _waitTicks;
+        _waitTicks = 0;
+      end
+      frame;
+    end
+
+    _pc++;
+  end
+end;
 
 /**
  * Proceso que muestra informacion de debug como los FPS
@@ -1146,8 +1207,8 @@ end
 /**
  * Nave o bicho enemigo
  * Parametros:
- * x
- * y
+ * x0 : Coordenadas de tilemap
+ * y0 : Coordenadas de tilemap
  * pathId : Patron de movimiento
  * typeId : Tipo de enemigo
  * groupProcess : Id del proceso grupo asociados a este enemigo

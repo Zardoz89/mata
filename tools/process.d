@@ -69,7 +69,8 @@ public auto processArgs(bool binaryOutput = false)(string[] args, string helpTex
   import std.stdio;
   import std.getopt;
 
-  string inputFile, outputFile, errFile;
+  string inputFile = "";
+  string outputFile = "";
 
   auto options = getopt(
     args,
@@ -82,12 +83,11 @@ public auto processArgs(bool binaryOutput = false)(string[] args, string helpTex
   }
 
   auto fin = stdin;
-  auto fout = stdout;
-
   if (inputFile.length != 0) {
     fin = File(inputFile, "r");
   }
 
+  auto fout = stdout;
   if (outputFile.length != 0) {
     static if (binaryOutput) {
       fout = File(outputFile, "wb");

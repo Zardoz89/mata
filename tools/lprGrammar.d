@@ -12,7 +12,8 @@ enum ushort[string] COMMAND = [
   "EndLevel"                : 0x0000,
   "SpawnEnemy"              : 0x0001,
   "SpawnEnemyScreenCoords"  : 0x0002,
-  "WaitTicks"               : 0x0003
+  "WaitTicks"               : 0x0003,
+  "WaitScroll"              : 0x0004
 ];
 
 /**
@@ -84,7 +85,8 @@ LevelProgram:
   Commands    < Command+ :Spacing
   Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
-                WaitTicks '(' Integer ')' ';'
+                WaitTicks '(' Integer ')' ';' /
+                WaitScroll '(' Integer ')' ';'
 
 
   Id          < Number / Identifier{verifyIdentifierExistsAction}
@@ -99,6 +101,7 @@ LevelProgram:
   SpawnEnemy  < "SpawnEnemy"
   SpawnEnemyScreenCoords  < "SpawnEnemyScreenCoords"
   WaitTicks   < "WaitTicks"
+  WaitScroll  < "WaitScroll"
 
 # Numbers
   Number      <~ digit+

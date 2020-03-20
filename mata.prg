@@ -92,6 +92,7 @@ const
   CMD_SPAWN_ENEMY      = 1;
   CMD_SPAWN_ENEMY_SCR  = 2;
   CMD_WAIT_TICKS       = 3;
+  CMD_WAIT_SCROLL      = 4;
 
 global
   // **** Libreria de graficos
@@ -502,12 +503,11 @@ private
   _playerEnergyStatusId; // Id del proceso que muestra y regenera la energia
   _playerShieldStatusId; // Id del proceso que muestra y regenera los escudos
   _levelSong;
-  int _commandsArraySize;
   word pointer _commands;
 begin
   // Carga de datos del nivel
   loadLevelData(levelName);
-  _commands = loadLevelCommands(levelName, offset _commandsArraySize);
+  _commands = loadLevelCommands(levelName);
   //loadData("lvl\" + levelName + "\enemies", offset groups, sizeof(groups));
 
   // Cargamos la musica del nivel
@@ -655,30 +655,55 @@ end
 /**
  * Lee los comandos de un fichero de datos binario
  */
-function loadLevelCommands(string levelName, int pointer arraySize)
+function loadLevelCommands(string levelName)
 private
   string _path;
+  int arraySize = 0;
   _file;
   word pointer _commands;
 begin
-  *arraySize = 0;
+  arraySize = 0;
   _path = "lvl\" + levelName + "\commands.dat";
   _path = pathResolve(_path);
   _file = fopen(_path, "r");
+
   if (_file == 0)
+    errorLoadLevelCommands(_path);
     return(0);
   end
 
   fseek(_file, 0, seek_end);
-  *arraySize = ftell(_file);
+  arraySize = ftell(_file); // Tama¤o en INTs
   fclose(_file);
-  if (*arraySize <= 0)
+  if (arraySize <= 0)
+    errorLoadLevelCommands(_path);
     return(0);
   end
 
-  _commands = malloc(*arraySize); // TODO verificar que no devuelve 0 por out of memory
+  _commands = malloc(arraySize); // malloc de div trabaja con tama¤o en INTs
+  if (_commands == 0)
+    errorLoadLevelCommands(_path);
+    return(0);
+  end
+
   load(_path, _commands);
   return(_commands);
+end
+
+function errorLoadLevelCommands(string path)
+private
+  string _msg;
+begin
+  _msg = "Error al abrir fichero de datos: " + path;
+  write(0, 0, 0, 0, _msg);
+  loop
+    // abortamos ejecuci¢n
+    if (key(_q) || key(_esc))
+      let_me_alone();
+      break;
+    end
+    frame;
+  end
 end
 
 /**
@@ -701,16 +726,26 @@ begin
       end
 
       case CMD_SPAWN_ENEMY:
-        debug;
         // 4 argumentos
-        _arg0 = commands[++_pc];
-        _arg1 = commands[++_pc];
-        _arg2 = commands[++_pc];
-        _arg3 = commands[++_pc];
+        _arg0 = commands[++_pc]; // X
+        _arg1 = commands[++_pc]; // Y
+        _arg2 = commands[++_pc]; // Type
+        _arg3 = commands[++_pc]; // Patron Mov.
+        enemy(_arg0, _arg1, _arg2, _arg3, 0);
+        ticksCounter = 0;
+      end
+
+      case CMD_SPAWN_ENEMY_SCR:
+        // 4 argumentos
+        _arg0 = screenXToScrollX(commands[++_pc]);
+        _arg1 = screenYToScrollY(commands[++_pc]);
+        _arg2 = commands[++_pc]; // Type
+        _arg3 = commands[++_pc]; // Patron Mov.
 
         enemy(_arg0, _arg1, _arg2, _arg3, 0);
         ticksCounter = 0;
       end
+
 
       case CMD_WAIT_TICKS:
         _arg0 = commands[++_pc];
@@ -1184,8 +1219,8 @@ begin
       enemy(
         groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
         groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
-        groups[groupInd].pathId[i],
         _enemyType,
+        groups[groupInd].pathId[i],
         id);
       remaningChildrens++;
     end
@@ -1209,11 +1244,11 @@ end
  * Parametros:
  * x0 : Coordenadas de tilemap
  * y0 : Coordenadas de tilemap
- * pathId : Patron de movimiento
  * typeId : Tipo de enemigo
+ * pathId : Patron de movimiento
  * groupProcess : Id del proceso grupo asociados a este enemigo
  */
-process enemy(x0, y0, pathId, typeId, groupProcess)
+process enemy(x0, y0, typeId, pathId, groupProcess)
 private
   int _pathStep = 0;
   int _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
@@ -1240,7 +1275,7 @@ begin
 
 
   // Aplicamos la velocidad inicial si hay un patron de mov.
-  if (pathId <> -1)
+  if (pathId <> 65535) // -1 en un WORD
     _vx = paths[pathId].vx0;
     _vy = paths[pathId].vy0;
   end;
@@ -1249,7 +1284,7 @@ begin
 
     // **** Movimiento
     // Aplicamos el patron de mov. si hay uno asignado
-    if (pathId <> -1 && _pathStep <= 10)
+    if (pathId <> 65535 && _pathStep <= 10)
       if (paths[pathId].maxSteps >= _pathStep)
         if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
           _pathStep++;

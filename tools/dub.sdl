@@ -1,9 +1,6 @@
 name "mata_tools"
-
+dependency "pegged" version="~>0.4"
+dependency "colored" version="~>0.0.21"
 targetType "executable"
 targetName "levelcompiler"
-
 sourceFiles "compiler.d" "process.d"
-
-dependency "pegged" version="~>0.4"
-

@@ -36,9 +36,26 @@ PT storeIdentifierAction(PT)(PT p)
 PT verifyIdentifierExistsAction(PT)(PT p)
 {
   import std.stdio : writeln;
+  import std.conv : to;
+  import colored;
   if ( (p.matches[0] in identifiersValues) is null) {
-    writeln("Identificador no reconocido : ", p.matches[0]);
     p.successful = false;
+
+    // Calcula la posición en el texto original (copy&paste del código de pegged)
+    Position pos = position(p);
+    string left, right;
+    if (pos.index < 10) {
+      left = p.input[0 .. pos.index];
+    } else {
+      left = p.input[pos.index - 10 .. pos.index];
+    }
+    if (pos.index + 10 < p.input.length) {
+      right = p.input[pos.index .. pos.index + 10];
+    } else {
+      right = p.input[pos.index .. $];
+    }
+    writeln("Identificador no reconocido : ".red , p.matches[0],
+      " at line " ~ to!string(pos.line) ~ ", col " ~ to!string(pos.col) );
   }
   return p;
 }
@@ -161,7 +178,9 @@ void main(string[] args)
     //fileStreams["fout"].rawWrite([arrayDivLength]);
     fileStreams["fout"].rawWrite(wordCode);
   } else {
+    import colored;
+    writeln("Error al parsear el código fuente".red);
     //toHTML(parseTree, "tree.html");
-    writeln(parseTree);
+    writeln(parseTree.failMsg);
   }
 }

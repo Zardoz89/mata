@@ -13,9 +13,7 @@ dat/enemtype.csv : datsrc/enemtype.csv
 	$(ENEMY_TYPE_PROCESSOR) $< $@
 
 $(LEVEL_PROCESSOR) : $(TOOLS_PATH)/compiler.d $(TOOLS_PATH)/process.d
-	cd $(TOOLS_PATH)
-	dub build
-	cd ..
+	cd $(TOOLS_PATH) ; dub build
 
 lvl/level_01/commands.dat : lvl/level_01/commands.lpr
 	$(LEVEL_PROCESSOR) $< $@

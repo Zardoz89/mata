@@ -76,7 +76,7 @@ PT verifyIdentifierExistsAction(PT)(PT p)
 
 enum string g = `
 LevelProgram:
-  Program     < Constant Commands? EndLevel ';' :Spacing :eoi
+  Program     < Constants? Commands? EndLevel ';' :Spacing :eoi
 
   Constants   < Constant+ :Spacing
   Constant    < "const" Identifier{getIdentifierStringAction} '=' Integer{storeIdentifierAction} ';'

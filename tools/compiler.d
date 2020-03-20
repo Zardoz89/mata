@@ -11,19 +11,57 @@ enum ushort[string] COMMAND = [
   "WaitTicks"               : 0x0003
 ];
 
+string lastIdentifier;
+ushort[string] identifiersValues;
+
+/**
+ * Guarda temporalmente el nombre del identifier
+ */
+PT getIdentifierStringAction(PT)(PT p)
+{
+  lastIdentifier = p.matches[0];
+  return p;
+}
+
+/**
+ * Mete en el diccionario de identificadores, el valor asignado
+ */
+PT storeIdentifierAction(PT)(PT p)
+{
+  import std.conv : to, castFrom, parse;
+  identifiersValues[lastIdentifier] = castFrom!long.to!ushort(parse!long(p.matches[0]));
+  return p;
+}
+
+PT verifyIdentifierExistsAction(PT)(PT p)
+{
+  import std.stdio : writeln;
+  if ( (p.matches[0] in identifiersValues) is null) {
+    writeln("Identificador no reconocido : ", p.matches[0]);
+    p.successful = false;
+  }
+  return p;
+}
+
 enum string g = `
 LevelProgram:
-  Program     < Command+ :Spacing :eoi
-  Command     < EndLevel ';' /
-								SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
+  Program     < Constant Commands? EndLevel ';' :Spacing :eoi
+
+  Constants   < Constant+ :Spacing
+  Constant    < "const" Identifier{getIdentifierStringAction} '=' Integer{storeIdentifierAction} ';'
+
+  Commands    < Command+ :Spacing
+  Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 WaitTicks '(' Integer ')' ';'
 
 
-  Id          < Number
+  Id          < Number / Identifier{verifyIdentifierExistsAction}
   Integer     <~ Sign? Number
 
 # Terminals *****************************************************
+
+  Identifier  <~ [a-zA-Z_] [a-zA-Z0-9_\-]*
 
 # Commands
   EndLevel    < "EndLevel"
@@ -49,6 +87,9 @@ mixin(grammar(g));
 ushort[] toShortArray(ParseTree p)
 {
   import std.conv : to, castFrom, parse;
+  import std.ascii : isAlpha;
+  import std.algorithm.searching : startsWith;
+  import std.algorithm.comparison : among;
   import std.stdio;
 
   ushort[] parseToCode(ParseTree p) {
@@ -56,12 +97,7 @@ ushort[] toShortArray(ParseTree p)
       case "LevelProgram":
         return parseToCode(p.children[0]); // The grammar result has only child: the start rule's parse tree
       case "LevelProgram.Program":
-        ushort[] result;
-        foreach( child; p.children) {
-          result ~= parseToCode(child);
-        }
-        return result;
-
+      case "LevelProgram.Commands":
       case "LevelProgram.Command":
         ushort[] result;
         foreach( child; p.children) {
@@ -73,12 +109,13 @@ ushort[] toShortArray(ParseTree p)
       case "LevelProgram.SpawnEnemy":
       case "LevelProgram.SpawnEnemyScreenCoords":
       case "LevelProgram.WaitTicks":
-        return [COMMAND[getCommand(p.name)]]; // [0x0001];
+        return [COMMAND[getCommand(p.name)]];
 
-       // return [0x0002];
-
-      case "LevelProgram.Integer":
       case "LevelProgram.Id":
+        if (p.matches[0].startsWith!isAlpha || p.matches[0].startsWith!(a => a.among('-', '_') != 0)) {
+          return [ identifiersValues[p.matches[0]] ];
+        }
+      case "LevelProgram.Integer":
         ushort tmp = castFrom!long.to!ushort(parse!long(p.matches[0]));
         return [tmp];
 
@@ -110,10 +147,14 @@ void main(string[] args)
 
   // Parseo
   auto parseTree = LevelProgram(program);
+  //writeln(parseTree);
+  writeln("Constantes: " , identifiersValues);
+
   if (parseTree.successful) {
     writeln("Generando 'wordcode'...");
 
     auto wordCode = toShortArray(parseTree);
+    writeln("Total bytes: ", wordCode.length * 2);
 
     //int arrayDivLength = cast(int) wordCode.length;
     // El fichero generado contiene un int con la longitud, seguido del "wordCode"

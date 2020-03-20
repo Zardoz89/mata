@@ -7,16 +7,16 @@ all: dat/shoots.csv dat/enemtype.csv lvl/level_01/commands.dat
 .PHONY: all clean
 
 dat/shoots.csv : datsrc/shoots.csv
-	$(SHOOTS_TYPE_PROCESSOR) $< $@
+	$(SHOOTS_TYPE_PROCESSOR) -i $< -o $@
 
 dat/enemtype.csv : datsrc/enemtype.csv
-	$(ENEMY_TYPE_PROCESSOR) $< $@
+	$(ENEMY_TYPE_PROCESSOR) -i $< -o $@
 
 $(LEVEL_PROCESSOR) : $(TOOLS_PATH)/compiler.d $(TOOLS_PATH)/lprGrammar.d $(TOOLS_PATH)/process.d
 	cd $(TOOLS_PATH) ; dub build
 
 lvl/level_01/commands.dat : lvl/level_01/commands.lpr
-	$(LEVEL_PROCESSOR) $< $@
+	$(LEVEL_PROCESSOR) -i $< -o $@
 
 clean :
 	rm dat/shoots.csv

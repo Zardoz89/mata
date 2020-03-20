@@ -5,12 +5,15 @@ import pegged.grammar;
 import process;
 import lprGrammar;
 
-void main(string[] args)
+int main(string[] args)
 {
   import pegged.tohtml;
   import std.stdio;
 
-  auto fileStreams = processArgs!true(args);
+  auto fileStreams = processArgs!(true)(args, "Compilador de comandos de nivel");
+  if (fileStreams is null) {
+    return 1;
+  }
   scope(exit) fileStreams["fout"].close();
 
   string program;
@@ -32,9 +35,9 @@ void main(string[] args)
   } else {
     import colored;
     writeln("Error al parsear el código fuente".red);
-    debug {
-      toHTML(parseTree, "parseTree.html");
-    }
     writeln(parseTree.failMsg);
+    toHTML(parseTree, "error.html");
+    return 1;
   }
+  return 0;
 }

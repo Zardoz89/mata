@@ -61,27 +61,38 @@ public void processFile(ref File fin, ref File fout, int[string] constants) {
 }
 
 /**
+ * Procesa los argumentos y genera los File de entrada y salida
  * Dado una lista de argumentos y diccionario de string->valor , lee un fichero y devuelve uno procesado.
- * Si la lista de argumentos está vacia, usa stdin y stdou.
- * args[1] -> fichero de entrada
- * args[2] -> fichero de salida
+ * Si la lista de argumentos está vacia, usa stdin y stdout.
  */
-public auto processArgs(bool binaryOutput = false )(string[] args) {
+public auto processArgs(bool binaryOutput = false)(string[] args, string helpText) {
   import std.stdio;
-  import std.array;
-  import std.algorithm;
+  import std.getopt;
+
+  string inputFile, outputFile, errFile;
+
+  auto options = getopt(
+    args,
+    "input|i", "Input file", &inputFile,
+    "ouput|o", "Output file", &outputFile);
+
+  if (options.helpWanted) {
+    defaultGetoptPrinter(helpText ~ "\n" ~ "Options:", options.options);
+    return null;
+  }
 
   auto fin = stdin;
   auto fout = stdout;
-  if (args.length >= 2) {
-    fin = File(args[1], "r");
+
+  if (inputFile.length != 0) {
+    fin = File(inputFile, "r");
   }
 
-  if (args.length >= 3) {
-    if (binaryOutput) {
-      fout = File(args[2], "wb");
+  if (outputFile.length != 0) {
+    static if (binaryOutput) {
+      fout = File(outputFile, "wb");
     } else {
-      fout = File(args[2], "w");
+      fout = File(outputFile, "w");
     }
   }
 

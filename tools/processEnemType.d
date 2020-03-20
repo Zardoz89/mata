@@ -10,6 +10,6 @@ void main(string[] args) {
 
   auto basePath = "./tools/"; //dirName(thisExePath());
   int[string] constants = readConstantsFile(buildPath(basePath, "animationEnum.txt"));
-  auto fileStreams = processArgs(args);
+  auto fileStreams = processArgs(args, "Procesa un CSV de tipos de enemigo");
   processFile(fileStreams["fin"], fileStreams["fout"], constants);
 }

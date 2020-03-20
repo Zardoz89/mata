@@ -10,6 +10,6 @@ void main(string[] args) {
 
   auto basePath = "./tools/"; //dirName(thisExePath());
   int[string] constants = readConstantsFile(buildPath(basePath, "shootDispersionEnum.txt"));
-  auto fileStreams = processArgs(args);
+  auto fileStreams = processArgs(args, "Procesa un CSV de tipos de disparo");
   processFile(fileStreams["fin"], fileStreams["fout"], constants);
 }

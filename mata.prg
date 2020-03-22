@@ -88,12 +88,14 @@ const
   ANI_SPRING = 2; // avanza-retrocede en la animacion
 
   // **** Comandos
-  CMD_END_LEVEL        = 0;
-  CMD_SPAWN_ENEMY      = 1;
-  CMD_SPAWN_ENEMY_SCR  = 2;
-  CMD_WAIT_TICKS       = 3;
-  CMD_WAIT_SCROLL      = 4;
-  CMD_SET_SCROLL_SPEED = 5;
+  CMD_END_LEVEL           = 0;
+  CMD_WAIT_TICKS          = 1;
+  CMD_WAIT_SCROLL         = 2;
+  CMD_SET_SCROLL_SPEED    = 3;
+  CMD_SPAWN_ENEMY         = 4;
+  CMD_SPAWN_ENEMY_SCR     = 5;
+  CMD_SPAWN_ENEMY_GRP     = 6;
+  CMD_SPAWN_ENEMY_GRP_SCR = 7;
 
 global
   // **** Libreria de graficos
@@ -120,19 +122,8 @@ global
 
   // **** Definicion de un "nivel"
   struct level
-    int numberOfGroups;
     int tileMapColumns;
     int tileMapRows;
-  end
-
-  // **** Grupos en un "nivel"
-  struct groups[64]
-    int x0; int y0; // Posicion inicial del grupo
-    int formationType; // Tipo de formacion asignada. -1 es no moverse respecto al scroll.
-    int spawnTime; // Tiempo en ticks de cuando hace spawn este grupo
-    int bonusType; // Id del tipo de bonus a dar si se destruye toda la oleada. -1 no tiene bonus
-    int enemyType[6]; // -1 no hay enemigo
-    int pathId[6]; // -1 esta fijo respecto al scroll de fondo
   end
 
   // **** Formaciones de naves enemigas
@@ -492,7 +483,6 @@ end
  */
 process gameLevel(levelName)
 private
-  _actualGroupInd = 0;
   _playerEnergyStatusId; // Id del proceso que muestra y regenera la energia
   _playerShieldStatusId; // Id del proceso que muestra y regenera los escudos
   _levelSong;
@@ -501,7 +491,6 @@ begin
   // Carga de datos del nivel
   loadLevelData(levelName);
   _commands = loadLevelCommands(levelName);
-  //loadData("lvl\" + levelName + "\enemies", offset groups, sizeof(groups));
 
   // Cargamos la musica del nivel
   //_levelSong = load_song(pathResolve("\mus\statewar.mod"), 0);
@@ -580,36 +569,16 @@ begin
 
     // TODO Romper el bucle cuando
     // * El jugador muere -> Replay ?
-    // * El jefe muere -> Next level
+    // * El nivel termina (comando endLevel) -> Intermission
     if (player.sId.hull <= 0)
       break;
     end
-
-    // En modo debug, mostramos el contador de ticks
-    if (DEBUG_MODE == 1)
-      write_int(0, 640, 35, 5, offset ticksCounter);
-      write_int(0, 590, 35, 5, offset _actualGroupInd);
-    end
-
-    // **** Crea los grupos de naves segun ha pasdo una delta de tiempo
-    /*
-    if (_actualGroupInd < level.numberOfGroups)
-      if (ticksCounter >= groups[_actualGroupInd].spawnTime)
-        ticksCounter -= groups[_actualGroupInd].spawnTime;
-
-        enemyGroup(_actualGroupInd);
-        _actualGroupInd++;
-      end
-    end
-    */
 
     // Actualizamos el eje Y del scroll
     scrollY = scrollY + scrollStepY;
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
     scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
 
-
-    ticksCounter++;
     frame;
   end
 
@@ -709,7 +678,7 @@ private
   _waitTicks = 0;
   _waitScrollY = -1;
   int _pc = 0;
-  word _val, _arg0, _arg1, _arg2, _arg3;
+  word _val, _arg0, _arg1, _arg2, _arg3, _arg4, _arg5;
 begin
   while (!_finished)
     _val = commands[_pc];
@@ -717,6 +686,22 @@ begin
     switch (_val)
       case CMD_END_LEVEL:
         _finished = 1;
+      end
+
+      case CMD_WAIT_TICKS:
+        _arg0 = commands[++_pc];
+        ticksCounter = 0;
+        _waitTicks = _arg0; // Inicializamos el contador de ticks
+      end
+
+      case CMD_WAIT_SCROLL:
+        _arg0 = commands[++_pc];
+        _waitScrollY = _arg0; // Inicializamos la espera hasta que el scrollY valga ese valor
+      end
+
+      case CMD_SET_SCROLL_SPEED:
+        _arg0 = commands[++_pc];
+        scrollStepY = sWordToInt(_arg0);
       end
 
       case CMD_SPAWN_ENEMY:
@@ -738,21 +723,28 @@ begin
         enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
       end
 
-      case CMD_WAIT_TICKS:
-        _arg0 = commands[++_pc];
-        ticksCounter = 0;
-        _waitTicks = _arg0; // Inicializamos el contador de ticks
+      case CMD_SPAWN_ENEMY_GRP:
+        // 6 argumentos
+        _arg0 = commands[++_pc]; // X
+        _arg1 = commands[++_pc]; // Y
+        _arg2 = commands[++_pc]; // Type
+        _arg3 = commands[++_pc]; // Patron Mov.
+        _arg4 = commands[++_pc]; // N§ de enemigos
+        _arg5 = commands[++_pc]; // Id Formaci¢n
+        createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
-      case CMD_WAIT_SCROLL:
-        _arg0 = commands[++_pc];
-        _waitScrollY = _arg0; // Inicializamos la espera hasta que el scrollY valga ese valor
+      case CMD_SPAWN_ENEMY_GRP_SCR:
+        // 6 argumentos
+        _arg0 = screenXToScrollX(commands[++_pc]);
+        _arg1 = screenYToScrollY(commands[++_pc]);
+        _arg2 = commands[++_pc]; // Type
+        _arg3 = commands[++_pc]; // Patron Mov.
+        _arg4 = commands[++_pc]; // N§ de enemigos
+        _arg5 = commands[++_pc]; // Id Formaci¢n
+        createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
-      case CMD_SET_SCROLL_SPEED:
-        _arg0 = commands[++_pc];
-        scrollStepY = sWordToInt(_arg0);
-      end
 
       default:
       end
@@ -1217,37 +1209,45 @@ begin
   end
 end
 
-/**
- * Crea a un grupo de enemigos y gestiona el spawn del bonus si es necesario
- */
-process enemyGroup(groupInd)
-private
- i;
- _formationType;
- _enemyType;
- _totalChildrens = 0;
-begin
-  _formationType = groups[groupInd].formationType;
 
-  for (i=0; i <= 6; i++)
-    _enemyType = groups[groupInd].enemyType[i];
-    if (_enemyType <> -1)
-      enemy(
-        groups[groupInd].x0 + formations[_formationType].startPosition[i].x,
-        groups[groupInd].y0 + formations[_formationType].startPosition[i].y,
-        _enemyType,
-        groups[groupInd].pathId[i],
-        id);
-      remaningChildrens++;
-    end
+/**
+ * Crea un grupo de enemigos en formaci¢n simple.
+ * Todos son del mismo tipo y siguen el mismo patr¢n de movimiento
+ */
+function createSimpleEnemyGroup(x, y, enemyType, pathId, number, formationType)
+private
+  i;
+  _enemyGroupId;
+begin
+  _enemyGroupId = enemyGroup(number);
+  for (i=0; i <= 6 && i < number; i++)
+    enemy(
+      x + formations[formationType].startPosition[i].x,
+      y + formations[formationType].startPosition[i].y,
+      enemyType,
+      pathId,
+      _enemyGroupId);
+    remaningChildrens++;
   end
-  _totalChildrens = remaningChildrens;
+  return(_enemyGroupId);
+end
+
+/**
+ * Proceso "padre" de un grupo de enemigos
+ * Gestiona el spawn del bonus si es necesario
+ */
+process enemyGroup(totalChildrens)
+private
+begin
+  remaningChildrens = totalChildrens;
   loop
     if (remaningChildrens <= 0)
+      /*
       if (killedChildrens == _totalChildrens && groups[groupInd].bonusType <> -1)
         // TODO Hacer espan de diferente tipos de bonus
         mainWeaponBonus(groups[groupInd].bonusType, x ,y, xrel);
       end
+      */
       break;
     end
 

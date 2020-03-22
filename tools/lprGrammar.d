@@ -9,12 +9,14 @@ import pegged.grammar;
  * Tabla de Comandos a word
  */
 enum ushort[string] COMMAND = [
-  "EndLevel"                : 0x0000,
-  "SpawnEnemy"              : 0x0001,
-  "SpawnEnemyScreenCoords"  : 0x0002,
-  "WaitTicks"               : 0x0003,
-  "WaitScroll"              : 0x0004,
-  "SetScrollSpeed"          : 0x0005
+  "EndLevel"                    : 0x0000,
+  "WaitTicks"                   : 0x0001,
+  "WaitScroll"                  : 0x0002,
+  "SetScrollSpeed"              : 0x0003,
+  "SpawnEnemy"                  : 0x0004,
+  "SpawnEnemyScreenCoords"      : 0x0005,
+  "SpawnEnemyGroup"             : 0x0006,
+  "SpawnEnemyGroupScreenCoords" : 0x0007
 ];
 
 /**
@@ -86,6 +88,8 @@ LevelProgram:
   Commands    < Command+ :Spacing
   Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
+                SpawnEnemyGroup '(' Integer ',' Integer ',' Id ',' Id ',' Integer ',' Id ')' ';' /
+                SpawnEnemyGroupScreenCoords '(' Integer ',' Integer ',' Id ',' Id ',' Integer ',' Id ')' ';' /
                 WaitTicks '(' Integer ')' ';' /
                 WaitScroll '(' Integer ')' ';' /
                 SetScrollSpeed '(' Integer ')' ';'
@@ -99,12 +103,14 @@ LevelProgram:
   Identifier  <~ [a-zA-Z_] [a-zA-Z0-9_\-]*
 
 # Commands
-  EndLevel    < "EndLevel"
-  SpawnEnemy  < "SpawnEnemy"
-  SpawnEnemyScreenCoords  < "SpawnEnemyScreenCoords"
-  WaitTicks   < "WaitTicks"
-  WaitScroll  < "WaitScroll"
-  SetScrollSpeed  < "SetScrollSpeed"
+  EndLevel                      < "EndLevel"
+  SpawnEnemy                    < "SpawnEnemy"
+  SpawnEnemyScreenCoords        < "SpawnEnemyScreenCoords"
+  SpawnEnemyGroup               < "SpawnEnemyGroup"
+  SpawnEnemyGroupScreenCoords   < "SpawnEnemyGroupScreenCoords"
+  WaitTicks                     < "WaitTicks"
+  WaitScroll                    < "WaitScroll"
+  SetScrollSpeed                < "SetScrollSpeed"
 
 # Numbers
   Number      <~ digit+
@@ -146,6 +152,8 @@ ushort[] toShortArray(ParseTree p)
       case "LevelProgram.EndLevel":
       case "LevelProgram.SpawnEnemy":
       case "LevelProgram.SpawnEnemyScreenCoords":
+      case "LevelProgram.SpawnEnemyGroup":
+      case "LevelProgram.SpawnEnemyGroupScreenCoords":
       case "LevelProgram.WaitTicks":
       case "LevelProgram.WaitScroll":
       case "LevelProgram.SetScrollSpeed":

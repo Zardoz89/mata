@@ -1,5 +1,5 @@
 # Nivel 01
-# numberOfGroups  , tileMapColumns  , tileMapRows
-  10              , 25              , 144
+# tileMapColumns  , tileMapRows
+  25              , 144
 
 # vim: set fileencoding=cp850 :

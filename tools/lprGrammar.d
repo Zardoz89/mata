@@ -13,7 +13,8 @@ enum ushort[string] COMMAND = [
   "SpawnEnemy"              : 0x0001,
   "SpawnEnemyScreenCoords"  : 0x0002,
   "WaitTicks"               : 0x0003,
-  "WaitScroll"              : 0x0004
+  "WaitScroll"              : 0x0004,
+  "SetScrollSpeed"          : 0x0005
 ];
 
 /**
@@ -86,7 +87,8 @@ LevelProgram:
   Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
                 WaitTicks '(' Integer ')' ';' /
-                WaitScroll '(' Integer ')' ';'
+                WaitScroll '(' Integer ')' ';' /
+                SetScrollSpeed '(' Integer ')' ';'
 
 
   Id          < Number / Identifier{verifyIdentifierExistsAction}
@@ -102,6 +104,7 @@ LevelProgram:
   SpawnEnemyScreenCoords  < "SpawnEnemyScreenCoords"
   WaitTicks   < "WaitTicks"
   WaitScroll  < "WaitScroll"
+  SetScrollSpeed  < "SetScrollSpeed"
 
 # Numbers
   Number      <~ digit+
@@ -143,6 +146,7 @@ ushort[] toShortArray(ParseTree p)
       case "LevelProgram.SpawnEnemy":
       case "LevelProgram.SpawnEnemyScreenCoords":
       case "LevelProgram.WaitTicks":
+      case "LevelProgram.SetScrollSpeed":
         return [COMMAND[getCommand(p.name)]];
 
       case "LevelProgram.Id":

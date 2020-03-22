@@ -100,24 +100,33 @@ LevelProgram:
   Program     < :Spacing Constants? Commands? EndLevel ';' :Spacing :eoi
 
   Constants   < Constant+ :Spacing
-  Constant    < "const" Identifier{getIdentifierStringAction} '=' Integer{storeConstIdentifierAction} ';'
+  Constant    < "const" Identifier{getIdentifierStringAction} '=' Expression{storeConstIdentifierAction} ';'
 
   Commands    < Command+ :Spacing
-  Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
-                SpawnEnemyScreenCoords '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
-                SpawnEnemyGroup '(' Integer ',' Integer ',' Id ',' Id ',' Integer ',' Id ')' ';' /
-                SpawnEnemyGroupScreenCoords '(' Integer ',' Integer ',' Id ',' Id ',' Integer ',' Id ')' ';' /
-                WaitTicks '(' Integer ')' ';' /
-                WaitScroll '(' Integer ')' ';' /
-                SetScrollSpeed '(' Integer ')' ';'
+  Command     < SpawnEnemy '(' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+                SpawnEnemyScreenCoords '(' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+                SpawnEnemyGroup '(' Expression ',' Expression ',' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+                SpawnEnemyGroupScreenCoords '(' Expression ',' Expression ',' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+                WaitTicks '(' Expression ')' ';' /
+                WaitScroll '(' Expression ')' ';' /
+                SetScrollSpeed '(' Expression ')' ';'
 
-
-  Id          < Number / Identifier{verifyIdentifierExistsAction}
-  Integer     <~ Sign? Number
+# Expressiones
+  Expression  < Term
+  Term        < Factor ( Add / Sub)*
+  Add         < "+" Factor
+  Sub         < "-" Factor
+  Factor      < Primary (Mul / Div)*
+  Mul         < "*" Primary
+  Div         < "/" Primary
+  Primary     < Parens / Neg / Number / Identifier{verifyIdentifierExistsAction}
+  Parens      < :"(" Term :")"
+  Neg         < "-" Primary
 
 # Terminals *****************************************************
 
   Identifier  <~ [a-zA-Z_] [a-zA-Z0-9_\-]*
+  Number      <~ digit+
 
 # Commands
   EndLevel                      < "EndLevel"
@@ -128,10 +137,6 @@ LevelProgram:
   WaitTicks                     < "WaitTicks"
   WaitScroll                    < "WaitScroll"
   SetScrollSpeed                < "SetScrollSpeed"
-
-# Numbers
-  Number      <~ digit+
-  Sign        <- "-" / "+"
 
 # Spacing and comments
   Spacing <~ (space / endOfLine / BlockComment / Comment)*
@@ -151,22 +156,56 @@ ushort[] toShortArray(ParseTree p)
   import std.ascii : isAlpha;
   import std.algorithm.searching : startsWith;
   import std.algorithm.comparison : among;
-  import std.stdio;
+  import std.stdio : writeln;
 
   /**
    * Parsea el árbol de expresiones matematicas
    */
   long parseExpression(PT)(PT p) {
-    string nodeName = p.name[13..$];
+    const string nodeName = p.name[13..$];
     switch(nodeName) {
-      case "Integer":
+      case "Expression":
+        return parseExpression(p.children[0]);
+        /*
+        long sign = 1;
+        size_t valInit = 0;
+        if (p.children[0].name[13..$] == "Sign") {
+          sign = parseExpression(p.children[0]);
+          valInit++;
+        }
+        long val = parseExpression(p.children[valInit]);
+        // TODO Procesar los hijos para agregar/restar valores
+        return sign * val;
+        */
+      case "Term":
+        long val = 0;
+        foreach(child; p.children) {
+          val += parseExpression(child);
+        }
+        return val;
+
+      case "Factor":
+        long val = 1;
+        foreach(child; p.children) {
+          if (child.name[13..$] == "Div") {
+            val /= parseExpression(child);
+          } else {
+            val *= parseExpression(child);
+          }
+        }
+        return val;
+
+      case "Primary", "Parens", "Add", "Mul", "Div":
+        return parseExpression(p.children[0]);
+
+      case "Sub", "Neg":
+        return - parseExpression(p.children[0]);
+
+      case "Number":
         return parse!long(p.matches[0]);
 
-      case "Id":
-        if (p.matches[0].startsWith!isAlpha || p.matches[0].startsWith!(a => a.among('-', '_') != 0)) {
-          return identifiersValues[p.matches[0]];
-        }
-        return parse!long(p.matches[0]);
+      case "Identifier":
+        return identifiersValues[p.matches[0]];
 
       default:
         return 0;
@@ -208,12 +247,7 @@ ushort[] toShortArray(ParseTree p)
       case "SetScrollSpeed":
         return [COMMAND[nodeName]];
 
-      case "Id":
-        if (p.matches[0].startsWith!isAlpha || p.matches[0].startsWith!(a => a.among('-', '_') != 0)) {
-          return [ castFrom!long.to!ushort(identifiersValues[p.matches[0]]) ];
-        }
-
-      case "Integer":
+      case "Expression":
         long value = parseExpression(p);
         ushort tmp = castFrom!long.to!ushort(value);
         return [tmp];

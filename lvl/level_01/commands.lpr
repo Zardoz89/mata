@@ -7,6 +7,8 @@ const grey-turret = 4;
 
 const NO_MOVE = -1;
 
+SetScrollSpeed(-5);
+
 WaitTicks(100);
 //          x, y, enemyTypeId, movementPatternId
 SpawnEnemy( 3240, 35520, kamikaze, 1);

@@ -93,6 +93,7 @@ const
   CMD_SPAWN_ENEMY_SCR  = 2;
   CMD_WAIT_TICKS       = 3;
   CMD_WAIT_SCROLL      = 4;
+  CMD_SET_SCROLL_SPEED = 5;
 
 global
   // **** Libreria de graficos
@@ -218,6 +219,7 @@ global
   int tilemapMaxX; // Tama¤o horizonal del tilemap/scroll
   int tilemapMaxY; // Tama¤o vertical del tilemap/scroll
   int scrollY; // El valor y0 del scroll multiplicado por PLAYFIELD_RESOLUTION
+  int scrollStepY; // La velocidad del scroll vertical
 
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
@@ -455,7 +457,6 @@ end
 function sWordToInt(int val)
 begin
  if (val >= 32768)
-   debug;
    val = val | 4294901760;
  end
  return(val);
@@ -524,6 +525,7 @@ begin
   free(tiles); // Y liberamos el tilemap
 
   // Inicializamos el scroll
+  scrollStepY = 0;
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
   tilemapMaxX = level.tileMapColumns * TILE_WIDTH;
   tilemapMaxY = level.tileMapRows * TILE_HEIGHT;
@@ -602,7 +604,7 @@ begin
     */
 
     // Actualizamos el eje Y del scroll
-    scrollY = scrollY - 5; // TODO La velocidad de scroll deberia de ser variable
+    scrollY = scrollY + scrollStepY;
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
     scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
 
@@ -724,7 +726,6 @@ begin
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
         enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
-        ticksCounter = 0;
       end
 
       case CMD_SPAWN_ENEMY_SCR:
@@ -735,14 +736,18 @@ begin
         _arg3 = commands[++_pc]; // Patron Mov.
 
         enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
-        ticksCounter = 0;
       end
-
 
       case CMD_WAIT_TICKS:
         _arg0 = commands[++_pc];
         ticksCounter = 0;
         _waitTicks = _arg0; // Inicializamos el contador de ticks
+      end
+
+      case CMD_SET_SCROLL_SPEED:
+        debug;
+        _arg0 = commands[++_pc];
+        scrollStepY = sWordToInt(_arg0);
       end
 
       default:

@@ -1,3 +1,4 @@
+// Definición de constantes
 const o-ship = 0;
 const u-ship = 1;
 const kamikaze = 2;
@@ -14,9 +15,11 @@ SpawnEnemy( 3480, 34290, u-ship, 1);
 WaitTicks(10);
 SpawnEnemy( 2280, 34020, grey-turret, NO_MOVE);
 
-//WaitTicks(100);
-//SpawnEnemy(4, 5, 6, 0);
-//SpawnEnemyScreenCoords(4, 5, 6, 0);
+/*
+WaitTicks(100);
+SpawnEnemy(4, 5, 6, 0);
+SpawnEnemyScreenCoords(4, 5, 6, 0);
+*/
 
 EndLevel;
 

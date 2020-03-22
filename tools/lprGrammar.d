@@ -78,7 +78,7 @@ PT verifyIdentifierExistsAction(PT)(PT p)
 
 enum string g = `
 LevelProgram:
-  Program     < Constants? Commands? EndLevel ';' :Spacing :eoi
+  Program     < :Spacing Constants? Commands? EndLevel ';' :Spacing :eoi
 
   Constants   < Constant+ :Spacing
   Constant    < "const" Identifier{getIdentifierStringAction} '=' Integer{storeIdentifierAction} ';'
@@ -111,8 +111,9 @@ LevelProgram:
   Sign        <- "-" / "+"
 
 # Spacing and comments
-  Spacing <~ (space / endOfLine / Comment)*
+  Spacing <~ (space / endOfLine / BlockComment / Comment)*
   Comment <~ "//" (!endOfLine .)* endOfLine
+  BlockComment <~ "/*" (!(eoi | "*/") .)* "*/"
 
 `;
 

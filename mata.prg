@@ -450,6 +450,18 @@ begin
 end
 
 /**
+ * Extiende el signo de un valor word a int
+ */
+function sWordToInt(int val)
+begin
+ if (val >= 32768)
+   debug;
+   val = val | 4294901760;
+ end
+ return(val);
+end
+
+/**
  * Conversi¢n coordeandas de scroll a pantalla
  */
 function scrollXToScreenX(int x)
@@ -711,7 +723,7 @@ begin
         _arg1 = commands[++_pc]; // Y
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
-        enemy(_arg0, _arg1, _arg2, _arg3, 0);
+        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
         ticksCounter = 0;
       end
 
@@ -722,7 +734,7 @@ begin
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
 
-        enemy(_arg0, _arg1, _arg2, _arg3, 0);
+        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
         ticksCounter = 0;
       end
 
@@ -1255,7 +1267,7 @@ begin
 
 
   // Aplicamos la velocidad inicial si hay un patron de mov.
-  if (pathId <> 65535) // -1 en un WORD
+  if (pathId <> -1 )
     _vx = paths[pathId].vx0;
     _vy = paths[pathId].vy0;
   end;
@@ -1264,7 +1276,7 @@ begin
 
     // **** Movimiento
     // Aplicamos el patron de mov. si hay uno asignado
-    if (pathId <> 65535 && _pathStep <= 10)
+    if (pathId <> -1 && _pathStep <= 10)
       if (paths[pathId].maxSteps >= _pathStep)
         if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
           _pathStep++;

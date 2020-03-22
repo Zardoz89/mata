@@ -22,12 +22,38 @@ enum ushort[string] COMMAND = [
 /**
  * Global donde guarda el ultimo idenficador al procesar el bloque de constantes
  */
-string lastIdentifier;
+private string lastIdentifier;
 
+/**
+ * 'HashSet' con los identificadores ya inicializados
+ */
+bool[string] constIdentifiers;
 /**
  * Diccionario de identificadores con sus valores
  */
-ushort[string] identifiersValues;
+long[string] identifiersValues;
+
+/**
+ * Genera la coletilla con la posición del nodo con error
+ */
+string generateErrorPossition(PT)(PT p)
+{
+  import std.conv : to;
+  // Calcula la posición en el texto original (copy&paste del código de pegged)
+  Position pos = position(p);
+  string left, right;
+  if (pos.index < 10) {
+    left = p.input[0 .. pos.index];
+  } else {
+    left = p.input[pos.index - 10 .. pos.index];
+  }
+  if (pos.index + 10 < p.input.length) {
+    right = p.input[pos.index .. pos.index + 10];
+  } else {
+    right = p.input[pos.index .. $];
+  }
+  return " at line " ~ to!string(pos.line) ~ ", col " ~ to!string(pos.col);
+}
 
 /**
  * Guarda temporalmente el nombre del identifier
@@ -39,12 +65,19 @@ PT getIdentifierStringAction(PT)(PT p)
 }
 
 /**
- * Mete en el diccionario de identificadores, el valor asignado
+ * Mete en el set de identificadores constante, un identificador constante o genera un error si ya existe previamente
  */
-PT storeIdentifierAction(PT)(PT p)
+PT storeConstIdentifierAction(PT)(PT p)
 {
-  import std.conv : to, castFrom, parse;
-  identifiersValues[lastIdentifier] = castFrom!long.to!ushort(parse!long(p.matches[0]));
+  if ((lastIdentifier in constIdentifiers) !is null) {
+    import std.stdio : writeln;
+    import colored;
+    p.successful = false;
+    writeln("Constante ya definida previamente : ".red , p.matches[0], generateErrorPossition(p));
+
+  } else {
+    constIdentifiers[lastIdentifier] = true;
+  }
   return p;
 }
 
@@ -53,27 +86,11 @@ PT storeIdentifierAction(PT)(PT p)
  */
 PT verifyIdentifierExistsAction(PT)(PT p)
 {
-  import std.stdio : writeln;
-  import std.conv : to;
-  import colored;
-  if ( (p.matches[0] in identifiersValues) is null) {
+  if ( (p.matches[0] in constIdentifiers) is null) {
+    import std.stdio : writeln;
+    import colored;
     p.successful = false;
-
-    // Calcula la posición en el texto original (copy&paste del código de pegged)
-    Position pos = position(p);
-    string left, right;
-    if (pos.index < 10) {
-      left = p.input[0 .. pos.index];
-    } else {
-      left = p.input[pos.index - 10 .. pos.index];
-    }
-    if (pos.index + 10 < p.input.length) {
-      right = p.input[pos.index .. pos.index + 10];
-    } else {
-      right = p.input[pos.index .. $];
-    }
-    writeln("Identificador no reconocido : ".red , p.matches[0],
-      " at line " ~ to!string(pos.line) ~ ", col " ~ to!string(pos.col) );
+    writeln("Identificador no reconocido : ".red , p.matches[0], generateErrorPossition(p));
   }
   return p;
 }
@@ -83,7 +100,7 @@ LevelProgram:
   Program     < :Spacing Constants? Commands? EndLevel ';' :Spacing :eoi
 
   Constants   < Constant+ :Spacing
-  Constant    < "const" Identifier{getIdentifierStringAction} '=' Integer{storeIdentifierAction} ';'
+  Constant    < "const" Identifier{getIdentifierStringAction} '=' Integer{storeConstIdentifierAction} ';'
 
   Commands    < Command+ :Spacing
   Command     < SpawnEnemy '(' Integer ',' Integer ',' Id ',' Id ')' ';' /
@@ -126,7 +143,7 @@ LevelProgram:
 mixin(grammar(g));
 
 /**
- * Recorre el arbol de parseo y genera el "wordcode"
+ * Recorre el AST para generar el "wordcode"
  */
 ushort[] toShortArray(ParseTree p)
 {
@@ -136,6 +153,29 @@ ushort[] toShortArray(ParseTree p)
   import std.algorithm.comparison : among;
   import std.stdio;
 
+  /**
+   * Parsea el árbol de expresiones matematicas
+   */
+  long parseExpression(PT)(PT p) {
+    string nodeName = p.name[13..$];
+    switch(nodeName) {
+      case "Integer":
+        return parse!long(p.matches[0]);
+
+      case "Id":
+        if (p.matches[0].startsWith!isAlpha || p.matches[0].startsWith!(a => a.among('-', '_') != 0)) {
+          return identifiersValues[p.matches[0]];
+        }
+        return parse!long(p.matches[0]);
+
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * Recorre el AST para generar el "wordcode"
+   */
   ushort[] parseToCode(ParseTree p) {
     if (p.name == "LevelProgram") {
       return parseToCode(p.children[0]); // The grammar result has only child: the start rule's parse tree
@@ -144,12 +184,19 @@ ushort[] toShortArray(ParseTree p)
     switch(nodeName) {
       case "Program":
       case "Commands":
+      case "Constants":
       case "Command":
         ushort[] result;
         foreach( child; p.children) {
           result ~= parseToCode(child);
         }
         return result;
+
+      case "Constant":
+        long contantVal = parseExpression(p.children[1]);
+        string identifier = p.children[0].matches[0];
+        identifiersValues[identifier] = contantVal;
+        return [];
 
       case "EndLevel":
       case "SpawnEnemy":
@@ -163,10 +210,12 @@ ushort[] toShortArray(ParseTree p)
 
       case "Id":
         if (p.matches[0].startsWith!isAlpha || p.matches[0].startsWith!(a => a.among('-', '_') != 0)) {
-          return [ identifiersValues[p.matches[0]] ];
+          return [ castFrom!long.to!ushort(identifiersValues[p.matches[0]]) ];
         }
+
       case "Integer":
-        ushort tmp = castFrom!long.to!ushort(parse!long(p.matches[0]));
+        long value = parseExpression(p);
+        ushort tmp = castFrom!long.to!ushort(value);
         return [tmp];
 
       default:
@@ -175,4 +224,5 @@ ushort[] toShortArray(ParseTree p)
   }
   return parseToCode(p);
 }
+
 

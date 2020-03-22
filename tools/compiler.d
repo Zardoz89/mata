@@ -23,12 +23,14 @@ int main(string[] args)
 
   // Parseo
   auto parseTree = LevelProgram(program);
-  writeln("Constantes: " , identifiersValues);
+  //writeln(parseTree);
+  writeln("Constantes: " , constIdentifiers.keys);
 
   if (parseTree.successful) {
     writeln("Generando 'wordcode'...");
 
     auto wordCode = toShortArray(parseTree);
+    writeln("Identificadores: ", identifiersValues);
     writeln("Total bytes: ", wordCode.length * 2);
 
     fileStreams["fout"].rawWrite(wordCode);

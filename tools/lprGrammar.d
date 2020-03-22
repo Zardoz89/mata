@@ -137,33 +137,35 @@ ushort[] toShortArray(ParseTree p)
   import std.stdio;
 
   ushort[] parseToCode(ParseTree p) {
-    switch(p.name) {
-      case "LevelProgram":
-        return parseToCode(p.children[0]); // The grammar result has only child: the start rule's parse tree
-      case "LevelProgram.Program":
-      case "LevelProgram.Commands":
-      case "LevelProgram.Command":
+    if (p.name == "LevelProgram") {
+      return parseToCode(p.children[0]); // The grammar result has only child: the start rule's parse tree
+    }
+    string nodeName = p.name[13..$];
+    switch(nodeName) {
+      case "Program":
+      case "Commands":
+      case "Command":
         ushort[] result;
         foreach( child; p.children) {
           result ~= parseToCode(child);
         }
         return result;
 
-      case "LevelProgram.EndLevel":
-      case "LevelProgram.SpawnEnemy":
-      case "LevelProgram.SpawnEnemyScreenCoords":
-      case "LevelProgram.SpawnEnemyGroup":
-      case "LevelProgram.SpawnEnemyGroupScreenCoords":
-      case "LevelProgram.WaitTicks":
-      case "LevelProgram.WaitScroll":
-      case "LevelProgram.SetScrollSpeed":
-        return [COMMAND[getCommand(p.name)]];
+      case "EndLevel":
+      case "SpawnEnemy":
+      case "SpawnEnemyScreenCoords":
+      case "SpawnEnemyGroup":
+      case "SpawnEnemyGroupScreenCoords":
+      case "WaitTicks":
+      case "WaitScroll":
+      case "SetScrollSpeed":
+        return [COMMAND[nodeName]];
 
-      case "LevelProgram.Id":
+      case "Id":
         if (p.matches[0].startsWith!isAlpha || p.matches[0].startsWith!(a => a.among('-', '_') != 0)) {
           return [ identifiersValues[p.matches[0]] ];
         }
-      case "LevelProgram.Integer":
+      case "Integer":
         ushort tmp = castFrom!long.to!ushort(parse!long(p.matches[0]));
         return [tmp];
 
@@ -172,10 +174,5 @@ ushort[] toShortArray(ParseTree p)
     }
   }
   return parseToCode(p);
-}
-
-private string getCommand(string parseNodeName) {
-  import std.array : split;
-  return parseNodeName.split(".")[1];
 }
 

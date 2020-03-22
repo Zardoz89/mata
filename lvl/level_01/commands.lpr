@@ -9,12 +9,11 @@ const NO_MOVE = -1;
 
 SetScrollSpeed(-5);
 
-WaitTicks(100);
 //          x, y, enemyTypeId, movementPatternId
-SpawnEnemy( 3240, 35520, kamikaze, 1);
-WaitTicks(100);
-SpawnEnemy( 3480, 34290, u-ship, 1);
-WaitTicks(10);
+SpawnEnemy( 3240, 35150, kamikaze, NO_MOVE);
+
+WaitScroll(34440);
+SpawnEnemy( 3480, 34290, u-ship, NO_MOVE);
 SpawnEnemy( 2280, 34020, grey-turret, NO_MOVE);
 
 /*

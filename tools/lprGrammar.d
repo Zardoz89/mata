@@ -147,6 +147,7 @@ ushort[] toShortArray(ParseTree p)
       case "LevelProgram.SpawnEnemy":
       case "LevelProgram.SpawnEnemyScreenCoords":
       case "LevelProgram.WaitTicks":
+      case "LevelProgram.WaitScroll":
       case "LevelProgram.SetScrollSpeed":
         return [COMMAND[getCommand(p.name)]];
 

@@ -707,7 +707,7 @@ process levelCommands(word pointer commands)
 private
   _finished = false;
   _waitTicks = 0;
-  _waitScrollY = 0;
+  _waitScrollY = -1;
   int _pc = 0;
   word _val, _arg0, _arg1, _arg2, _arg3;
 begin
@@ -744,8 +744,12 @@ begin
         _waitTicks = _arg0; // Inicializamos el contador de ticks
       end
 
+      case CMD_WAIT_SCROLL:
+        _arg0 = commands[++_pc];
+        _waitScrollY = _arg0; // Inicializamos la espera hasta que el scrollY valga ese valor
+      end
+
       case CMD_SET_SCROLL_SPEED:
-        debug;
         _arg0 = commands[++_pc];
         scrollStepY = sWordToInt(_arg0);
       end
@@ -762,6 +766,21 @@ begin
         _waitTicks = 0;
       end
       frame;
+    end
+
+    // Esperamos a que el scroll alcanze un determinado valor
+    if (_waitScrollY <> -1 && scrollStepY <> 0)
+      if (scrollStepY < 0)
+        // Scroll normal hacia arriba
+        while (scrollY <= _waitScrollY)
+          frame;
+        end
+      else
+        // Scroll hacia abajo
+        while (scrollY >= _waitScrollY)
+          frame;
+        end
+      end
     end
 
     _pc++;

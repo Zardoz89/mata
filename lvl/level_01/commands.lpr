@@ -8,9 +8,11 @@ const NO_MOVE = -1;
 
 WaitTicks(100);
 //          x, y, enemyTypeId, movementPatternId
-SpawnEnemy( 4240, 33466, grey-turret, NO_MOVE); // Foobar2000
+SpawnEnemy( 3240, 35520, kamikaze, 1);
 WaitTicks(100);
-SpawnEnemy( 4240, 33430, u-ship, 1);  // Foobar
+SpawnEnemy( 3480, 34290, u-ship, 1);
+WaitTicks(10);
+SpawnEnemy( 2280, 34020, grey-turret, NO_MOVE);
 
 //WaitTicks(100);
 //SpawnEnemy(4, 5, 6, 0);

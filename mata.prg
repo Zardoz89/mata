@@ -219,7 +219,6 @@ global
   int tilemapMaxY; // Tama¤o vertical del tilemap/scroll
   int scrollY; // El valor y0 del scroll multiplicado por PLAYFIELD_RESOLUTION
 
-
 local // Las variables locales a los procesos, se definen "universalmente" aqui
   hull; // Vida o puntos de casco de cosos destruibles
   typeId = -1; // Usada en los procesos acceder a los datos de tipo de lo que sea
@@ -454,26 +453,13 @@ end
  * Conversi¢n coordeandas de scroll a pantalla
  */
 function scrollXToScreenX(int x)
-private
-  int _screenX;
 begin
-  // FIXME Creo que esto esta mal, pero el resultado que da es el correctom, asi que tirando...
-  // Regla de tres para convertir el espacio de coordenadas
-  _screenX = (x * PLAYFIELD_REGION_W) / tilemapMaxX;
-  // Aplicamos el offset
-  _screenX = _screenX - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
-  return(_screenX);
-
+  return(x - (scroll[0].x0 * PLAYFIELD_RESOLUTION));
 end
 function scrollYToScreenY(int y)
-private
-  int _screenY;
 begin
-  // Aplicamos el offset
-  _screenY = y - scrollY; // scrollY ya va multiplicado por 10
-  // Regla de tres para convertir el espacio de coordenadas
-  _screenY = (_screenY * PLAYFIELD_REGION_H  * PLAYFIELD_RESOLUTION ) / tilemapMaxY;
-  return(_screenY);
+  return(y -
+  scrollY);
 end
 
 /**
@@ -481,17 +467,11 @@ end
  */
 function screenXToScrollX(int x)
 begin
-  // FIXME Creo que esto esta mal, pero el resultado que da es el correctom, asi que tirando...
-  return(((x + scroll[0].x0) * tilemapMaxX) / PLAYFIELD_REGION_W );
+  return(x + (scroll[0].x0 * PLAYFIELD_RESOLUTION));
 end
 function screenYToScrollY(int y)
-private
-  int __y;
 begin
-  // Regla de tes para convetir el espacio de coordenadas
-  __y = (y  * tilemapMaxY) / (PLAYFIELD_REGION_H * PLAYFIELD_RESOLUTION);
-  // Aplicamos offset
-  return(__y + scrollY);
+  return(y + scrollY);
 end
 
 /**

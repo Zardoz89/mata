@@ -97,6 +97,9 @@ const
   CMD_SPAWN_ENEMY_GRP     = 6;
   CMD_SPAWN_ENEMY_GRP_SCR = 7;
 
+  CMD_DEFINE_ENEMY_GROUP  = 8;
+  CMD_END_BLOCK           = 9;
+
 global
   // **** Libreria de graficos
   int fpgTileset;
@@ -218,8 +221,9 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   ticksCounter = 0; // Contador de ticks (frames)
   xrel = 0; // Posiciones relativas
   yrel = 0;
-  remaningChildrens = 0; // Numero de procesos hijos restantes
-  killedChildrens = 0; // Numero de procesos hijos matados por el jugador
+  totalChildrens = 0; // N£mero inicial de procesos hijos
+  remaningChildrens = 0; // N£mero de procesos hijos restantes
+  killedChildrens = 0; // N£mero de procesos hijos matados por el jugador
   groupProcess = 0; // Id del proceso grupo padre de un enemigo
 
 private
@@ -677,6 +681,8 @@ private
   _finished = false;
   _waitTicks = 0;
   _waitScrollY = -1;
+  _defineEnemyGroupBlock = false;
+  _enemyGroupId = 0;
   int _pc = 0;
   word _val, _arg0, _arg1, _arg2, _arg3, _arg4, _arg5;
 begin
@@ -710,7 +716,12 @@ begin
         _arg1 = commands[++_pc]; // Y
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
-        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
+        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), _enemyGroupId);
+        // Si estamos definiendo un grupo complejo, tenemos que actualizar el n§ de hijos del grupo
+        if (_enemyGroupId <> 0)
+          _enemyGroupId.totalChildrens += 1;
+          _enemyGroupId.remaningChildrens = _enemyGroupId.totalChildrens;
+        end
       end
 
       case CMD_SPAWN_ENEMY_SCR:
@@ -720,7 +731,12 @@ begin
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
 
-        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), 0);
+        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), _enemyGroupId);
+        // Si estamos definiendo un grupo complejo, tenemos que actualizar el n§ de hijos del grupo
+        if (_enemyGroupId <> 0)
+          _enemyGroupId.totalChildrens += 1;
+          _enemyGroupId.remaningChildrens = _enemyGroupId.totalChildrens;
+        end
       end
 
       case CMD_SPAWN_ENEMY_GRP:
@@ -745,6 +761,18 @@ begin
         createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
+      case CMD_DEFINE_ENEMY_GROUP:
+        _defineEnemyGroupBlock = 1;
+        _enemyGroupId = enemyGroup(1); // Hack: Le indicamos un hijo, luego se lo restamos
+        // Se hace para evitar que se auto-muera hasta crear los hijos de verdad
+      end
+
+      case CMD_END_BLOCK:
+        _defineEnemyGroupBlock = false;
+          _enemyGroupId.totalChildrens -= 1;
+          _enemyGroupId.remaningChildrens = _enemyGroupId.totalChildrens;
+        _enemyGroupId = 0;
+      end
 
       default:
       end
@@ -764,12 +792,12 @@ begin
     if (_waitScrollY <> -1 && scrollStepY <> 0)
       if (scrollStepY < 0)
         // Scroll normal hacia arriba
-        while (scrollY <= _waitScrollY)
+        while (scrollY >= _waitScrollY)
           frame;
         end
       else
         // Scroll hacia abajo
-        while (scrollY >= _waitScrollY)
+        while (scrollY <= _waitScrollY)
           frame;
         end
       end

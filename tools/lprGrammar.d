@@ -16,7 +16,9 @@ enum ushort[string] COMMAND = [
   "SpawnEnemy"                  : 0x0004,
   "SpawnEnemyScreenCoords"      : 0x0005,
   "SpawnEnemyGroup"             : 0x0006,
-  "SpawnEnemyGroupScreenCoords" : 0x0007
+  "SpawnEnemyGroupScreenCoords" : 0x0007,
+  "DefineEnemyGroup"            : 0x0008,
+  "EndBlock"                    : 0x0009,
 ];
 
 /**
@@ -97,19 +99,32 @@ PT verifyIdentifierExistsAction(PT)(PT p)
 
 enum string g = `
 LevelProgram:
-  Program     < :Spacing Constants? Commands? EndLevel ';' :Spacing :eoi
+  Program     < :Spacing Constants? Statements? EndLevel ';' :Spacing :eoi
 
   Constants   < Constant+ :Spacing
   Constant    < "const" Identifier{getIdentifierStringAction} '=' Expression{storeConstIdentifierAction} ';'
 
-  Commands    < Command+ :Spacing
-  Command     < SpawnEnemy '(' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
-                SpawnEnemyScreenCoords '(' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+  Statements    < Statement+ :Spacing
+  Statement     < CompoundStatement / SpawnCommands / SpawnSimpleGroupCommands / WaitCommands / ScrollCommands
+
+  SpawnCommands <
+                SpawnEnemy '(' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+                SpawnEnemyScreenCoords '(' Expression ',' Expression ',' Expression ',' Expression ')' ';'
+
+  SpawnSimpleGroupCommands <
                 SpawnEnemyGroup '(' Expression ',' Expression ',' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
-                SpawnEnemyGroupScreenCoords '(' Expression ',' Expression ',' Expression ',' Expression ',' Expression ',' Expression ')' ';' /
+                SpawnEnemyGroupScreenCoords '(' Expression ',' Expression ',' Expression ',' Expression ',' Expression ',' Expression ')' ';'
+
+  WaitCommands <
                 WaitTicks '(' Expression ')' ';' /
-                WaitScroll '(' Expression ')' ';' /
+                WaitScroll '(' Expression ')' ';'
+
+  ScrollCommands <
                 SetScrollSpeed '(' Expression ')' ';'
+
+  CompoundStatement < CompoundStatementType '{' SpawnCommands+ :Spacing '}'
+
+  CompoundStatementType < DefineEnemyGroup
 
 # Expressiones
   Expression  < Term
@@ -128,7 +143,7 @@ LevelProgram:
   Identifier  <~ [a-zA-Z_] [a-zA-Z0-9_\-]*
   Number      <~ digit+
 
-# Commands
+# Statements
   EndLevel                      < "EndLevel"
   SpawnEnemy                    < "SpawnEnemy"
   SpawnEnemyScreenCoords        < "SpawnEnemyScreenCoords"
@@ -137,6 +152,9 @@ LevelProgram:
   WaitTicks                     < "WaitTicks"
   WaitScroll                    < "WaitScroll"
   SetScrollSpeed                < "SetScrollSpeed"
+
+# Compound Statements types
+  DefineEnemyGroup              < "DefineEnemyGroup"
 
 # Spacing and comments
   Spacing <~ (space / endOfLine / BlockComment / Comment)*
@@ -166,17 +184,7 @@ ushort[] toShortArray(ParseTree p)
     switch(nodeName) {
       case "Expression":
         return parseExpression(p.children[0]);
-        /*
-        long sign = 1;
-        size_t valInit = 0;
-        if (p.children[0].name[13..$] == "Sign") {
-          sign = parseExpression(p.children[0]);
-          valInit++;
-        }
-        long val = parseExpression(p.children[valInit]);
-        // TODO Procesar los hijos para agregar/restar valores
-        return sign * val;
-        */
+
       case "Term":
         long val = 0;
         foreach(child; p.children) {
@@ -222,9 +230,14 @@ ushort[] toShortArray(ParseTree p)
     string nodeName = p.name[13..$];
     switch(nodeName) {
       case "Program":
-      case "Commands":
       case "Constants":
-      case "Command":
+      case "Statements":
+      case "Statement":
+      case "SpawnCommands":
+      case "SpawnSimpleGroupCommands":
+      case "WaitCommands":
+      case "ScrollCommands":
+      case "CompoundStatementType":
         ushort[] result;
         foreach( child; p.children) {
           result ~= parseToCode(child);
@@ -232,7 +245,7 @@ ushort[] toShortArray(ParseTree p)
         return result;
 
       case "Constant":
-        long contantVal = parseExpression(p.children[1]);
+        const long contantVal = parseExpression(p.children[1]);
         string identifier = p.children[0].matches[0];
         identifiersValues[identifier] = contantVal;
         return [];
@@ -245,7 +258,20 @@ ushort[] toShortArray(ParseTree p)
       case "WaitTicks":
       case "WaitScroll":
       case "SetScrollSpeed":
+      case "DefineEnemyGroup":
+        writeln(nodeName);
         return [COMMAND[nodeName]];
+
+      case "CompoundStatement":
+        // 0 -> Tipo
+        // 1..$ -> N Comandos dentro del bloque
+        ushort[] result;
+        foreach( child; p.children) {
+          result ~= parseToCode(child);
+        }
+        result ~= COMMAND["EndBlock"];
+        return result;
+
 
       case "Expression":
         long value = parseExpression(p);

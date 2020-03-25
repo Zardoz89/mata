@@ -23,7 +23,7 @@ int main(string[] args)
 
   // Parseo
   auto parseTree = LevelProgram(program);
-  writeln(parseTree);
+  //writeln(parseTree);
   writeln("Constantes: " , constIdentifiers.keys);
 
   if (parseTree.successful) {

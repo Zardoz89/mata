@@ -475,8 +475,7 @@ begin
 end
 function scrollYToScreenY(int y)
 begin
-  return(y -
-  scrollY);
+  return(y - scrollY);
 end
 
 /**
@@ -588,7 +587,9 @@ begin
     end
 
     // Actualizamos el eje Y del scroll
-    scrollY = scrollY + scrollStepY;
+    if (scrollY > 0) // AND < tama¤o maximo
+      scrollY = scrollY + scrollStepY;
+    end
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
     scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
 
@@ -820,6 +821,7 @@ begin
           frame;
         end
       end
+      _waitScrollY = -1;
     end
 
     _pc++;

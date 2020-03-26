@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="25" height="145" tilewidth="24" tileheight="28" infinite="0" nextlayerid="4" nextobjectid="25">
+<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="25" height="145" tilewidth="24" tileheight="28" infinite="0" nextlayerid="4" nextobjectid="33">
  <editorsettings>
   <export target="tilemap.csv" format="csv"/>
  </editorsettings>
@@ -154,23 +154,41 @@
 </data>
  </layer>
  <objectgroup id="3" name="Capa de Objetos 1">
-  <object id="18" x="324" y="3515">
-   <point/>
-  </object>
-  <object id="19" x="348.5" y="3429">
-   <point/>
-  </object>
-  <object id="20" x="228.5" y="3402.5">
+  <object id="18" name="u-ship grp" x="132" y="3431">
    <point/>
   </object>
   <object id="21" name="Marco Pantalla Inicial" x="0" y="3552" width="600" height="508"/>
-  <object id="22" x="348" y="3290">
+  <object id="22" name="u-ship" x="300" y="3290">
    <point/>
   </object>
-  <object id="23" x="372" y="3262">
+  <object id="23" name="u-ship" x="324" y="3262">
    <point/>
   </object>
-  <object id="24" x="324" y="3262">
+  <object id="24" name="u-ship" x="276" y="3262">
+   <point/>
+  </object>
+  <object id="25" name="Torreta gris" x="467.8" y="3066.1">
+   <point/>
+  </object>
+  <object id="26" name="u-ship grp" x="492" y="3431">
+   <point/>
+  </object>
+  <object id="27" name="Torreta gris" x="587.8" y="3066.1">
+   <point/>
+  </object>
+  <object id="28" name="kamikaze grp" x="180" y="2869.6">
+   <point/>
+  </object>
+  <object id="29" name="Torreta Gris" x="444" y="2814.5">
+   <point/>
+  </object>
+  <object id="30" name="Torreta Gris" x="588" y="2814.5">
+   <point/>
+  </object>
+  <object id="31" name="Torreta Gris" x="588" y="2730.5">
+   <point/>
+  </object>
+  <object id="32" name="Torreta Gris" x="444" y="2730.5">
    <point/>
   </object>
  </objectgroup>

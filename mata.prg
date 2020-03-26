@@ -100,6 +100,8 @@ const
   CMD_DEFINE_ENEMY_GROUP  = 8;
   CMD_END_BLOCK           = 9;
 
+  CMD_SET_BONUS_TYPE      = 10; // 0x000A
+
 global
   // **** Libreria de graficos
   int fpgTileset;
@@ -221,6 +223,9 @@ local // Las variables locales a los procesos, se definen "universalmente" aqui
   ticksCounter = 0; // Contador de ticks (frames)
   xrel = 0; // Posiciones relativas
   yrel = 0;
+
+  // Se usa para gestionar los grupos de enemigos
+  bonusType = -1;
   totalChildrens = 0; // N£mero inicial de procesos hijos
   remaningChildrens = 0; // N£mero de procesos hijos restantes
   killedChildrens = 0; // N£mero de procesos hijos matados por el jugador
@@ -761,6 +766,16 @@ begin
         createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
+      case CMD_SET_BONUS_TYPE:
+        // 1 argumento
+        _arg0 = commands[++_pc]; // Id de bonus
+        // Solo surge efecto si esta dentro de un definici¢n de un grupo complejo
+        if (_enemyGroupId <> 0)
+          _enemyGroupId.bonusType = _arg0;
+        end
+
+      end
+
       case CMD_DEFINE_ENEMY_GROUP:
         _defineEnemyGroupBlock = 1;
         _enemyGroupId = enemyGroup(1); // Hack: Le indicamos un hijo, luego se lo restamos
@@ -1270,12 +1285,10 @@ begin
   remaningChildrens = totalChildrens;
   loop
     if (remaningChildrens <= 0)
-      /*
-      if (killedChildrens == _totalChildrens && groups[groupInd].bonusType <> -1)
-        // TODO Hacer espan de diferente tipos de bonus
-        mainWeaponBonus(groups[groupInd].bonusType, x ,y, xrel);
+      if (killedChildrens == totalChildrens && bonusType <> -1)
+        // TODO Hacer spawn de diferente tipos de bonus
+        mainWeaponBonus(bonusType, x ,y, xrel);
       end
-      */
       break;
     end
 

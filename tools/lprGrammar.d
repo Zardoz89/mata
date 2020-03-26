@@ -19,6 +19,7 @@ enum ushort[string] COMMAND = [
   "SpawnEnemyGroupScreenCoords" : 0x0007,
   "DefineEnemyGroup"            : 0x0008,
   "EndBlock"                    : 0x0009,
+  "SetBonusType"                : 0x000A,
 ];
 
 /**
@@ -122,7 +123,9 @@ LevelProgram:
   ScrollCommands <
                 SetScrollSpeed '(' Expression ')' ';'
 
-  CompoundStatement < CompoundStatementType '{' SpawnCommands+ :Spacing '}'
+  ConfigGroupCommands < SetBonusType '(' Expression ')' ';'
+
+  CompoundStatement < CompoundStatementType '{' ConfigGroupCommands*  SpawnCommands+ :Spacing '}'
 
   CompoundStatementType < DefineEnemyGroup
 
@@ -152,6 +155,7 @@ LevelProgram:
   WaitTicks                     < "WaitTicks"
   WaitScroll                    < "WaitScroll"
   SetScrollSpeed                < "SetScrollSpeed"
+  SetBonusType                  < "SetBonusType"
 
 # Compound Statements types
   DefineEnemyGroup              < "DefineEnemyGroup"
@@ -238,6 +242,7 @@ ushort[] toShortArray(ParseTree p)
       case "WaitCommands":
       case "ScrollCommands":
       case "CompoundStatementType":
+      case "ConfigGroupCommands":
         ushort[] result;
         foreach( child; p.children) {
           result ~= parseToCode(child);
@@ -259,7 +264,7 @@ ushort[] toShortArray(ParseTree p)
       case "WaitScroll":
       case "SetScrollSpeed":
       case "DefineEnemyGroup":
-        writeln(nodeName);
+      case "SetBonusType":
         return [COMMAND[nodeName]];
 
       case "CompoundStatement":

@@ -195,8 +195,7 @@ global
   struct playerWeapons[1]
     itemGraph; // Grafico del item que da dicha arma
     weaponId[4];
-  end = 109,   2,  3,  4,  5,  6, // Vulcan tier 0 a tier 4
-        119,   7,  8,  9, 10, 11; // Laser tier 0 a tier 4
+  end
 
   // **** Definici¢n animaciones de explosiones
   struct exploFx[3]
@@ -295,11 +294,15 @@ begin
 
   // Carga patrones de movimiento
   loadData("dat\movpaths", offset paths, sizeof(paths));
-  _loadingMsg = "Cargando... 80%";
+  _loadingMsg = "Cargando... 75%";
   frame();
 
   // Carga tipo de enemigos
   loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
+  _loadingMsg = "Cargando... 80%";
+  frame();
+
+  loadData("dat\pweapons", offset playerWeapons, sizeof(playerWeapons));
   _loadingMsg = "Cargando... 90%";
   frame();
 

@@ -341,5 +341,22 @@
   0     , 0     , 0
   0     , 0     , 0      # 10
 
+# patron id 20 - Baja con Ss v 20px
+# maxSteps , vx0   , vy0
+  9        , 0     , 15
+# pasos id 0
+# ax    , ay    , ticks
+  1     , 0     , 5      # 0
+ -1     , 0     , 5
+  1     , 0     , 5
+ -1     , 0     , 5
+  1     , 0     , 5
+ -1     , 0     , 5      # 5
+  1     , 0     , 5
+ -1     , 0     , 5
+  1     , 0     , 5
+ -1     , 0     , 5
+  0     , 0     , 0      # 10
+
 
 # vim: set fileencoding=cp850 :

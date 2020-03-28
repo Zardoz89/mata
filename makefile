@@ -3,7 +3,7 @@ SHOOTS_TYPE_PROCESSOR := $(TOOLS_PATH)/processShoots.d
 ENEMY_TYPE_PROCESSOR := $(TOOLS_PATH)/processEnemType.d
 LEVEL_PROCESSOR := $(TOOLS_PATH)/levelcompiler
 
-all: dat/shoots.csv dat/enemtype.csv lvl/level_01/commands.dat
+all: dat/*.csv lvl/level_01/commands.dat
 
 tools: $(LEVEL_PROCESSOR)
 
@@ -15,6 +15,9 @@ dat/shoots.csv : datsrc/shoots.csv
 
 dat/enemtype.csv : datsrc/enemtype.csv
 	$(ENEMY_TYPE_PROCESSOR) -i $< -o $@
+
+dat/movpaths.csv : datsrc/movpaths.csv
+	cp $< $@
 
 lvl/level_01/commands.dat : lvl/level_01/commands.lpr
 	$(LEVEL_PROCESSOR) -i $< -o $@

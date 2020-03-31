@@ -1084,8 +1084,13 @@ begin
   region = PLAYFIELD_REGION;
   resolution = PLAYFIELD_RESOLUTION;
   graph = shootData[typeId];
-  xrel = 0;
-  yrel = 0;
+  if (moveRelativeToFather) // Con mov. relativo al padre, xrel/yrel es respecto al padre
+    xrel = 0;
+    yrel = 0;
+  else // xrel/yrel respecto al tilemap
+    xrel = screenXToScrollX(x);
+    yrel = screenYToScrollY(y);
+  end
 
   while (! out_region(id, region))
     if (enemyShoot)
@@ -1140,11 +1145,15 @@ begin
         y = yrel;
       end
     else
-      xadvance(direction, shootData[typeId].speed);
+      xrel += (cos(direction) * shootData[typeId].speed) / 1000;
+      yrel -= (sin(direction) * shootData[typeId].speed) / 1000;
+      x = scrollXToScreenX(xrel);
+      y = scrollYToScreenY(yrel);
     end
     frame;
   end;
 end
+
 
 /**
  * Proceso de efecto de explosion
@@ -1293,7 +1302,7 @@ begin
     if (remaningChildrens <= 0)
       if (killedChildrens == totalChildrens && bonusType <> -1)
         // TODO Hacer spawn de diferente tipos de bonus
-        mainWeaponBonus(bonusType, x ,y, xrel);
+        mainWeaponBonus(bonusType, xrel ,yrel);
       end
       break;
     end
@@ -1361,8 +1370,8 @@ begin
     xrel += _vx;
     yrel += _vy;
     // El movimiento horizontal es respecto al scroll de fondo
-    x = scrollXToScreenX(xrel); //xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
-    y = scrollYToScreenY(yrel); //yrel;
+    x = scrollXToScreenX(xrel);
+    y = scrollYToScreenY(yrel);
 
     // **** Animacion
     if (!ticksCounter) // Se actualiza la animacion cada 2 frames
@@ -1439,7 +1448,7 @@ end
 /**
  * Item bonus que cambia/mejora el arma del jugador
  */
-process mainWeaponBonus(playerWeaponId, x, y, xrel)
+process mainWeaponBonus(playerWeaponId, xrel, yrel)
 private
 begin
   file = fpgShoots;
@@ -1448,8 +1457,8 @@ begin
   graph = playerWeapons[playerWeaponId];
 
   while (! isOutsidePlayfield(x, y))
-    x = xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
-
+    x = scrollXToScreenX(xrel);
+    y = scrollYToScreenY(yrel);
 
     if (collision(type playerShip))
       // El jugador ha recogido el item. Mejoramos o cambiamos el arma

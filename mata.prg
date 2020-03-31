@@ -165,6 +165,7 @@ global
   // **** Tipos de enemigos del juego
   struct enemyType[10]
     int hull; // Vidia inicial
+    byte canCollide: // Flag que indica si puede colisionar
     int shootTypeId; // Tipo de disparo
     int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
     // Abs es la frecuencia de disparo -> rand(0, 1000) <= abs(aggresion)
@@ -942,12 +943,13 @@ begin
     // Colision con naves enemigas
     _hitId = collision(type enemy);
     if (_hitId)
-      damagePlayer(1);
-      // Hacemos que le cueste penetrar mas en el enemigo
-      _collisionAngle = get_angle(_hitId);
-      mouse.x -= cos(_collisionAngle) / 500;
-      mouse.x -= sin(_collisionAngle) / 500;
-
+      if (enemyType[_hitId.typeId].canCollide)
+        damagePlayer(1);
+        // Hacemos que le cueste penetrar mas en el enemigo
+        _collisionAngle = get_angle(_hitId);
+        mouse.x -= cos(_collisionAngle) / 500;
+        mouse.x -= sin(_collisionAngle) / 500;
+      end
     end
 
     _mainWeaponId = getMainWeaponIdFromPlayerWeapon();

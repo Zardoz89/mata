@@ -727,7 +727,8 @@ begin
         _arg1 = commands[++_pc]; // Y
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
-        enemy(_arg0, _arg1, _arg2, sWordToInt(_arg3), _enemyGroupId);
+
+        enemy(sWordToInt(_arg0), _arg1, _arg2, sWordToInt(_arg3), _enemyGroupId);
         // Si estamos definiendo un grupo complejo, tenemos que actualizar el n§ de hijos del grupo
         if (_enemyGroupId <> 0)
           _enemyGroupId.totalChildrens += 1;
@@ -737,8 +738,8 @@ begin
 
       case CMD_SPAWN_ENEMY_SCR:
         // 4 argumentos
-        _arg0 = screenXToScrollX(commands[++_pc]);
-        _arg1 = screenYToScrollY(commands[++_pc]);
+        _arg0 = screenXToScrollX(sWordToInt(commands[++_pc]));
+        _arg1 = screenYToScrollY(sWordToInt(commands[++_pc]));
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
 
@@ -758,13 +759,13 @@ begin
         _arg3 = commands[++_pc]; // Patron Mov.
         _arg4 = commands[++_pc]; // N§ de enemigos
         _arg5 = commands[++_pc]; // Id Formaci¢n
-        createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
+        createSimpleEnemyGroup(sWordToInt(_arg0), _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
       case CMD_SPAWN_ENEMY_GRP_SCR:
         // 6 argumentos
-        _arg0 = screenXToScrollX(commands[++_pc]);
-        _arg1 = screenYToScrollY(commands[++_pc]);
+        _arg0 = screenXToScrollX(sWordToInt(commands[++_pc]));
+        _arg1 = screenYToScrollY(sWordToInt(commands[++_pc]));
         _arg2 = commands[++_pc]; // Type
         _arg3 = commands[++_pc]; // Patron Mov.
         _arg4 = commands[++_pc]; // N§ de enemigos

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="25" height="145" tilewidth="24" tileheight="28" infinite="0" nextlayerid="4" nextobjectid="42">
+<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="25" height="145" tilewidth="24" tileheight="28" infinite="0" nextlayerid="4" nextobjectid="47">
  <editorsettings>
   <export target="tilemap.csv" format="csv"/>
  </editorsettings>
@@ -216,6 +216,18 @@
    <point/>
   </object>
   <object id="41" name="kamikaze grp" x="204" y="2534.6">
+   <point/>
+  </object>
+  <object id="42" name="O-ship" x="-12" y="2509">
+   <point/>
+  </object>
+  <object id="44" name="Large turret" x="300" y="2409">
+   <point/>
+  </object>
+  <object id="45" name="Large turret" x="492" y="2409">
+   <point/>
+  </object>
+  <object id="46" name="Large turret" x="108" y="2409">
    <point/>
   </object>
  </objectgroup>

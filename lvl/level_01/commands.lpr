@@ -6,6 +6,7 @@ const KAMIKAZE = 2;
 const D-SHIP = 3;
 const GREY-TURRET = 4;
 const BROWN-TURRET = 5;
+const LARGE-MCLIFF-TURRET = 6;
 
 // **** Patrones movimiento
 const NO_MOVE = -1;
@@ -55,11 +56,29 @@ WaitScroll(26200);
 SpawnEnemy( 2510, 26170, BROWN-TURRET, NO_MOVE);
 SpawnEnemy( 4200, 25065, GREY-TURRET, NO_MOVE);
 SpawnEnemy( 4440, 25065, GREY-TURRET, NO_MOVE);
+SpawnEnemy( 1080, 24140, LARGE-MCLIFF-TURRET, NO_MOVE);
+SpawnEnemy( 3000, 24140, LARGE-MCLIFF-TURRET, NO_MOVE);
+SpawnEnemy( 4920, 24140, LARGE-MCLIFF-TURRET, NO_MOVE);
 
 // Naves cruzando los pilares
-WaitScroll(23200);
+WaitScroll(23100);
+SetScrollSpeed(0);
 SpawnEnemyGroup( 0 - 480, 23380, U-SHIP, RIGHT_V20PX, 4, 1);
-SpawnEnemyGroup( 5880 + 480, 23380, U-SHIP, LEFT_V20PX, 4, 1);
+SpawnEnemyGroup( 5880 + 480, 23660, U-SHIP, LEFT_V20PX, 4, 1);
+
+DefineEnemyGroup {
+  SpawnEnemy( 0 - 480, 25090        , O-SHIP, 21);
+  SpawnEnemy( 0 - 480, 25090 + 280  , O-SHIP, 22);
+  SpawnEnemy( 0 - 480, 25090 + 280*2, O-SHIP, 23);
+}
+DefineEnemyGroup {
+  SpawnEnemy( 5880 + 480, 25090        , O-SHIP, 24);
+  SpawnEnemy( 5880 + 480, 25090 + 280  , O-SHIP, 25);
+  SpawnEnemy( 5880 + 480, 25090 + 280*2, O-SHIP, 26);
+}
+
+WaitTicks(300); // Aprox. 5 segundos
+SetScrollSpeed(-5);
 
 WaitScroll(21500);
 SpawnEnemy( 3470, 21410, BROWN-TURRET, NO_MOVE);

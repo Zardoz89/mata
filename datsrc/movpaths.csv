@@ -358,5 +358,107 @@
  -1     , 0     , 5
   0     , 0     , 0      # 10
 
+# patron id 21 - Derecha 126f (9blq) y tuerze hacia arriba
+# maxSteps , vx0   , vy0
+  2        , 15    , 0
+# pasos id 0
+# ax    , ay    , ticks
+  0     , 0     , 126    # 0
+  -15   , -20   , 1
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 5
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 10
+
+# patron id 22 - Derecha 112f (8blq) y tuerze hacia arriba
+# maxSteps , vx0   , vy0
+  2        , 15    , 0
+# pasos id 0
+# ax    , ay    , ticks
+  0     , 0     , 112    # 0
+  -15   , -20   , 1
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 5
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 10
+
+# patron id 23 - Derecha 98f (7blq) y tuerze hacia arriba
+# maxSteps , vx0   , vy0
+  2        , 15    , 0
+# pasos id 0
+# ax    , ay    , ticks
+  0     , 0     , 98     # 0
+  -15   , -20   , 1
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 5
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 10
+
+# patron id 24 - Izquierda 126f (9blq) y tuerze hacia arriba
+# maxSteps , vx0   , vy0
+  2        , -15   , 0
+# pasos id 0
+# ax    , ay    , ticks
+  0     , 0     , 126    # 0
+  15    , -20   , 1
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 5
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 10
+
+# patron id 25 - Izquierda 112f (8blq) y tuerze hacia arriba
+# maxSteps , vx0   , vy0
+  2        , -15   , 0
+# pasos id 0
+# ax    , ay    , ticks
+  0     , 0     , 112    # 0
+  15    , -20   , 1
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 5
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 10
+
+# patron id 26 - Izquierda 98f (7blq) y tuerze hacia arriba
+# maxSteps , vx0   , vy0
+  2        , -15   , 0
+# pasos id 0
+# ax    , ay    , ticks
+  0     , 0     , 98     # 0
+  15    , -20   , 1
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 5
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0
+  0     , 0     , 0      # 10
+
 
 # vim: set fileencoding=cp850 :

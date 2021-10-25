@@ -9,14 +9,7 @@ COMPILER_OPTIONS _case_sensitive;
 
 program tiletest;
 
-import "zardoz/mata/dll/csv.dll";
-
 const
-
-  // cte. para las rutas
-  PATH_USER="zardoz";
-  PATH_PROG="mata";
-
   PLAYFIELD_REGION=1; // Region de la zona de juego
   PLAYFIELD_REGION_W=492;
   PLAYFIELD_REGION_H=448; // 28px * 16
@@ -76,14 +69,14 @@ begin
   set_fps(60, 0);
   vsync=1;
 
-  load_fpg(pathResolve("fpg\tilemap.fpg"));
+  load_fpg("fpg\\TILEMAP.FPG");
 
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
   debugText();
 
   tiles = malloc((TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
-  loadData("dat\tmap00", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+  loadData("lvl\\level_01\\tilemap", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
 
   tileMap = createTileBuffer(TILEMAP_COLUMNS, TILE_WIDTH, PLAYFIELD_REGION_H);
   backgroundScroll(tileMap, tiles);
@@ -97,14 +90,6 @@ begin
     frame;
   end
   free(tiles);
-end
-
-/**
- * Genera la ruta relativa a los ficheros del juego
- */
-function pathResolve(file)
-begin
-  return (PATH_USER + "\" + PATH_PROG + "\" + file);
 end
 
 /**
@@ -128,17 +113,16 @@ end
 /**
  * Lee un fichero CSV con datos de juego
  */
-function loadData(dataFile, _offset, size)
+function loadData(dataFile, _offset, _size)
 private
   int _retVal = 0;
   string _path;
   string _msg;
 begin
   _path = dataFile + ".csv";
-  _path = pathResolve(_path);
   // Efectivamente rellena un array de structs
   // La razon es que internamente DIV usa un array gigante para todas las variables
-  _retVal = readCSVToIntArray(_path, _offset, size);
+  _retVal = CSV_ReadToArray(_path, _size, _offset);
   if (_retVal <= 0)
     _msg = "Error al abrir fichero de datos: " + _path;
     write(0, 0, 0, 0, _msg);
@@ -258,3 +242,4 @@ begin
   end
 end
 
+/* vim: set ts=2 sw=2 tw=0 et fileencoding=iso8859-1 :*/

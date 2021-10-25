@@ -17,4 +17,5 @@ MAKEFILE text eol=crlf
 *.map binary
 *.EXE binary
 *.exe binary
+*.so binary
 

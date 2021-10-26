@@ -68,7 +68,8 @@ private
 
   int tileMapGraph;
 begin
-  mode_set(640,480, 8);
+  //mode_set(640, 480, 32, mode_window, filter_scale_scale2x, filter_scanline_noscanline);
+  mode_set(640, 480, 8);
   set_fps(60, 0);
   vsync=1;
 

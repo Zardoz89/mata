@@ -10,13 +10,10 @@ COMPILER_OPTIONS _case_sensitive;
 program mata;
 
 include "src/loadData.prg";
+include "src/tilemaps.prg";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.
-
-  // cte. para las rutas
-  PATH_USER="zardoz";
-  PATH_PROG="mata";
 
   BLACK_COLOR_PAL_INDEX = 196; // Indice del color negro en la paleta
 
@@ -243,7 +240,7 @@ begin
   rand_seed(1234);
 
   // **** Carga de paleta
-  load_pal(pathResolve("pal\tyrian.pal"));
+  load_pal(pathResolve("pal/tyrian.pal"));
   set_color(0, 0, 0 ,0); // Hack para que el color transparente sea el negro
   clear_screen();
 
@@ -253,66 +250,66 @@ begin
 
   // **** Carga de recursos ****
   // Fuentes
-  fntScore = load_fnt(pathResolve("fnt\score.fnt"));
-  fntGameover = load_fnt(pathResolve("fnt\gameover.fnt"));
+  fntScore = load_fnt(pathResolve("fnt/score.fnt"));
+  fntGameover = load_fnt(pathResolve("fnt/gameover.fnt"));
   _loadingMsg = "Cargando... 10%";
   frame();
 
   // Gr ficos
-  fpgTileset = load_fpg(pathResolve("fpg\tilemap.fpg"));
+  fpgTileset = load_fpg(pathResolve("fpg/tilemap.fpg"));
   _loadingMsg = "Cargando... 25%";
   frame();
 
-  fpgPlayer = load_fpg(pathResolve("fpg\player.fpg"));
+  fpgPlayer = load_fpg(pathResolve("fpg/player.fpg"));
   _loadingMsg = "Cargando... 30%";
   frame();
 
-  fpgShoots = load_fpg(pathResolve("fpg\shoots.fpg"));
+  fpgShoots = load_fpg(pathResolve("fpg/shoots.fpg"));
   _loadingMsg = "Cargando... 40%";
   frame();
 
-  fpgEnemy = load_fpg(pathResolve("fpg\enemy.fpg"));
+  fpgEnemy = load_fpg(pathResolve("fpg/enemy.fpg"));
   _loadingMsg = "Cargando... 50%";
   frame();
 
-  fpgExplosion = load_fpg(pathResolve("fpg\explo.fpg"));
+  fpgExplosion = load_fpg(pathResolve("fpg/explo.fpg"));
   _loadingMsg = "Cargando... 55%";
   frame();
 
-  fpgHud = load_fpg(pathResolve("fpg\hud.fpg"));
+  fpgHud = load_fpg(pathResolve("fpg/hud.fpg"));
   _loadingMsg = "Cargando... 60%";
   frame();
 
   // Carga tipos de disparo
-  loadData("dat\shoots", offset shootData, sizeof(shootData));
+  loadData("dat/shoots", offset shootData, sizeof(shootData));
   _loadingMsg = "Cargando... 65%";
   frame();
 
   // Carga las formaciones
-  loadData("dat\formatio", offset formations, sizeof(formations));
+  loadData("dat/formatio", offset formations, sizeof(formations));
   _loadingMsg = "Cargando... 70%";
   frame();
 
   // Carga patrones de movimiento
-  loadData("dat\movpaths", offset paths, sizeof(paths));
+  loadData("dat/movpaths", offset paths, sizeof(paths));
   _loadingMsg = "Cargando... 75%";
   frame();
 
   // Carga tipo de enemigos
-  loadData("dat\enemtype", offset enemyType, sizeof(enemyType));
+  loadData("dat/enemtype", offset enemyType, sizeof(enemyType));
   _loadingMsg = "Cargando... 80%";
   frame();
 
-  loadData("dat\pweapons", offset playerWeapons, sizeof(playerWeapons));
+  loadData("dat/pweapons", offset playerWeapons, sizeof(playerWeapons));
   _loadingMsg = "Cargando... 90%";
   frame();
 
   // TODO Carga de FX de sonido
-  snd.explosion = load_wav(pathResolve("\snd\bigexpl0.wav"), 0);
-  snd.bigExplosion = load_wav(pathResolve("\snd\bigexpl1.wav"), 0);
+  snd.explosion = load_wav(pathResolve("snd/bigexpl0.wav"), 0);
+  snd.bigExplosion = load_wav(pathResolve("snd/bigexpl1.wav"), 0);
   //snd.pickUp;
   //snd.eShoot;
-  snd.vulcan = load_wav(pathResolve("\snd\vulcan.wav"), 0);
+  snd.vulcan = load_wav(pathResolve("snd/vulcan.wav"), 0);
   //snd.laser;
   _loadingMsg = "Cargando... 100%";
   frame();
@@ -455,10 +452,11 @@ begin
 
   // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
   tiles = malloc(level.tileMapRows * level.tileMapColumns);
-  loadData("lvl\" + levelName + "\tilemap", tiles, level.tileMapRows * level.tileMapColumns);
+  loadData("lvl/" + levelName + "/tilemap", tiles, level.tileMapRows * level.tileMapColumns);
 
   // Creamos el buffer del tilemap
-  tileMapGraph = createTileBuffer(level.tileMapRows, level.tileMapColumns);
+  //tileMapGraph = createTileBuffer(level.tileMapRows, level.tileMapColumns);
+  tileMapGraph = createTileBuffer(level.tileMapRows, level.tileMapColumns, TILE_WIDTH, TILE_HEIGHT, BLACK_COLOR_PAL_INDEX);
 
   // Rellenamos el buffer con el tilemap
   drawTiles(tileMapGraph, tiles, level.tileMapColumns, level.tileMapRows, TILE_WIDTH, TILE_HEIGHT);
@@ -565,7 +563,7 @@ end
  */
 function loadLevelData(string levelName)
 begin
-   return(loadData("lvl\" + levelName + "\level", offset level, sizeof(level)));
+   return(loadData("lvl/" + levelName + "/level", offset level, sizeof(level)));
 end
 
 /**
@@ -579,7 +577,7 @@ private
   word pointer _commands;
 begin
   arraySize = 0;
-  _path = "lvl\" + levelName + "\commands.dat";
+  _path = "lvl/" + levelName + "/commands.dat";
   _path = pathResolve(_path);
   _file = fopen(_path, "r");
 
@@ -793,50 +791,6 @@ begin
 
 
     frame(3000); // Actualiza a 2 FPS
-  end
-end
-
-/**
- * Crea el buffer de tilemap
- */
-function createTileBuffer(rows, columns)
-private
-  bufferWidth;
-  bufferHeight;
-  buffer;
-begin
-  bufferWidth = TILE_WIDTH * columns;
-  bufferHeight = TILE_HEIGHT * rows;
-  buffer = new_map(bufferWidth, bufferHeight,
-    bufferWidth >> 1, bufferHeight >> 1,
-    BLACK_COLOR_PAL_INDEX); // Color negro
-  return(buffer);
-end
-
-/**
- * Pinta un tilemap grande en un buffer
- */
-function drawTiles(buffer, word pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight)
-private
-  tileIndex;
-  tileMap; // Grafico del tilemap a pintar
-  halfTileWidth; // Centro X del tilemap
-  halfTileHeight; // Centro Y del tilemap
-  putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
-begin
-  halfTileWidth = tileWidth >> 1;
-  halfTileHeight = tileHeight >> 1;
-
-  for (y = 0; y < mapRows; y++)
-    putY = (y * tileHeight) + halfTileHeight;
-    for (x = 0; x < mapColumns; x++)
-      tileIndex = mapColumns * y + x;
-      tileMap = tilesPtr[tileIndex];
-      tileMap = max(tileMap, 1);
-      map_put(0, buffer, tileMap,
-        (x * tileWidth) + halfTileWidth,
-        putY);
-    end
   end
 end
 

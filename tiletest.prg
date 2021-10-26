@@ -9,6 +9,7 @@ COMPILER_OPTIONS _case_sensitive, _extended_conditions;//, _use_cstyle;
 program tiletest;
 
 include "src/loadData.prg";
+include "src/tilemaps.prg";
 
 const
   PLAYFIELD_REGION=1; // Region de la zona de juego
@@ -22,6 +23,7 @@ const
   TILEMAP_MAX_X= 600; //TILEMAP_COLUMNS * TILEMAP_WIDTH - playfield_region_w;
   TILEMAP_MAX_Y= 4060; //768; //TILEMAP_ROWS * TILEMAP_HEIGHT;
 
+  BLACK_COLOR_PAL_INDEX = 196; // Indice del color negro en la paleta
 
 global
 
@@ -30,7 +32,7 @@ scrollY = 0;
 scrollX = 0;
 
 private
-  int* tiles;
+  int16* tiles;
   /*int tiles[(TILEMAP_ROWS+1) * TILEMAP_COLUMNS] =
   // 0    1    2    3    4    5    6    7     8    9   10   11   12   13   14   15    16   17   18   19   20   21   22   23   24
     16,  16,   2,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
@@ -64,7 +66,7 @@ private
     13,  13,  13,  13,  13,  13,  13,  13,   21,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  20,  21; // 8
   */
 
-  tileMap;
+  int tileMapGraph;
 begin
   mode_set(640,480, 8);
   set_fps(60, 0);
@@ -79,18 +81,24 @@ begin
   tiles = malloc((TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
   loadData("lvl/level_01/tilemap", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
 
-  tileMap = createTileBuffer(TILEMAP_COLUMNS, TILE_WIDTH, PLAYFIELD_REGION_H);
-  backgroundScroll(tileMap, tiles);
+  tileMapGraph = createTileBuffer(TILEMAP_ROWS, TILEMAP_COLUMNS, TILE_WIDTH, TILE_HEIGHT, BLACK_COLOR_PAL_INDEX);
+  drawTiles(tileMapGraph, tiles, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT);
+  free(tiles);
+
+  start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
+  scroll[0].y0 = TILEMAP_ROWS * TILE_HEIGHT;
 
   loop
     if (keydown(_q))
       let_me_alone();
       break;
     end
-
+    scroll[0].x0 = TILEMAP_COLUMNS * TILE_WIDTH * (mouse.x / 640.0); //clamp(mouse.x, 0, TILEMAP_COLUMNS * TILE_WIDTH);
+    scroll[0].y0 = TILEMAP_ROWS * TILE_HEIGHT * (mouse.y / 480.0); //clamp(mouse.y, 0, TILEMAP_ROWS * TILE_HEIGHT);
+    write(0, 0, 0, 0, &scroll[0].x0);
+    write(0, 0, 30, 0, &scroll[0].y0);
     frame;
   end
-  free(tiles);
 end
 
 /**
@@ -119,86 +127,5 @@ begin
   end
 end
 
-function createTileBuffer(mapColumns, tileWidth, regionHeight)
-private
-  bufferWidth;
-  buffer;
-begin
-  bufferWidth = tileWidth * mapColumns;
-
-  buffer = new_map(bufferWidth, regionHeight,
-    0, 0,//bufferWidth >> 1, regionHeight >> 1,
-    196);
-  return(buffer);
-end
-
-
-process backgroundScroll(graph, int pointer tilesPtr)
-private
-  oldScrollX;
-  oldScrollY;
-begin
-  file = 0;
-  region = PLAYFIELD_REGION;
-  z = 512;
-  scrollY = TILEMAP_MAX_Y - PLAYFIELD_REGION_H;
-
-  oldScrollX = scrollX;
-  oldScrollY = scrollY;
-
-
-  drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, 0, 0);
-  loop
-    scrollX = clamp(mouse.x, 0, TILEMAP_MAX_X - PLAYFIELD_REGION_W);
-    scrollY = clamp(scrollY - 1, 0, TILEMAP_MAX_Y - PLAYFIELD_REGION_H);
-    if (scrollX <> oldScrollX || scrollY <> oldScrollY)
-      drawTiles(graph, tilesPtr, TILEMAP_COLUMNS, TILEMAP_ROWS, TILE_WIDTH, TILE_HEIGHT, scrollX, scrollY);
-    end
-    oldScrollX = scrollX;
-    oldScrollY = scrollY;
-
-    frame(200);
-  end
-
-end
-
-/**
- * Pinta un tilemap grande en un buffer
- *
- *
- * El funcionamiento es el siguiente, determina las filas y columnas que van a estar dentro del buffer de destino
- * a partir de inputX e inputY como desplazamientos.
- * Recorre el array multidimensional del tileMap, pero solamente las parte visibles y las pinta en el buffer de destino
- */
-function drawTiles(buffer, int pointer tilesPtr, mapColumns, mapRows, tileWidth, tileHeight, inputX, inputY)
-private
-  tileIndex;
-  tileMap; // Grafico del tilemap a pintar
-  halfTileWidth; // Centro X del tilemap
-  halfTileHeight; // Centro Y del tilemap
-  x0; // Primera columna que se va a pintar
-  y0; // Primera fila que se va a pintar
-  xMax; // Ultima columna que se va a pintar
-  yMax; // Ultima fila que se va a pintar
-  putY; // Temporal para sacar calculo de Y en el buffer al pintar, del bucle mas interior
-begin
-  y=0; x=0;
-  x0 = inputX / tileWidth;
-  y0 = inputY / tileHeight;
-  xMax = clamp(((inputX + PLAYFIELD_REGION_W) / tileWidth) + 1, 0, mapColumns);
-  yMax = clamp(((inputY + PLAYFIELD_REGION_H) / tileHeight) + 1, 0, mapRows);
-  halfTileWidth = tileWidth >> 1;
-  halfTileHeight = tileHeight >> 1;
-
-  for (y = y0; y <= (mapRows); y++)
-    putY = (y * tileHeight) + halfTileHeight - inputY;
-    for (x = x0 ; x < xMax; x++)
-      tileIndex = mapColumns * y + x;
-      tileMap = tilesPtr[tileIndex];
-      tileMap = max(tileMap, 1);
-      map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth - inputX, putY);
-    end
-  end
-end
 
 /* vim: set ts=2 sw=2 tw=0 et fileencoding=iso8859-1 :*/

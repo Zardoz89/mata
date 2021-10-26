@@ -9,8 +9,7 @@ COMPILER_OPTIONS _case_sensitive;
 
 program mata;
 
-import "zardoz/mata/csvdll/dist/div2/csv.dll";
-//import "zardoz/mata/ghost.dll";
+include "src/loadData.prg";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.
@@ -238,7 +237,7 @@ private
 
 begin
   // **** Configuraci¢n pantalla
-  set_mode(m640x480);
+  mode_set(640,480, 8);
   set_fps(60, 0);
   vsync=1;
   rand_seed(1234);
@@ -351,69 +350,8 @@ end
  */
 function pathResolve(file)
 begin
-  return (PATH_USER + "\" + PATH_PROG + "\" + file);
+  return (file);
 end
-
-/**
- * Lee un fichero CSV con datos de juego, rellenando un array de Ints o una estructura
- */
-function loadData(dataFile, _offset, size)
-private
-  int _retVal = 0;
-  string _path;
-  string _msg;
-begin
-  _path = dataFile + ".csv";
-  _path = pathResolve(_path);
-  // Efectivamente rellena un array de structs
-  // La razon es que internamente DIV usa un array gigante para todas las variables
-  _retVal = readCSVToIntArray(_path, _offset, size);
-  if (_retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-    loop
-      // abortamos ejecuci¢n
-      if (key(_q) || key(_esc))
-        let_me_alone();
-        break;
-      end
-
-      frame;
-    end
-  end
-  return(_retVal);
-end
-
-/**
- * Lee un fichero CSV con datos de juego, rellenando un array de Words
- */
-function loadDataWord(dataFile, _offset, size)
-private
-  int _retVal = 0;
-  string _path;
-  string _msg;
-begin
-  _path = dataFile + ".csv";
-  _path = pathResolve(_path);
-  // Efectivamente rellena un array de structs
-  // La razon es que internamente DIV usa un array gigante para todas las variables
-  _retVal = readCSVToWordArray(_path, _offset, size);
-  if (_retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-    loop
-      // abortamos ejecuci¢n
-      if (key(_q) || key(_esc))
-        let_me_alone();
-        break;
-      end
-
-      frame;
-    end
-  end
-  return(_retVal);
-end
-
 
 /**
  * Verifica si un proceso est  dentro del area de juego, que es mas grande que la regi¢n visible
@@ -517,7 +455,7 @@ begin
 
   // Creamos el array dinamico del tilemap y lo leemos de un fichero csv
   tiles = malloc(level.tileMapRows * level.tileMapColumns);
-  loadDataWord("lvl\" + levelName + "\tilemap", tiles, level.tileMapRows * level.tileMapColumns);
+  loadData("lvl\" + levelName + "\tilemap", tiles, level.tileMapRows * level.tileMapColumns);
 
   // Creamos el buffer del tilemap
   tileMapGraph = createTileBuffer(level.tileMapRows, level.tileMapColumns);

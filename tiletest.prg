@@ -1,4 +1,4 @@
-COMPILER_OPTIONS _case_sensitive;
+COMPILER_OPTIONS _case_sensitive, _extended_conditions;//, _use_cstyle;
 // ****************************************************************************
 // Matamarcianos con DIV 2 Games Studio para el DivCompo
 //
@@ -6,8 +6,9 @@ COMPILER_OPTIONS _case_sensitive;
 //
 // https://divcompo.now.sh
 // ****************************************************************************
-
 program tiletest;
+
+include "src/loadData.prg";
 
 const
   PLAYFIELD_REGION=1; // Region de la zona de juego
@@ -29,7 +30,7 @@ scrollY = 0;
 scrollX = 0;
 
 private
-  int pointer tiles;
+  int* tiles;
   /*int tiles[(TILEMAP_ROWS+1) * TILEMAP_COLUMNS] =
   // 0    1    2    3    4    5    6    7     8    9   10   11   12   13   14   15    16   17   18   19   20   21   22   23   24
     16,  16,   2,  13,  13,  13,  13,  21,   13,  13,  13,  13,  13,  13,  13,  13,   13,  13,  13,  13,  13,  13,  13,  13,  20, // 0
@@ -65,24 +66,24 @@ private
 
   tileMap;
 begin
-  set_mode(m640x480);
+  mode_set(640,480, 8);
   set_fps(60, 0);
   vsync=1;
 
-  load_fpg("fpg\\TILEMAP.FPG");
+  load_fpg("fpg/TILEMAP.FPG");
 
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
   debugText();
 
   tiles = malloc((TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
-  loadData("lvl\\level_01\\tilemap", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
+  loadData("lvl/level_01/tilemap", tiles, (TILEMAP_ROWS+1) * TILEMAP_COLUMNS);
 
   tileMap = createTileBuffer(TILEMAP_COLUMNS, TILE_WIDTH, PLAYFIELD_REGION_H);
   backgroundScroll(tileMap, tiles);
 
   loop
-    if (key(_q))
+    if (keydown(_q))
       let_me_alone();
       break;
     end
@@ -90,6 +91,14 @@ begin
     frame;
   end
   free(tiles);
+end
+
+/**
+ * Genera la ruta relativa a los ficheros del juego
+ */
+function string pathResolve(string filename)
+begin
+  return(filename);
 end
 
 /**
@@ -109,36 +118,6 @@ begin
     frame(3000); // Actualiza a 2 FPS
   end
 end
-
-/**
- * Lee un fichero CSV con datos de juego
- */
-function loadData(dataFile, _offset, _size)
-private
-  int _retVal = 0;
-  string _path;
-  string _msg;
-begin
-  _path = dataFile + ".csv";
-  // Efectivamente rellena un array de structs
-  // La razon es que internamente DIV usa un array gigante para todas las variables
-  _retVal = CSV_ReadToArray(_path, _size, _offset);
-  if (_retVal <= 0)
-    _msg = "Error al abrir fichero de datos: " + _path;
-    write(0, 0, 0, 0, _msg);
-    loop
-      // abortamos ejecuci¢n
-      if (key(_q) || key(_esc))
-        let_me_alone();
-        break;
-      end
-
-      frame;
-    end
-  end
-  return(_retVal);
-end
-
 
 function createTileBuffer(mapColumns, tileWidth, regionHeight)
 private
@@ -182,26 +161,6 @@ begin
   end
 
 end
-
-function clamp(val, minVal, maxVal)
-begin
-  if (val > maxVal)
-    return(maxVal);
-  end
-  if (val < minVal)
-    return(minVal);
-  end
-  return(val);
-end
-
-function max(val, maxVal)
-begin
-  if (val < maxVal)
-    return(maxVal);
-  end
-  return(val);
-end
-
 
 /**
  * Pinta un tilemap grande en un buffer

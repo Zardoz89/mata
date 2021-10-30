@@ -26,10 +26,7 @@ const
   BLACK_COLOR_PAL_INDEX = 196; // Indice del color negro en la paleta
 
 global
-
-local
-scrollY = 0;
-scrollX = 0;
+  real_res_x, real_res_y;
 
 private
   int16* tiles;
@@ -69,11 +66,13 @@ private
   int tileMapGraph;
 begin
   //mode_set(640, 480, 32, mode_window, filter_scale_scale2x, filter_scanline_noscanline);
+  desktop_get_size(&real_res_x, &real_res_y);
+  virtualresolution_set(real_res_x, real_res_y, 1, 0);
   mode_set(640, 480, 8);
   set_fps(60, 0);
   vsync=1;
 
-  load_fpg("fpg/TILEMAP.FPG");
+  fpg_load("fpg/TILEMAP.FPG");
 
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
 
@@ -94,8 +93,10 @@ begin
       let_me_alone();
       break;
     end
+
     scroll[0].x0 = TILEMAP_COLUMNS * TILE_WIDTH * (mouse.x / 640.0); //clamp(mouse.x, 0, TILEMAP_COLUMNS * TILE_WIDTH);
     scroll[0].y0 = TILEMAP_ROWS * TILE_HEIGHT * (mouse.y / 480.0); //clamp(mouse.y, 0, TILEMAP_ROWS * TILE_HEIGHT);
+
     write(0, 0, 0, 0, &scroll[0].x0);
     write(0, 0, 30, 0, &scroll[0].y0);
     frame;

@@ -6,9 +6,13 @@ SHOOTS_TYPE_PROCESSOR := $(TOOLS_PATH)/processShoots.d
 ENEMY_TYPE_PROCESSOR := $(TOOLS_PATH)/processEnemType.d
 LEVEL_PROCESSOR := $(TOOLS_PATH)/levelcompiler
 
-all: tiletest dat/*.csv lvl/level_01/commands.dat
+all: dat/*.csv lvl/level_01/commands.dat tiletest mata
 
 tiletest: tiletest.prg src/*.prg
+	cd ${GEMIX_COMPILER_PATH} && ${GEMIX_COMPILER} ${CURDIR}/$< $@
+	mv ${GEMIX_COMPILER_PATH}$@* ${EXE_PATH}
+
+mata: mata.prg src/*.prg
 	cd ${GEMIX_COMPILER_PATH} && ${GEMIX_COMPILER} ${CURDIR}/$< $@
 	mv ${GEMIX_COMPILER_PATH}$@* ${EXE_PATH}
 

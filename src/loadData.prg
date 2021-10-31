@@ -46,7 +46,7 @@ end
  * @param size Tamaño del array
  * @return Nº de elementos leidos del CSV
  */
-function loadData(string dataFile, int16* data, int sizeOfArray)
+function int loadData(string dataFile, int16* data, int sizeOfArray)
 private
   int _retVal = 0;
   string _path;

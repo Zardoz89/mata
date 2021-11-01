@@ -113,36 +113,36 @@ begin
     //   end
     // end
 
-    // _mainWeaponId = getMainWeaponIdFromPlayerWeapon();
+    _mainWeaponId = getMainWeaponIdFromPlayerWeapon();
 
-    // // Disparo arma principal
-    // if (key(_control) || mouse.left)
-    //   // Si ha pasado suficiente delay...
-    //   if (_mainShootCounter >= shootData[_mainWeaponId].delay)
+    // Disparo arma principal
+    if (keydown(_control) || mouse.left)
+      // Si ha pasado suficiente delay...
+      if (_mainShootCounter >= shootData[_mainWeaponId].delay)
     //     // Si tenemos suficiente energia...
     //     if (player.energy > shootData[_mainWeaponId].energy )
     //       // Consumismos energia
     //       player.energy = clamp(player.energy - shootData[_mainWeaponId].energy, 0, PLAYER_MAX_ENERGY);
     //       _mainShootCounter = 0;
 
-    //       // Calculo dispersión del disparo si aplica
-    //       _dispersionAngle = calcDispersionAngle(shootData[_mainWeaponId].disperseValue,
-    //         shootData[_mainWeaponId].disperseType, ticksCounter);
-    //       if (shootData[_mainWeaponId].disperseType <> DIS_FOLLOW_Y_FATHER)
-    //         shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId, MOVREL_NONE, false);
-    //       else
-    //         shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId,
-    //           MOVREL_SYNC_X || MOVREL_REL_Y, false);
-    //       end
+          // Calculo dispersión del disparo si aplica
+          _dispersionAngle = calcDispersionAngle(shootData[_mainWeaponId].disperseValue,
+          shootData[_mainWeaponId].disperseType, ticksCounter);
+          if (shootData[_mainWeaponId].disperseType <> DIS_FOLLOW_Y_FATHER)
+            shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId, MOVREL_NONE, false);
+          else
+            shoot(x, y, 90000 + _dispersionAngle , _mainWeaponId,
+              MOVREL_SYNC_X || MOVREL_REL_Y, false);
+          end
 
     //       // Y metemos el FX de sonido
     //       //sound(snd.vulcan, 256, 256);
-    //     end
-    //   end
     // end
+      end
+    end
 
-    // _mainShootCounter++;
-    // ticksCounter++;
+    _mainShootCounter++;
+    ticksCounter++;
     frame;
   end
 
@@ -184,13 +184,13 @@ end
 //   end
 // end
 // 
-// /**
-//  * Devuelve el ID de la tabla de armas a partir del arma actual del jugador
-//  */
-// function getMainWeaponIdFromPlayerWeapon()
-// begin
-//   return(playerWeapons[player.mainWeapon.weapon].weaponId[player.mainWeapon.tier]);
-// end
+/**
+ * Devuelve el ID de la tabla de armas a partir del arma actual del jugador
+ */
+function getMainWeaponIdFromPlayerWeapon()
+begin
+  return(playerWeapons[player.mainWeapon.weapon].weaponId[player.mainWeapon.tier]);
+end
 // 
 // /**
 //  * Devuelve el ID de la tabla de armas a partir del arma secundartia actual del jugador

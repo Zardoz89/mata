@@ -5,6 +5,11 @@ COMPILER_OPTIONS _case_sensitive, _extended_conditions, _use_cstyle;
 // Código para la generación de tilemaps
 // ****************************************************************************
 
+const
+  // Cte. referentes al tilemap
+  TILE_WIDTH=24;
+  TILE_HEIGHT=28;
+
 /**
  * Crea el buffer de tilemap
  * @param mapRows Nº de filas del tilemap

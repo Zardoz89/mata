@@ -32,6 +32,12 @@ global
     end
   end
 
+  // **** Tabla de armas del jugador
+  struct playerWeapons[1]
+    int32 itemGraph; // Grafico del item que da dicha arma
+    int32 weaponId[4];
+  end
+
 /**
  * Nave del juegador
  */

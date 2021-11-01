@@ -14,6 +14,7 @@ include "src/loadData.prg";
 include "src/tilemaps.prg";
 include "src/gamelevel.prg";
 include "src/player.prg";
+include "src/shoots.prg";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.
@@ -58,14 +59,6 @@ const
   STATUS_ENERGY_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
 
   // **** Enumerados **********************************************************
-  // **** Tipos de dispersion del disparo
-  DIS_NONE = 0; // No dispersa
-  DIS_RAND = 1; // Dispersion aleatoria
-  DIS_SIN = 2; // Dispersion senoidal
-  DIS_FOLLOW_Y_FATHER = 3; // Se mantiene en el mismo eje Y que el proceso padre
-
-  DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN
-
   // **** Tipos de movimientos relativos
   MOVREL_NONE = 0;
   MOVREL_SYNC_X = 1; // Sincroniza eje X con el padre
@@ -124,17 +117,6 @@ global
   //   end
   // end
 
-  // // **** Tipos de disparo
-  // struct shootData[10]
-  //   int graph; // Indice del grafico a usar de fpgShoots
-  //   int damage; // Da¤o del disparo
-  //   int energy; // Energia consumida (solo jugador)
-  //   int delay; // Retardo entre cada disparo. A 60 fps -> 1 tick ~ 16 centesimas
-  //   int speed; // Velocidad en pixels
-  //   int disperseValue; // Angulo de dispersion
-  //   int disperseType; // Tipo de dispersion del disparo
-  // end
-
   // // **** Patrones de movimiento [Id patron]
   // struct paths[40]
   //   byte maxSteps; // N§ de pasos
@@ -158,12 +140,6 @@ global
   //   byte nFrames; // N§ de frames de la animaci¢n
   //   byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
   //   int graphId[10];
-  // end
-
-  // // **** Tabla de armas del jugador
-  // struct playerWeapons[1]
-  //   itemGraph; // Grafico del item que da dicha arma
-  //   weaponId[4];
   // end
 
   // // **** Definici¢n animaciones de explosiones
@@ -213,6 +189,7 @@ begin
   rand_seed(1234);
 
   // **** Carga de paleta
+  logger_log("Cargando paleta");
   load_pal(pathResolve("pal/tyrian.pal"));
   set_color(0, 0, 0 ,0); // Hack para que el color transparente sea el negro
   clear_screen();
@@ -223,40 +200,48 @@ begin
 
   // **** Carga de recursos ****
   // Fuentes
+  logger_log("Cargando fuentes");
   fntScore = load_fnt(pathResolve("fnt/score.fnt"));
   fntGameover = load_fnt(pathResolve("fnt/gameover.fnt"));
   _loadingMsg = "Cargando... 10%";
   frame();
 
   // Gr ficos
+  logger_log("Cargando tilemap.fpg");
   fpgTileset = load_fpg(pathResolve("fpg/TILEMAP.FPG"));
   _loadingMsg = "Cargando... 25%";
   frame();
 
+  logger_log("Cargando player.fpg");
   fpgPlayer = load_fpg(pathResolve("fpg/PLAYER.FPG"));
   _loadingMsg = "Cargando... 30%";
   frame();
 
+  logger_log("Cargando shoots.fpg");
   fpgShoots = load_fpg(pathResolve("fpg/shoots.fpg"));
   _loadingMsg = "Cargando... 40%";
   frame();
 
+  logger_log("Cargando enemy.fpg");
   fpgEnemy = load_fpg(pathResolve("fpg/enemy.fpg"));
   _loadingMsg = "Cargando... 50%";
   frame();
 
+  logger_log("Cargando explo.fpg");
   fpgExplosion = load_fpg(pathResolve("fpg/EXPLO.FPG"));
   _loadingMsg = "Cargando... 55%";
   frame();
 
+  logger_log("Cargando hud.fpg");
   fpgHud = load_fpg(pathResolve("fpg/hud.fpg"));
   _loadingMsg = "Cargando... 60%";
   frame();
 
-  // // Carga tipos de disparo
-  // loadData("dat/shoots", offset shootData, sizeof(shootData));
-  // _loadingMsg = "Cargando... 65%";
-  // frame();
+  // Carga tipos de disparo
+  logger_log("Cargando shoots.csv");
+  loadShootsData();
+  _loadingMsg = "Cargando... 65%";
+  frame();
 
   // // Carga las formaciones
   // loadData("dat/formatio", offset formations, sizeof(formations));
@@ -273,7 +258,8 @@ begin
   // _loadingMsg = "Cargando... 80%";
   // frame();
 
-  // loadData("dat/pweapons", offset playerWeapons, sizeof(playerWeapons));
+  // logger_log("Cargando pweapons.csv");
+  // loadData("dat/pweapons", (int32*)&playerWeapons, sizeof(playerWeapons));
   // _loadingMsg = "Cargando... 90%";
   // frame();
 
@@ -362,119 +348,6 @@ begin
 end
 
 // 
-// 
-// /**
-//  * Calcula el nuevo angulo de dispersion a partir del tipo, angulo maximo y ticks
-//  */
-// function calcDispersionAngle(weaponDispersionAngle, dispersionType, ticks)
-// private
-//   int _dispersionAngle;
-// begin
-//   switch (dispersionType)
-//     case DIS_RAND:
-//       _dispersionAngle = rand(- weaponDispersionAngle, weaponDispersionAngle);
-//     end
-//     case DIS_SIN:
-//       _dispersionAngle = (weaponDispersionAngle / 1000) * sin(ticks * DIS_TICKS_SIN_MULTIPLIER);
-//     end
-//     default:
-//       _dispersionAngle = 0;
-//     end
-//   end
-//   return (_dispersionAngle);
-// end
-// 
-// /**
-//  * Proceso que representa un disparo
-//  *
-//  * Parametros:
-//  * x
-//  * y
-//  * direction Angulo de movimiento
-//  * typeId Tipo de disparo
-//  * moveRelativeToFather Cte. que indica el tipo de movimiento relativo
-//  * enemyShoot True si es disparado por un enemigo
-//  */
-// process shoot(x, y, direction, typeId, moveRelativeToFather, enemyShoot)
-// private
-//   hitId;
-//   tmpScore;
-//   tmpK;
-//   tmpR;
-// begin
-//   file = fpgShoots;
-//   region = PLAYFIELD_REGION;
-//   resolution = PLAYFIELD_RESOLUTION;
-//   graph = shootData[typeId];
-//   if (moveRelativeToFather) // Con mov. relativo al padre, xrel/yrel es respecto al padre
-//     xrel = 0;
-//     yrel = 0;
-//   else // xrel/yrel respecto al tilemap
-//     xrel = screenXToScrollX(x);
-//     yrel = screenYToScrollY(y);
-//   end
-// 
-//   while (! out_region(id, region))
-//     if (enemyShoot)
-//       // Colision con el jugador
-//       hitId = collision(type playerShip);
-//       if (hitId)
-//         explosion(3, x, y); // Mini explosion por impacto
-// 
-//         damagePlayer(shootData[typeId].damage);
-//         break;
-//       end
-// 
-//     else
-//       // Colision con un enemigo
-//       hitId = collision(type enemy);
-//       if (hitId)
-//         if (hitId.hull > 0) // Evitamos que se cuente multiples veces la muerte
-//           // Da¤amos al enemigo
-//           hitId.hull = hitId.hull - shootData[typeId].damage;
-//           if (hitId.hull <= 0) // Si se queda sin vida, contamos la muerte y aumentamos la puntuaci¢n
-//             player.score += enemyType[hitId.typeId].score;
-//             if (hitId.groupProcess)
-//               hitId.groupProcess.killedChildrens++;
-//               hitId.groupProcess.remaningChildrens--;
-//               // Asignamos X e Y para que el grupo de enemigos pueda dropear el bonus en donde muere el ultimo miembro del grupo
-//               hitId.groupProcess.x = x;
-//               hitId.groupProcess.xrel = hitId.xrel;
-//               hitId.groupProcess.y = y;
-//               hitId.groupProcess.yrel = hitId.yrel;
-//             end
-//             explosion(rand(0, 2), x, y); // Efecto de explosion
-//           else
-//             explosion(3, x, y); // Mini explosion por impacto
-//           end
-//         end
-//         break;
-//       end
-//     end
-// 
-//     // Movimiento
-//     // Si es movimiento relativo
-//     if ((moveRelativeToFather && MOVREL_SYNC_X) == MOVREL_SYNC_X)
-//       x = father.x;
-//       if (direction == 270000 || direction == -90000)
-//         yrel += shootData[typeId].speed;
-//       else
-//         yrel -= shootData[typeId].speed;
-//       end
-//       if ((moveRelativeToFather && MOVREL_REL_Y) == MOVREL_REL_Y)
-//         y = father.y + yrel;
-//       else
-//         y = yrel;
-//       end
-//     else
-//       xrel += (cos(direction) * shootData[typeId].speed) / 1000;
-//       yrel -= (sin(direction) * shootData[typeId].speed) / 1000;
-//       x = scrollXToScreenX(xrel);
-//       y = scrollYToScreenY(yrel);
-//     end
-//     frame;
-//   end;
-// end
 // 
 // 
 // /**

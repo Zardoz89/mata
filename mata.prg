@@ -258,10 +258,11 @@ begin
   // _loadingMsg = "Cargando... 80%";
   // frame();
 
-  // logger_log("Cargando pweapons.csv");
+  logger_log("Cargando pweapons.csv");
+  loadWeaponssData();
   // loadData("dat/pweapons", (int32*)&playerWeapons, sizeof(playerWeapons));
-  // _loadingMsg = "Cargando... 90%";
-  // frame();
+  _loadingMsg = "Cargando... 90%";
+  frame();
 
   // TODO Carga de FX de sonido
   //snd.explosion = load_wav(pathResolve("snd/bigexpl0.wav"), 0);

@@ -33,10 +33,34 @@ global
   end
 
   // **** Tabla de armas del jugador
-  struct playerWeapons[1]
+  struct playerWeapons[2]
     int32 itemGraph; // Grafico del item que da dicha arma
-    int32 weaponId[4];
+    int32 weaponId[5];
   end
+
+/**
+ * Carga los datos de los distintos tipos de armas y el id de disparo/proyectil
+ */
+function int loadWeaponssData()
+private
+  int32* tmpArray;
+  int _size;
+  int i;
+begin
+  _size = loadData("dat/pweapons",  tmpArray, max_int32);
+  tmpArray = memory_new(_size * sizeof(int32));
+  _size = loadData("dat/pweapons",  tmpArray, _size);
+  for(i=0; (i < _size) && (i/6 < 2); i++)
+    if (i%6 == 0)
+      playerWeapons[i/6].itemGraph = tmpArray[i];
+    end
+    if (i%6 != 0)
+      playerWeapons[i/6].weaponId[i%6 - 1] = tmpArray[i];
+    end
+  end
+  memory_delete(tmpArray);
+  return(_size);
+end
 
 /**
  * Nave del juegador

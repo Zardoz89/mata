@@ -15,6 +15,7 @@ include "src/tilemaps.prg";
 include "src/gamelevel.prg";
 include "src/player.prg";
 include "src/shoots.prg";
+include "src/enemy.prg";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.
@@ -58,19 +59,7 @@ const
   STATUS_ENERGY_BAR_X = PLAYFIELD_REGION_W + 118 + 6;
   STATUS_ENERGY_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
 
-  // **** Enumerados **********************************************************
-  // **** Tipos de movimientos relativos
-  MOVREL_NONE = 0;
-  MOVREL_SYNC_X = 1; // Sincroniza eje X con el padre
-  MOVREL_SYNC_Y = 2; // Sincroniza eje Y con el padre
-  MOVREL_REL_X  = 4; // Movimiento relativo solo eje X
-  MOVREL_REL_Y  = 8; // Movimiento relativo solo eje Y
-  MOVREL_REL_XY = MOVREL_REL_X || MOVREL_REL_Y; // Ambos ejes
-
-  // **** Tipos de animacion
-  ANI_SINGLE = 0; // Al terminar los frames, para
-  ANI_LOOP = 1; // Hace bucle
-  ANI_SPRING = 2; // avanza-retrocede en la animacion
+  // **** Enumerados *******************************************************
 
   // **** Comandos
   CMD_END_LEVEL           = 0;
@@ -127,19 +116,6 @@ global
   //     int ay; // Aceleracion eje y
   //     int ticks; // N§ de ticks que dura este paso
   //   end
-  // end
-
-  // // **** Tipos de enemigos del juego
-  // struct enemyType[10]
-  //   int hull; // Vidia inicial
-  //   byte canCollide: // Flag que indica si puede colisionar
-  //   int shootTypeId; // Tipo de disparo
-  //   int aggression; // Si es < 0 dispara directamente; > 0 dispara hacia abajo
-  //   // Abs es la frecuencia de disparo -> rand(0, 1000) <= abs(aggresion)
-  //   word score; // Puntos que da al ser destruido
-  //   byte nFrames; // N§ de frames de la animaci¢n
-  //   byte animationType; // 0 al terminar, para; 1 bucle ; 2 avanza-retrocede
-  //   int graphId[10];
   // end
 
   // // **** Definici¢n animaciones de explosiones
@@ -253,13 +229,15 @@ begin
   // _loadingMsg = "Cargando... 75%";
   // frame();
 
-  // // Carga tipo de enemigos
+  // Carga tipo de enemigos
+  logger_log("Cargando enemtype.csv");
+  loadEnemyData();
   // loadData("dat/enemtype", offset enemyType, sizeof(enemyType));
-  // _loadingMsg = "Cargando... 80%";
-  // frame();
+  _loadingMsg = "Cargando... 80%";
+  frame();
 
   logger_log("Cargando pweapons.csv");
-  loadWeaponssData();
+  loadWeaponsData();
   // loadData("dat/pweapons", (int32*)&playerWeapons, sizeof(playerWeapons));
   _loadingMsg = "Cargando... 90%";
   frame();
@@ -273,12 +251,6 @@ begin
   ////snd.laser;
   //_loadingMsg = "Cargando... 100%";
   frame();
-
-  // NPI de como va regular el volumen de la m£sica
-  //setup.master = 50;
-  //setup.sound_fx = 90;
-  //setup.cd_audio = 50;
-  //set_volume();
 
   frame(600); // Espera 6 frames -> 1/6 de segundo
   fade_off();
@@ -348,9 +320,6 @@ begin
   return(yy + scrollY);
 end
 
-// 
-// 
-// 
 // /**
 //  * Proceso de efecto de explosion
 //  *
@@ -371,95 +340,6 @@ end
 //   for (i = 0; i <= _totalFrames; i++)
 //     graph = exploFx[explosionId].graph[i];
 //     frame(200); // Actualiza a 30fps
-//   end
-// end
-// 
-// /**
-//  * Proceso que muestra el estado del casco del jugador
-//  */
-// process playerHullStatus()
-// private
-//   int clampHull;
-//   int regionY;
-// begin
-//   region=STATUS_HULL_BAR_REGION;
-//   x = STATUS_HULL_BAR_X;
-//   y = STATUS_HULL_BAR_Y;
-//   file=fpgHud;
-//   graph=2; // Grafico vida
-//   loop
-//     clampHull = clamp(player.sId.hull, 0, PLAYER_MAX_HULL);
-//     regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
-//     define_region(STATUS_HULL_BAR_REGION,
-//       STATUS_HULL_BAR_X - 6,
-//       regionY,
-//       12, clampHull);
-//     frame(200);
-//   end
-// end
-// 
-// /**
-//  * Proceso que muestra el estado del escudo del jugador y los regenera
-//  */
-// process playerShieldStatus()
-// private
-//   int clampShield;
-//   int regionY;
-// begin
-//   region=STATUS_SHIELD_BAR_REGION;
-//   x = STATUS_SHIELD_BAR_X;
-//   y = STATUS_SHIELD_BAR_Y;
-//   file=fpgHud;
-//   graph=3; // Grafico barra escudos
-//   loop
-//     clampShield = clamp(player.shield, 0, PLAYER_MAX_SHIELD);
-//     regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampShield;
-//     define_region(STATUS_SHIELD_BAR_REGION,
-//       STATUS_SHIELD_BAR_X - 6,
-//       regionY,
-//       12, clampShield);
-// 
-//     // Regeneraci¢n escudos
-//     if (player.energy > 30 && ticksCounter > 30)
-//       player.shield = clamp(player.shield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
-//       player.energy -= (SHIELD_REGENERATION_RATE >> 1);
-//       ticksCounter = 0;
-//     end
-// 
-//     ticksCounter++;
-//     frame;
-//   end
-// end
-// 
-// /**
-//  * Proceso que muestra la energia del jugador y la regenera
-//  */
-// process playerEnergyStatus()
-// private
-//   int clampEnergy;
-//   int regionY;
-// begin
-//   region=STATUS_ENERGY_BAR_REGION;
-//   x = STATUS_ENERGY_BAR_X;
-//   y = STATUS_ENERGY_BAR_Y;
-//   file=fpgHud;
-//   graph=4; // Grafico barra escudos
-//   loop
-//     clampEnergy = clamp(player.energy, 0, PLAYER_MAX_ENERGY);
-//     regionY = STATUS_ENERGY_BAR_Y - 100 + 200 - clampEnergy;
-//     define_region(STATUS_ENERGY_BAR_REGION,
-//       STATUS_ENERGY_BAR_X - 6,
-//       regionY,
-//       12, clampEnergy);
-// 
-//     // Regeneraci¢n energia
-//     if (ticksCounter > 4)
-//       player.energy = clamp(player.energy + player.generatorRate, 0, PLAYER_MAX_ENERGY);
-//       ticksCounter = 0;
-//     end
-// 
-//     ticksCounter++;
-//     frame;
 //   end
 // end
 // 
@@ -504,140 +384,6 @@ end
 //     end
 // 
 //     frame;
-//   end
-// end
-// 
-// /**
-//  * Nave o bicho enemigo
-//  * Parametros:
-//  * x0 : Coordenadas de tilemap
-//  * y0 : Coordenadas de tilemap
-//  * typeId : Tipo de enemigo
-//  * pathId : Patron de movimiento
-//  * groupProcess : Id del proceso grupo asociados a este enemigo
-//  */
-// process enemy(x0, y0, typeId, pathId, groupProcess)
-// private
-//   int _pathStep = 0;
-//   int _pathTick = 0; // Utilizamos para contar los ticks que permanece en paso altual de mov.
-//   int _vx = 0;
-//   int _vy = 0;
-//   int _frame = 0;
-//   int _frameDir = 1; // Lo utilizamos para las animaciones tipo spring
-//   int _aggressionAbs;
-//   int _dispersionAngle;
-//   int _shootId;
-// begin
-//   file = fpgEnemy;
-//   region = PLAYFIELD_REGION;
-//   resolution = PLAYFIELD_RESOLUTION;
-//   graph = enemyType[typeId].graphId[_frame];
-//   hull = enemyType[typeId].hull;
-//   _aggressionAbs = abs(enemyType[typeId].aggression);
-//   _shootId = enemyType[typeId].shootTypeId;
-// 
-//   xrel = x0;
-//   yrel = y0;
-//   x = scrollXToScreenX(xrel); //xrel - (scroll[0].x0 * PLAYFIELD_RESOLUTION);
-//   y = scrollYToScreenY(yrel); //yrel;
-// 
-// 
-//   // Aplicamos la velocidad inicial si hay un patron de mov.
-//   if (pathId <> -1 )
-//     _vx = paths[pathId].vx0;
-//     _vy = paths[pathId].vy0;
-//   end;
-// 
-//   while (! isOutsidePlayfield(x, y) && hull > 0)
-// 
-//     // **** Movimiento
-//     // Aplicamos el patron de mov. si hay uno asignado
-//     if (pathId <> -1 && _pathStep <= 10)
-//       if (paths[pathId].maxSteps >= _pathStep)
-//         if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
-//           _pathStep++;
-//           _pathTick = 0;
-//         end
-//         _vx = _vx + paths[pathId].steps[_pathStep].ax;
-//         _vy = _vy + paths[pathId].steps[_pathStep].ay;
-//         _pathTick++;
-//       end
-//     end
-//     xrel += _vx;
-//     yrel += _vy;
-//     // El movimiento horizontal es respecto al scroll de fondo
-//     x = scrollXToScreenX(xrel);
-//     y = scrollYToScreenY(yrel);
-// 
-//     // **** Animacion
-//     if (!ticksCounter) // Se actualiza la animacion cada 2 frames
-//       switch (enemyType[typeId].animationType)
-//       case ANI_SINGLE:
-//         if (enemyType[typeId].nFrames -1 <= _frame)
-//         else
-//           _frame++;
-//         end
-//       end
-//       case ANI_LOOP:
-//         if (enemyType[typeId].nFrames -1 <= _frame)
-//           _frame = 0;
-//         else
-//           _frame++;
-//         end
-//       end
-//       case ANI_SPRING:
-//         if (enemyType[typeId].nFrames -1 <= _frame)
-//           _frameDir = -1;
-//         else if (_frame <= 0)
-//           _frameDir = 1;
-//           end
-//         end
-//         _frame = _frame + _frameDir;
-//       end
-//     end
-//     graph = enemyType[typeId].graphId[_frame];
-//     end
-// 
-//     // **** Disparo
-//     if (enemyType[typeId].shootTypeId <> -1)
-//       if (ticksCounter >> 1)
-//         if (rand(0, 1000) <= _aggressionAbs)
-//           // Disparamos
-//           _dispersionAngle = calcDispersionAngle(
-//             shootData[_shootId].disperseValue,
-//             shootData[_shootId].disperseType,
-//             ticksCounter);
-// 
-//           if (enemyType[typeId].aggression >= 0)
-//             // Dispara hacia el jugador
-// 
-//             shoot(x, y,
-//               fget_angle(x, y, player.sId.x, player.sId.y) + _dispersionAngle ,
-//               enemyType[typeId].shootTypeId, MOVREL_NONE, true);
-//           else
-//             // Dispara recto
-//             shoot(x, y, 270000 + _dispersionAngle,
-//               enemyType[typeId].shootTypeId, MOVREL_NONE, true);
-// 
-//             if (shootData[_shootId].disperseType <> DIS_FOLLOW_Y_FATHER)
-//               shoot(x, y, 270000 + _dispersionAngle , _shootId, MOVREL_NONE, true);
-//             else
-//               shoot(x, y, 270000 + _dispersionAngle , _shootId,
-//                 MOVREL_SYNC_X || MOVREL_REL_Y, true);
-//             end
-// 
-//           end
-//         end
-//       end
-//     end
-// 
-//     ticksCounter++;
-//     frame;
-//   end;
-// 
-//   // Evitamos contar dos veces una muerte
-//   if (hull > 0 && groupProcess)
-//     groupProcess.remaningChildrens--;
 //   end
 // end
 // 

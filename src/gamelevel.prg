@@ -49,7 +49,7 @@ begin
   // Rellenamos el buffer con el tilemap
   drawTiles(tileMapGraph, tiles, level.tileMapColumns, level.tileMapRows, TILE_WIDTH, TILE_HEIGHT);
   free(tiles); // Y liberamos el tilemap
-  
+
   // Inicializamos el scroll
   scrollStepY = 0;
   start_scroll(0, 0, tileMapGraph, 0, PLAYFIELD_REGION, 0);
@@ -63,7 +63,6 @@ begin
   player.energy = 25;
   player.sId = playerShip(1, 100);
   signal(player.sId, s_sleep); // Dormimos al proceso para que no se pueda mover ni hacer nada
-/*
   // Procesos con el estado de casco, escudo y energia
   playerHullStatus();
   _playerShieldStatusId = playerShieldStatus();
@@ -72,7 +71,6 @@ begin
   signal(_playerShieldStatusId, s_sleep); // Dormimos al proceso para que no regenere
 
   // Antes de empezar el bucle y el juego, hacemos un fade
-  */
   fade(100, 100, 100, 1);
   while(fading)
     mouse.x = PLAYFIELD_REGION_W >> 1;
@@ -94,10 +92,8 @@ begin
   */
   // Y despertamos a los procesos
   signal(player.sId, s_wakeup);
-  /*
   signal(_playerEnergyStatusId, s_wakeup);
   signal(_playerShieldStatusId, s_wakeup);
-  */
 
   if (DEBUG_MODE == 1)
     debugText();
@@ -115,21 +111,21 @@ begin
       break;
     end
 
-    /*
     // Actualizamos el eje Y del scroll
     if (scrollY > 0) // AND < tamaño maximo
-      scrollY = scrollY + scrollStepY;
+      scrollY = scrollY - 5 ;//+ scrollStepY;
     end
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
     scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
-    */
+
+
     frame;
   end
 
-  /*
   signal(_playerEnergyStatusId, s_sleep); // Dormimos al proceso para que no regenere
   signal(_playerShieldStatusId, s_sleep); // Dormimos al proceso para que no regenere
 
+  /*
   // El jugador murió. Se muestra la pantalla de game over
   if (player.sId.hull <= 0)
     gameOverScreen();
@@ -143,12 +139,12 @@ begin
 
   stop_song();
   unload_song(_levelSong);
+  */
   unload_map(tileMapGraph); // Liberamos el graph
 
   if (_commands != 0)
     free(_commands);
   end
-  */
   signal(id, s_kill_tree); // Matamos cualquier proceso descendiente del nivel
 end
 

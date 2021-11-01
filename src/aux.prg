@@ -34,11 +34,11 @@ begin
     _msgScrollXY = "scrollX: " + itoa(scroll[0].x0) + " scrollY: " + itoa(scroll[0].y0);
     write(0, 640, 15, 5, _msgScrollXY);
 
-    // _msgPlayerXY = "x: " + itoa(player.sId.x) + " y: " + itoa(player.sId.y);
-    // write(0, 640, 25, 5, _msgPlayerXY);
+    _msgPlayerXY = "x: " + itoa(player.sId.x) + " y: " + itoa(player.sId.y);
+    write(0, 640, 25, 5, _msgPlayerXY);
 
-    // _msgMWeapon = "w: " + itoa(player.mainWeapon.weapon) + " t: " + itoa(player.mainWeapon.tier);
-    // write(0, 640, 45, 5, _msgMWeapon);
+    _msgMWeapon = "w: " + itoa(player.mainWeapon.weapon) + " t: " + itoa(player.mainWeapon.tier);
+    write(0, 640, 45, 5, _msgMWeapon);
 
 
     frame(3000); // Actualiza a 2 FPS

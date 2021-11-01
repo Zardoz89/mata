@@ -12,11 +12,19 @@ const
   DIS_SIN = 2; // Dispersion senoidal
   DIS_FOLLOW_Y_FATHER = 3; // Se mantiene en el mismo eje Y que el proceso padre
 
-  DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN
+  DIS_TICKS_SIN_MULTIPLIER = 50000; // Multiplicador de ticks para DIS_SIN***
+
+  // **** Tipos de movimientos relativos
+  MOVREL_NONE = 0;
+  MOVREL_SYNC_X = 1; // Sincroniza eje X con el padre
+  MOVREL_SYNC_Y = 2; // Sincroniza eje Y con el padre
+  MOVREL_REL_X  = 4; // Movimiento relativo solo eje X
+  MOVREL_REL_Y  = 8; // Movimiento relativo solo eje Y
+  MOVREL_REL_XY = MOVREL_REL_X || MOVREL_REL_Y; // Ambos ejes
 
 global
   // **** Tipos de disparo
-  struct shootData[10]
+  struct shootData[11]
     int32 graph; // Indice del grafico a usar de fpgShoots
     int32 damage; // Daño del disparo
     int32 energy; // Energia consumida (solo jugador)

@@ -41,7 +41,7 @@ global
 /**
  * Carga los datos de los distintos tipos de armas y el id de disparo/proyectil
  */
-function int loadWeaponssData()
+function int loadWeaponsData()
 private
   int32* tmpArray;
   int _size;
@@ -119,11 +119,11 @@ begin
     if (keydown(_control) || mouse.left)
       // Si ha pasado suficiente delay...
       if (_mainShootCounter >= shootData[_mainWeaponId].delay)
-    //     // Si tenemos suficiente energia...
-    //     if (player.energy > shootData[_mainWeaponId].energy )
-    //       // Consumismos energia
-    //       player.energy = clamp(player.energy - shootData[_mainWeaponId].energy, 0, PLAYER_MAX_ENERGY);
-    //       _mainShootCounter = 0;
+        // Si tenemos suficiente energia...
+        if (player.energy > shootData[_mainWeaponId].energy )
+          // Consumismos energia
+          player.energy = clamp(player.energy - shootData[_mainWeaponId].energy, 0, PLAYER_MAX_ENERGY);
+          _mainShootCounter = 0;
 
           // Calculo dispersión del disparo si aplica
           _dispersionAngle = calcDispersionAngle(shootData[_mainWeaponId].disperseValue,
@@ -137,7 +137,7 @@ begin
 
     //       // Y metemos el FX de sonido
     //       //sound(snd.vulcan, 256, 256);
-    // end
+        end
       end
     end
 
@@ -162,7 +162,7 @@ end
 //     shieldFx(); // Hacemos el efecto del escudo
 //   end
 // end
-// 
+//
 // /**
 //  * Proceso que muestra el efecto de escudos de la nave del jugador
 //  */
@@ -176,14 +176,14 @@ end
 //   flags = 4; // Transparencia
 //   graph = 6;
 //   z = min_int + 2;
-// 
+//
 //   for (i = 0; i <= 4; i++)
 //     x = player.sId.x;
 //     y = player.sId.y;
 //     frame;
 //   end
 // end
-// 
+//
 /**
  * Devuelve el ID de la tabla de armas a partir del arma actual del jugador
  */
@@ -191,7 +191,7 @@ function getMainWeaponIdFromPlayerWeapon()
 begin
   return(playerWeapons[player.mainWeapon.weapon].weaponId[player.mainWeapon.tier]);
 end
-// 
+//
 // /**
 //  * Devuelve el ID de la tabla de armas a partir del arma secundartia actual del jugador
 //  */
@@ -202,5 +202,96 @@ end
 //   end
 //   return(playerWeapons[player.secondaryWeapon.weapon].weaponId[player.secondaryWeapon.tier]);
 // end
+
+
+/**
+ * Proceso que muestra el estado del casco del jugador
+ */
+process playerHullStatus()
+private
+  int clampHull;
+  int regionY;
+begin
+  region=STATUS_HULL_BAR_REGION;
+  x = STATUS_HULL_BAR_X;
+  y = STATUS_HULL_BAR_Y;
+  file=fpgHud;
+  graph=2; // Grafico vida
+  loop
+    clampHull = clamp(player.sId.hull, 0, PLAYER_MAX_HULL);
+    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampHull ;
+    define_region(STATUS_HULL_BAR_REGION,
+      STATUS_HULL_BAR_X - 6,
+      regionY,
+      12, clampHull);
+    frame(200);
+  end
+end
+
+/**
+ * Proceso que muestra el estado del escudo del jugador y los regenera
+ */
+process playerShieldStatus()
+private
+  int clampShield;
+  int regionY;
+begin
+  region=STATUS_SHIELD_BAR_REGION;
+  x = STATUS_SHIELD_BAR_X;
+  y = STATUS_SHIELD_BAR_Y;
+  file=fpgHud;
+  graph=3; // Grafico barra escudos
+  loop
+    clampShield = clamp(player.shield, 0, PLAYER_MAX_SHIELD);
+    regionY = STATUS_HULL_BAR_Y - 100 + 200 - clampShield;
+    define_region(STATUS_SHIELD_BAR_REGION,
+      STATUS_SHIELD_BAR_X - 6,
+      regionY,
+      12, clampShield);
+
+    // Regeneración escudos
+    if (player.energy > 30 && ticksCounter > 30)
+      player.shield = clamp(player.shield + SHIELD_REGENERATION_RATE, 0, PLAYER_MAX_SHIELD);
+      player.energy -= (SHIELD_REGENERATION_RATE >> 1);
+      ticksCounter = 0;
+    end
+
+    ticksCounter++;
+    frame;
+  end
+end
+
+/**
+ * Proceso que muestra la energia del jugador y la regenera
+ */
+process playerEnergyStatus()
+private
+  int clampEnergy;
+  int regionY;
+begin
+  region=STATUS_ENERGY_BAR_REGION;
+  x = STATUS_ENERGY_BAR_X;
+  y = STATUS_ENERGY_BAR_Y;
+  file=fpgHud;
+  graph=4; // Grafico barra escudos
+  loop
+    clampEnergy = clamp(player.energy, 0, PLAYER_MAX_ENERGY);
+    regionY = STATUS_ENERGY_BAR_Y - 100 + 200 - clampEnergy;
+    define_region(STATUS_ENERGY_BAR_REGION,
+      STATUS_ENERGY_BAR_X - 6,
+      regionY,
+      12, clampEnergy);
+
+    // Regeneración energia
+    if (ticksCounter > 4)
+      player.energy = clamp(player.energy + player.generatorRate, 0, PLAYER_MAX_ENERGY);
+      ticksCounter = 0;
+    end
+
+    ticksCounter++;
+    frame;
+  end
+end
+
 
 /* vim: set ts=2 sw=2 tw=0 et fileencoding=iso8859-1  :*/

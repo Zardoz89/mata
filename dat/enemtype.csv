@@ -1,5 +1,5 @@
 # Tipo de enemigos
-#  hull, canCollide, shootTypeId, aggresion, score, nFrames, animationType,
+#  hull, canCollide, shootTypeId, aggression, score, nFrames, animationType,
 #  graphId[0], graphId[1], graphId[2], graphId[3], graphId[4], graphId[5], graphId[6], graphId[7], graphId[8], graphId[9], graphId[10]
 # id 0  o-ship
  10, 1,  0,  35,  5,  8,    1,    1,   2,   3,   4,   5,   6,   7,   8,   0,   0,   0

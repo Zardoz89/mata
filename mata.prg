@@ -60,23 +60,6 @@ const
   STATUS_ENERGY_BAR_X = PLAYFIELD_REGION_W + 118 + 6;
   STATUS_ENERGY_BAR_Y = 250 - 100; // Parte inf. - la mitad de la altura de la imagen
 
-  // **** Enumerados *******************************************************
-
-  // **** Comandos
-  CMD_END_LEVEL           = 0;
-  CMD_WAIT_TICKS          = 1;
-  CMD_WAIT_SCROLL         = 2;
-  CMD_SET_SCROLL_SPEED    = 3;
-  CMD_SPAWN_ENEMY         = 4;
-  CMD_SPAWN_ENEMY_SCR     = 5;
-  CMD_SPAWN_ENEMY_GRP     = 6;
-  CMD_SPAWN_ENEMY_GRP_SCR = 7;
-
-  CMD_DEFINE_ENEMY_GROUP  = 8;
-  CMD_END_BLOCK           = 9;
-
-  CMD_SET_BONUS_TYPE      = 10; // 0x000A
-
 global
   // **** Libreria de graficos
   int fpgTileset;

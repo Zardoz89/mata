@@ -87,7 +87,7 @@ begin
   mouse.cursor = 1;
 
   // // Inicializamos el procesador de comandos
-  // levelCommands(_commands);
+  levelCommands(_commands);
 
   // Y despertamos a los procesos
   signal(player.sId, s_wakeup);
@@ -112,7 +112,7 @@ begin
 
     // Actualizamos el eje Y del scroll
     if (scrollY > 0) // AND < tamaño maximo
-      scrollY = scrollY - 5 ;//+ scrollStepY;
+      scrollY = scrollY + scrollStepY; // - 5
     end
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
     scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;

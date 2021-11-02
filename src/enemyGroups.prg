@@ -90,47 +90,47 @@ begin
   return(_size);
 end
 
-// /**
-//  * Crea un grupo de enemigos en formación simple.
-//  * Todos son del mismo tipo y siguen el mismo patrón de movimiento
-//  */
-// function createSimpleEnemyGroup(x, y, enemyType, pathId, number, formationType)
-// private
-//   i;
-//   _enemyGroupId;
-// begin
-//   _enemyGroupId = enemyGroup(number);
-//   for (i=0; i <= 6 && i < number; i++)
-//     enemy(
-//       x + formations[formationType].startPosition[i].x,
-//       y + formations[formationType].startPosition[i].y,
-//       enemyType,
-//       pathId,
-//       _enemyGroupId);
-//     remaningChildrens++;
-//   end
-//   return(_enemyGroupId);
-// end
-//
-// /**
-//  * Proceso "padre" de un grupo de enemigos
-//  * Gestiona el spawn del bonus si es necesario
-//  */
-// process enemyGroup(totalChildrens)
-// private
-// begin
-//   remaningChildrens = totalChildrens;
-//   loop
-//     if (remaningChildrens <= 0)
-//       if (killedChildrens == totalChildrens && bonusType <> -1)
-//         // TODO Hacer spawn de diferente tipos de bonus
-//         mainWeaponBonus(bonusType, xrel ,yrel);
-//       end
-//       break;
-//     end
-//
-//     frame;
-//   end
-// end
+/**
+ * Crea un grupo de enemigos en formación simple.
+ * Todos son del mismo tipo y siguen el mismo patrón de movimiento
+ */
+function createSimpleEnemyGroup(x, y, enemyType, pathId, number, formationType)
+private
+  i;
+  _enemyGroupId;
+begin
+  _enemyGroupId = enemyGroup(number);
+  for (i=0; i <= 6 && i < number; i++)
+    enemy(
+      x + formations[formationType].startPosition[i].x,
+      y + formations[formationType].startPosition[i].y,
+      enemyType,
+      pathId,
+      _enemyGroupId);
+    remaningChildrens++;
+  end
+  return(_enemyGroupId);
+end
+
+/**
+ * Proceso "padre" de un grupo de enemigos
+ * Gestiona el spawn del bonus si es necesario
+ */
+process enemyGroup(totalChildrens)
+private
+begin
+  remaningChildrens = totalChildrens;
+  loop
+    if (remaningChildrens <= 0)
+      if (killedChildrens == totalChildrens && bonusType <> -1)
+        // TODO Hacer spawn de diferente tipos de bonus
+        // mainWeaponBonus(bonusType, xrel ,yrel);
+      end
+      break;
+    end
+
+    frame;
+  end
+end
 
 /* vim: set ts=2 sw=2 tw=0 et fileencoding=iso8859-1 :*/

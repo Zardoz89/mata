@@ -150,7 +150,7 @@ begin
         _arg3 = commands[++_pc]; // Patron Mov.
         _arg4 = commands[++_pc]; // Nº de enemigos
         _arg5 = commands[++_pc]; // Id Formación
-        // createSimpleEnemyGroup(sWordToInt(_arg0), _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
+        createSimpleEnemyGroup(sWordToInt(_arg0), _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
       case CMD_SPAWN_ENEMY_GRP_SCR:
@@ -161,7 +161,7 @@ begin
         _arg3 = commands[++_pc]; // Patron Mov.
         _arg4 = commands[++_pc]; // Nº de enemigos
         _arg5 = commands[++_pc]; // Id Formación
-        // createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
+        createSimpleEnemyGroup(_arg0, _arg1, _arg2, sWordToInt(_arg3), _arg4, _arg5);
       end
 
       case CMD_SET_BONUS_TYPE:

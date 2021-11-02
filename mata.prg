@@ -16,6 +16,7 @@ include "src/gamelevel.prg";
 include "src/player.prg";
 include "src/shoots.prg";
 include "src/enemy.prg";
+include "src/enemyGroups.prg";
 
 const
   DEBUG_MODE=1; // Modo debug. Activa la salida rapida, etc.
@@ -97,25 +98,6 @@ global
   //   eShoot;
   //   vulcan;
   //   laser;
-  // end
-
-  // **** Formaciones de naves enemigas
-  // struct formations[13]
-  //   struct startPosition[6]
-  //     int x; int y;
-  //   end
-  // end
-
-  // // **** Patrones de movimiento [Id patron]
-  // struct paths[40]
-  //   byte maxSteps; // N§ de pasos
-  //   int vx0; // Velocidad inicial eje X
-  //   int vy0; // Velocidad inicial eje Y
-  //   struct steps[10]
-  //      int ax; // Aceleracion eje x
-  //     int ay; // Aceleracion eje y
-  //     int ticks; // N§ de ticks que dura este paso
-  //   end
   // end
 
   // // **** Definici¢n animaciones de explosiones
@@ -219,15 +201,19 @@ begin
   _loadingMsg = "Cargando... 65%";
   frame();
 
-  // // Carga las formaciones
+  // Carga las formaciones
+  logger_log("Cargando formatio.csv");
+  loadFormations();
   // loadData("dat/formatio", offset formations, sizeof(formations));
-  // _loadingMsg = "Cargando... 70%";
-  // frame();
+   _loadingMsg = "Cargando... 70%";
+  frame();
 
-  // // Carga patrones de movimiento
+  // Carga patrones de movimiento
+  logger_log("Cargando movpaths.csv");
+  loadPaths();
   // loadData("dat/movpaths", offset paths, sizeof(paths));
-  // _loadingMsg = "Cargando... 75%";
-  // frame();
+  _loadingMsg = "Cargando... 75%";
+  frame();
 
   // Carga tipo de enemigos
   logger_log("Cargando enemtype.csv");
@@ -336,57 +322,15 @@ end
 //   flags = 4; // Transparencia
 //   z = min_int + 1;
 //   _totalFrames = exploFx[explosionId].frames;
-// 
+//
 //   for (i = 0; i <= _totalFrames; i++)
 //     graph = exploFx[explosionId].graph[i];
 //     frame(200); // Actualiza a 30fps
 //   end
 // end
-// 
-// 
-// /**
-//  * Crea un grupo de enemigos en formaci¢n simple.
-//  * Todos son del mismo tipo y siguen el mismo patr¢n de movimiento
-//  */
-// function createSimpleEnemyGroup(x, y, enemyType, pathId, number, formationType)
-// private
-//   i;
-//   _enemyGroupId;
-// begin
-//   _enemyGroupId = enemyGroup(number);
-//   for (i=0; i <= 6 && i < number; i++)
-//     enemy(
-//       x + formations[formationType].startPosition[i].x,
-//       y + formations[formationType].startPosition[i].y,
-//       enemyType,
-//       pathId,
-//       _enemyGroupId);
-//     remaningChildrens++;
-//   end
-//   return(_enemyGroupId);
-// end
-// 
-// /**
-//  * Proceso "padre" de un grupo de enemigos
-//  * Gestiona el spawn del bonus si es necesario
-//  */
-// process enemyGroup(totalChildrens)
-// private
-// begin
-//   remaningChildrens = totalChildrens;
-//   loop
-//     if (remaningChildrens <= 0)
-//       if (killedChildrens == totalChildrens && bonusType <> -1)
-//         // TODO Hacer spawn de diferente tipos de bonus
-//         mainWeaponBonus(bonusType, xrel ,yrel);
-//       end
-//       break;
-//     end
-// 
-//     frame;
-//   end
-// end
-// 
+//
+//
+//
 // /**
 //  * Item bonus que cambia/mejora el arma del jugador
 //  */
@@ -397,11 +341,11 @@ end
 //   region = PLAYFIELD_REGION;
 //   resolution = PLAYFIELD_RESOLUTION;
 //   graph = playerWeapons[playerWeaponId];
-// 
+//
 //   while (! isOutsidePlayfield(x, y))
 //     x = scrollXToScreenX(xrel);
 //     y = scrollYToScreenY(yrel);
-// 
+//
 //     if (collision(type playerShip))
 //       // El jugador ha recogido el item. Mejoramos o cambiamos el arma
 //       if (player.mainWeapon.weapon == playerWeaponId)
@@ -416,7 +360,7 @@ end
 //     frame;
 //   end;
 // end;
-// 
+//
 // /**
 //  * Muestra el rotulo de game over
 //  * TODO Mostrar si el jugador desea volver a jugar el mapa o volver al men£. Retornar valor seg£n la opci¢n.

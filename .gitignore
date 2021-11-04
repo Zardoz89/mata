@@ -1,5 +1,7 @@
+.directory
 *.swp
 *.bak
 mods/
 exe/
+GEMIX_RuntimeErrorLOG.txt
 

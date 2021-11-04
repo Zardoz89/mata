@@ -23,7 +23,7 @@ ${EXE_PATH}/created.txt:
 
 tests: tiletest
 
-tiletest: tiletest.prg src/*.prg
+tiletest: test/tiletest.prg src/*.prg
 	cd ${GEMIX_COMPILER_PATH} && ${GEMIX_COMPILER} ${CURDIR}/$< $@
 	mv ${GEMIX_COMPILER_PATH}$@* ${EXE_PATH}
 

@@ -8,8 +8,8 @@ COMPILER_OPTIONS _case_sensitive, _extended_conditions;//, _use_cstyle;
 // ****************************************************************************
 program tiletest;
 
-include "src/loadData.prg";
-include "src/tilemaps.prg";
+include "../src/loadData.prg";
+include "../src/tilemaps.prg";
 
 const
   PLAYFIELD_REGION=1; // Region de la zona de juego

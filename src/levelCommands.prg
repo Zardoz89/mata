@@ -33,7 +33,6 @@ private
 begin
   arraySize = 0;
   _path = "lvl/" + levelName + "/commands.dat";
-  _path = pathResolve(_path);
   _file = fopen(_path, "r");
 
   if (_file == 0)
@@ -42,7 +41,7 @@ begin
   end
 
   fseek(_file, 0, seek_end);
-  arraySize = ftell(_file); // Tamaño en INTs
+  arraySize = ftell(_file);
   fclose(_file);
   if (arraySize <= 0)
     errorLoadLevelCommands(_path);
@@ -176,14 +175,14 @@ begin
 
       case CMD_DEFINE_ENEMY_GROUP:
         _defineEnemyGroupBlock = 1;
-        // _enemyGroupId = enemyGroup(1); // Hack: Le indicamos un hijo, luego se lo restamos
+        _enemyGroupId = enemyGroup(1); // Hack: Le indicamos un hijo, luego se lo restamos
         // Se hace para evitar que se auto-muera hasta crear los hijos de verdad
       end
 
       case CMD_END_BLOCK:
         _defineEnemyGroupBlock = false;
-          _enemyGroupId.totalChildrens -= 1;
-          _enemyGroupId.remaningChildrens = _enemyGroupId.totalChildrens;
+           _enemyGroupId.totalChildrens -= 1;
+           _enemyGroupId.remaningChildrens = _enemyGroupId.totalChildrens;
         _enemyGroupId = 0;
       end
 

@@ -31,7 +31,7 @@ begin
   _commands = loadLevelCommands(levelName);
 
   // Cargamos la musica del nivel
-  _levelSong = song_load(pathResolve("mus/statewar.mod"));
+  _levelSong = song_load("mus/statewar.mod");
 
   // Inicialización de las regiones
   define_region(PLAYFIELD_REGION, 0, 0, PLAYFIELD_REGION_W, PLAYFIELD_REGION_H);
@@ -112,7 +112,7 @@ begin
 
     // Actualizamos el eje Y del scroll
     if (scrollY > 0) // AND < tamaño maximo
-      scrollY = scrollY + scrollStepY; // - 5
+      scrollY = scrollY /*+ scrollStepY; //*/ - 5;
     end
     // Hacemos la multiplicacion/division para poder trabajar a una velocidad inferior a 1 pixel por frame
     scroll[0].y0 = scrollY / PLAYFIELD_RESOLUTION;
@@ -124,7 +124,6 @@ begin
   signal(_playerEnergyStatusId, s_sleep); // Dormimos al proceso para que no regenere
   signal(_playerShieldStatusId, s_sleep); // Dormimos al proceso para que no regenere
 
-  /*
   // El jugador murió. Se muestra la pantalla de game over
   if (player.sId.hull <= 0)
     gameOverScreen();
@@ -136,9 +135,8 @@ begin
     frame;
   end
 
-  stop_song();
+  //stop_song();
   unload_song(_levelSong);
-  */
   unload_map(tileMapGraph); // Liberamos el graph
 
   if (_commands != 0)

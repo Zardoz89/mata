@@ -36,7 +36,8 @@ private
   int i, u, index;
 begin
   _size = loadData("dat/formatio",  tmpArray, max_int32);
-  tmpArray = memory_new(_size * sizeof(int32));
+  _size = _size * sizeof(int32); // Pasamos de nº de elementos a tamaño en bytes
+  tmpArray = memory_new(_size);
   _size = loadData("dat/formatio",  tmpArray, _size);
 
   for (i=0; i < 15; i++)

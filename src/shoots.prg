@@ -22,9 +22,9 @@ const
   MOVREL_REL_Y  = 8; // Movimiento relativo solo eje Y
   MOVREL_REL_XY = MOVREL_REL_X || MOVREL_REL_Y; // Ambos ejes
 
-global
-  // **** Tipos de disparo
-  struct shootData[11]
+typedef
+  // Información sobre un disparo
+  type ShootData
     int32 graph; // Indice del grafico a usar de fpgShoots
     int32 damage; // Daño del disparo
     int32 energy; // Energia consumida (solo jugador)
@@ -33,6 +33,12 @@ global
     int32 disperseValue; // Angulo de dispersion
     int32 disperseType; // Tipo de dispersion del disparo
   end
+
+global
+  int fpgShoots;
+
+  ShootData* shootData; // Tipos de disparo
+  int sizeOfShootData; // Tamaño del array
 
 /**
  * Carga los datos de losdistintos tipos de proyectiles y su forma de dispararse
@@ -44,8 +50,13 @@ private
   int i;
 begin
   _size = loadData("dat/shoots",  tmpArray, max_int32);
-  tmpArray = memory_new(_size * sizeof(int32));
+  _size = _size * sizeof(int32); // Pasamos de nº de elementos a tamaño en bytes
+  tmpArray = memory_new(_size);
+
   _size = loadData("dat/shoots",  tmpArray, _size);
+  sizeOfShootData = _size / 7; // Devuelve el nº de valores leidos, pero ShootData, conntiene 7 valores
+  shootData = memory_new(sizeOfShootData * sizeof(ShootData));
+
   for(i=0; (i < _size) && (i/7 < 10); i++)
     if (i%7 == 0)
       shootData[i/7].graph = tmpArray[i];
@@ -70,7 +81,7 @@ begin
     end
   end
   memory_delete(tmpArray);
-  return(_size);
+  return(sizeOfShootData);
 end
 
 /**
@@ -125,7 +136,6 @@ begin
   end
 
   while (! out_region(id, region))
-  /*
     if (enemyShoot)
       // Colision con el jugador
       hitId = collision(type playerShip);
@@ -162,7 +172,7 @@ begin
         break;
       end
     end
-*/
+
     // Movimiento
     // Si es movimiento relativo
     if ((moveRelativeToFather && MOVREL_SYNC_X) == MOVREL_SYNC_X)

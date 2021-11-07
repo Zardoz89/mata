@@ -12,10 +12,10 @@ const
   ANI_LOOP = 1; // Hace bucle
   ANI_SPRING = 2; // avanza-retrocede en la animacion
 
-global
+typedef
 
-  // **** Tipos de enemigos del juego
-  struct enemyType[10]
+  // Información de un tipo de enemigo
+  type EnemyType
     int32 hull; // Vidia inicial
     byte canCollide; // Flag que indica si puede colisionar
     int32 shootTypeId; // Tipo de disparo
@@ -27,6 +27,11 @@ global
     int32 graphId[11];
   end
 
+global
+
+  EnemyType* enemyType; // Tipos de disparo
+  int sizeOfEnemyType; // Tamaño del array
+
 /**
  * Carga los datos de los distintos tipos de enemigos
  */
@@ -37,32 +42,36 @@ private
   int i;
 begin
   _size = loadData("dat/enemtype",  tmpArray, max_int32);
-  tmpArray = memory_new(_size * sizeof(int32));
+  _size = _size * sizeof(int32); // Pasamos de nº de elementos a tamaño en bytes
+  tmpArray = memory_new(_size);
   _size = loadData("dat/enemtype",  tmpArray, _size);
-  for(i=0; (i < _size) && (i/17 < 10); i++)
-    if (i%17 == 0)
-      enemyType[i/17].hull = tmpArray[i];
+  sizeOfEnemyType = _size / (7+11); // Devuelve el nº de valores leidos, pero EnemyRType, contiene 7+11 valores
+  enemyType = memory_new(sizeOfEnemyType * sizeof(EnemyType));
+
+  for(i=0; (i < _size) && (i/18 < 10); i++)
+    if (i%18 == 0)
+      enemyType[i/18].hull = tmpArray[i];
     end
-    if (i%17 == 1)
-      enemyType[i/17].canCollide = (byte) tmpArray[i];
+    if (i%18 == 1)
+      enemyType[i/18].canCollide = (byte) tmpArray[i];
     end
-    if (i%17 == 2)
-      enemyType[i/17].shootTypeId = tmpArray[i];
+    if (i%18 == 2)
+      enemyType[i/18].shootTypeId = tmpArray[i];
     end
-    if (i%17 == 3)
-      enemyType[i/17].aggression = tmpArray[i];
+    if (i%18 == 3)
+      enemyType[i/18].aggression = tmpArray[i];
     end
-    if (i%17 == 4)
-      enemyType[i/17].score = (word) tmpArray[i];
+    if (i%18 == 4)
+      enemyType[i/18].score = (word) tmpArray[i];
     end
-    if (i%17 == 5)
-      enemyType[i/17].nFrames = (byte) tmpArray[i];
+    if (i%18 == 5)
+      enemyType[i/18].nFrames = (byte) tmpArray[i];
     end
-    if (i%17 == 6)
-      enemyType[i/17].animationType = (byte) tmpArray[i];
+    if (i%18 == 6)
+      enemyType[i/18].animationType = (byte) tmpArray[i];
     end
-    if (i%17 >= 7)
-      enemyType[i/17].graphId[i%17 -7] = tmpArray[i];
+    if (i%18 >= 7)
+      enemyType[i/18].graphId[i%18 - 7] = tmpArray[i];
     end
   end
   memory_delete(tmpArray);
@@ -105,26 +114,26 @@ begin
 
 
   // Aplicamos la velocidad inicial si hay un patron de mov.
-  // if (pathId <> -1 )
-  //   _vx = paths[pathId].vx0;
-  //   _vy = paths[pathId].vy0;
-  // end;
+  if (pathId <> -1 )
+    _vx = paths[pathId].vx0;
+    _vy = paths[pathId].vy0;
+  end;
 
   while (! isOutsidePlayfield(x, y) && hull > 0)
 
     // **** Movimiento
     // Aplicamos el patron de mov. si hay uno asignado
-    // if (pathId <> -1 && _pathStep <= 10)
-    //   if (paths[pathId].maxSteps >= _pathStep)
-    //     if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
-    //       _pathStep++;
-    //       _pathTick = 0;
-    //     end
-    //     _vx = _vx + paths[pathId].steps[_pathStep].ax;
-    //     _vy = _vy + paths[pathId].steps[_pathStep].ay;
-    //     _pathTick++;
-    //   end
-    // end
+    if (pathId <> -1 && _pathStep <= 10)
+      if (paths[pathId].maxSteps >= _pathStep)
+        if (_pathTick >= paths[pathId].steps[_pathStep].ticks)
+          _pathStep++;
+          _pathTick = 0;
+        end
+        _vx = _vx + paths[pathId].steps[_pathStep].ax;
+        _vy = _vy + paths[pathId].steps[_pathStep].ay;
+        _pathTick++;
+      end
+    end
     xrel += _vx;
     yrel += _vy;
     // El movimiento horizontal es respecto al scroll de fondo

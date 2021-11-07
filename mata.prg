@@ -64,7 +64,7 @@ global
   // **** Libreria de graficos
   int fpgTileset;
   int fpgPlayer;
-  int fpgShoots;
+  //int fpgShoots;
   int fpgEnemy;
   int fpgHud;
   int fpgExplosion;
@@ -83,14 +83,14 @@ global
   //   laser;
   // end
 
-  // // **** Definici¢n animaciones de explosiones
-  // struct exploFx[3]
-  //   int frames;
-  //   int graph[5]; // Id del grafico de explosion
-  // end = 5,     001, 002, 003, 004, 005, 006,
-  //       5,     007, 008, 009, 010, 011, 012,
-  //       5,     013, 014, 015, 016, 017, 018,
-  //       4,     019, 020, 021, 022, 023, 023;
+  // **** Definici¢n animaciones de explosiones
+  struct exploFx[3]
+    int frames;
+    int graph[5]; // Id del grafico de explosion
+  end = 5,     001, 002, 003, 004, 005, 006,
+        5,     007, 008, 009, 010, 011, 012,
+        5,     013, 014, 015, 016, 017, 018,
+        4,     019, 020, 021, 022, 023, 023;
 
   // **** Usadas por el scroll de fondo de tilemap
   tileMapGraph; // Buffer del tilemap
@@ -131,7 +131,7 @@ begin
 
   // **** Carga de paleta
   logger_log("Cargando paleta");
-  load_pal(pathResolve("pal/tyrian.pal"));
+  load_pal("pal/tyrian.pal");
   set_color(0, 0, 0 ,0); // Hack para que el color transparente sea el negro
   clear_screen();
 
@@ -142,8 +142,8 @@ begin
   // **** Carga de recursos ****
   // Fuentes
   logger_log("Cargando fuentes");
-  fntScore = load_fnt(pathResolve("fnt/score.fnt"));
-  fntGameover = load_fnt(pathResolve("fnt/gameover.fnt"));
+  fntScore = load_fnt("fnt/score.fnt");
+  fntGameover = load_fnt("fnt/gameover.fnt");
   _loadingMsg = "Cargando... 10%";
   frame();
 
@@ -187,27 +187,23 @@ begin
   // Carga las formaciones
   logger_log("Cargando formatio.csv");
   loadFormations();
-  // loadData("dat/formatio", offset formations, sizeof(formations));
-   _loadingMsg = "Cargando... 70%";
+  _loadingMsg = "Cargando... 70%";
   frame();
 
   // Carga patrones de movimiento
   logger_log("Cargando movpaths.csv");
   loadPaths();
-  // loadData("dat/movpaths", offset paths, sizeof(paths));
   _loadingMsg = "Cargando... 75%";
   frame();
 
   // Carga tipo de enemigos
   logger_log("Cargando enemtype.csv");
   loadEnemyData();
-  // loadData("dat/enemtype", offset enemyType, sizeof(enemyType));
   _loadingMsg = "Cargando... 80%";
   frame();
 
   logger_log("Cargando pweapons.csv");
   loadWeaponsData();
-  // loadData("dat/pweapons", (int32*)&playerWeapons, sizeof(playerWeapons));
   _loadingMsg = "Cargando... 90%";
   frame();
 
@@ -289,80 +285,80 @@ begin
   return(yy + scrollY);
 end
 
-// /**
-//  * Proceso de efecto de explosion
-//  *
-//  * Usa una tabla global para saber los Ids de la explosi¢n
-//  */
-// process explosion(explosionId, x, y)
-// private
-//   int i;
-//   int _totalFrames;
-// begin
-//   file = fpgExplosion;
-//   region = PLAYFIELD_REGION;
-//   resolution = PLAYFIELD_RESOLUTION;
-//   flags = 4; // Transparencia
-//   z = min_int + 1;
-//   _totalFrames = exploFx[explosionId].frames;
-//
-//   for (i = 0; i <= _totalFrames; i++)
-//     graph = exploFx[explosionId].graph[i];
-//     frame(200); // Actualiza a 30fps
-//   end
-// end
-//
-//
-//
-// /**
-//  * Item bonus que cambia/mejora el arma del jugador
-//  */
-// process mainWeaponBonus(playerWeaponId, xrel, yrel)
-// private
-// begin
-//   file = fpgShoots;
-//   region = PLAYFIELD_REGION;
-//   resolution = PLAYFIELD_RESOLUTION;
-//   graph = playerWeapons[playerWeaponId];
-//
-//   while (! isOutsidePlayfield(x, y))
-//     x = scrollXToScreenX(xrel);
-//     y = scrollYToScreenY(yrel);
-//
-//     if (collision(type playerShip))
-//       // El jugador ha recogido el item. Mejoramos o cambiamos el arma
-//       if (player.mainWeapon.weapon == playerWeaponId)
-//         // Aumentamos el tier
-//         player.mainWeapon.tier = min(player.mainWeapon + 1, 4);
-//       else
-//         // Cambiamos el arma
-//         player.mainWeapon.weapon = playerWeaponId;
-//       end
-//       break;
-//     end
-//     frame;
-//   end;
-// end;
-//
-// /**
-//  * Muestra el rotulo de game over
-//  * TODO Mostrar si el jugador desea volver a jugar el mapa o volver al men£. Retornar valor seg£n la opci¢n.
-//  */
-// function gameOverScreen()
-// private
-//   _gameoverId;
-// begin
-//   _gameoverId = write(fntGameover, 320, 240, 4, "GAME OVER");
-//   frame(6000); // Esperamos ~1 segundo
-//   loop
-//     if (key(_enter) || key(_esc) || mouse.left)
-//       break;
-//     end;
-//     frame;
-//   end
-//   delete_text(_gameoverId);
-//   return(false);
-// end
+/**
+ * Proceso de efecto de explosion
+ *
+ * Usa una tabla global para saber los Ids de la explosi¢n
+ */
+process explosion(explosionId, x, y)
+private
+  int i;
+  int _totalFrames;
+begin
+  file = fpgExplosion;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  flags = 4; // Transparencia
+  z = min_int + 1;
+  _totalFrames = exploFx[explosionId].frames;
+
+  for (i = 0; i <= _totalFrames; i++)
+    graph = exploFx[explosionId].graph[i];
+    frame(200); // Actualiza a 30fps
+  end
+end
+
+
+
+/**
+ * Item bonus que cambia/mejora el arma del jugador
+ */
+process mainWeaponBonus(int playerWeaponId, xrel, yrel)
+private
+begin
+  file = fpgShoots;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  graph = playerWeapons[playerWeaponId].itemGraph;
+
+  while (! isOutsidePlayfield(x, y))
+    x = scrollXToScreenX(xrel);
+    y = scrollYToScreenY(yrel);
+
+    if (collision(type playerShip))
+      // El jugador ha recogido el item. Mejoramos o cambiamos el arma
+      if (player.mainWeapon.weapon == playerWeaponId)
+        // Aumentamos el tier
+        player.mainWeapon.tier++; //min(player.mainWeapon + 1, 4);
+      else
+        // Cambiamos el arma
+        player.mainWeapon.weapon = playerWeaponId;
+      end
+      break;
+    end
+    frame;
+  end;
+end;
+
+/**
+ * Muestra el rotulo de game over
+ * TODO Mostrar si el jugador desea volver a jugar el mapa o volver al men£. Retornar valor seg£n la opci¢n.
+ */
+function gameOverScreen()
+private
+  _gameoverId;
+begin
+  _gameoverId = write(fntGameover, 320, 240, 4, "GAME OVER");
+  frame(6000); // Esperamos ~1 segundo
+  loop
+    if (key(_enter) || key(_esc) || mouse.left)
+      break;
+    end;
+    frame;
+  end
+  delete_text(_gameoverId);
+  return(false);
+end
 
 
 /* vim: set ts=2 sw=2 tw=0 et fileencoding=cp858 :*/

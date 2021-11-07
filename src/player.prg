@@ -101,17 +101,17 @@ begin
     // scrollX en funcion de X (regla de tres)
     scroll[0].x0 = x * (tilemapMaxX - PLAYFIELD_REGION_W) / (PLAYFIELD_REGION_W * PLAYFIELD_RESOLUTION);
 
-    // // Colision con naves enemigas
-    // _hitId = collision(type enemy);
-    // if (_hitId)
-    //   if (enemyType[_hitId.typeId].canCollide)
-    //     damagePlayer(1);
-    //     // Hacemos que le cueste penetrar mas en el enemigo
-    //     _collisionAngle = get_angle(_hitId);
-    //     mouse.x -= cos(_collisionAngle) / 500;
-    //     mouse.x -= sin(_collisionAngle) / 500;
-    //   end
-    // end
+    // Colision con naves enemigas
+    _hitId = collision(type enemy);
+    if (_hitId)
+      if (enemyType[_hitId.typeId].canCollide)
+        damagePlayer(1);
+        // Hacemos que le cueste penetrar mas en el enemigo
+        _collisionAngle = get_angle(_hitId);
+        mouse.x -= cos(_collisionAngle) / 500;
+        mouse.x -= sin(_collisionAngle) / 500;
+      end
+    end
 
     _mainWeaponId = getMainWeaponIdFromPlayerWeapon();
 
@@ -148,42 +148,42 @@ begin
 
 end
 
-// /**
-//  * Función auxiliar que aplica daño a la nave del jugador
-//  */
-// function damagePlayer(damage)
-// private
-// begin
-//   player.shield -= damage;
-//   if (player.shield < 0)
-//     player.sId.hull += player.shield;
-//     player.shield = 0;
-//   else
-//     shieldFx(); // Hacemos el efecto del escudo
-//   end
-// end
-//
-// /**
-//  * Proceso que muestra el efecto de escudos de la nave del jugador
-//  */
-// process shieldFx()
-// private
-//   int i;
-// begin
-//   file = fpgPlayer;
-//   region = PLAYFIELD_REGION;
-//   resolution = PLAYFIELD_RESOLUTION;
-//   flags = 4; // Transparencia
-//   graph = 6;
-//   z = min_int + 2;
-//
-//   for (i = 0; i <= 4; i++)
-//     x = player.sId.x;
-//     y = player.sId.y;
-//     frame;
-//   end
-// end
-//
+/**
+ * Función auxiliar que aplica daño a la nave del jugador
+ */
+function damagePlayer(damage)
+private
+begin
+  player.shield -= damage;
+  if (player.shield < 0)
+    player.sId.hull += player.shield;
+    player.shield = 0;
+  else
+    shieldFx(); // Hacemos el efecto del escudo
+  end
+end
+
+/**
+ * Proceso que muestra el efecto de escudos de la nave del jugador
+ */
+process shieldFx()
+private
+  int i;
+begin
+  file = fpgPlayer;
+  region = PLAYFIELD_REGION;
+  resolution = PLAYFIELD_RESOLUTION;
+  flags = 4; // Transparencia
+  graph = 6;
+  z = min_int + 2;
+
+  for (i = 0; i <= 4; i++)
+    x = player.sId.x;
+    y = player.sId.y;
+    frame;
+  end
+end
+
 /**
  * Devuelve el ID de la tabla de armas a partir del arma actual del jugador
  */

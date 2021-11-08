@@ -21,7 +21,6 @@ private
   string _msg;
 begin
   _path = dataFile + ".csv";
-  _path = pathResolve(_path);
   _retVal = CSV_ReadToArray(_path, sizeOfArray, data);
   if (_retVal <= 0)
     _msg = "Error al abrir fichero de datos: " + _path;
@@ -53,7 +52,6 @@ private
   string _msg;
 begin
   _path = dataFile + ".csv";
-  _path = pathResolve(_path);
   _retVal = CSV_ReadToArray(_path, sizeOfArray, data);
   if (_retVal <= 0)
     _msg = "Error al abrir fichero de datos: " + _path;

@@ -135,8 +135,8 @@ begin
               MOVREL_SYNC_X || MOVREL_REL_Y, false);
           end
 
-    //       // Y metemos el FX de sonido
-    //       //sound(snd.vulcan, 256, 256);
+          // Y metemos el FX de sonido
+          sound(snd.vulcan, 256, 256);
         end
       end
     end

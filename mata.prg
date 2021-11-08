@@ -74,14 +74,14 @@ global
   int fntGameover;
 
   // **** Efectos de sonido
-  // struct snd
-  //   explosion;
-  //   bigExplosion;
-  //   pickUp;
-  //   eShoot;
-  //   vulcan;
-  //   laser;
-  // end
+  struct snd
+    sExplosion;
+    bigExplosion;
+    pickUp;
+    eShoot;
+    vulcan;
+    laser;
+  end
 
   // **** Definici¢n animaciones de explosiones
   struct exploFx[3]
@@ -149,32 +149,32 @@ begin
 
   // Gr ficos
   logger_log("Cargando tilemap.fpg");
-  fpgTileset = load_fpg(pathResolve("fpg/TILEMAP.FPG"));
+  fpgTileset = load_fpg("fpg/TILEMAP.FPG");
   _loadingMsg = "Cargando... 25%";
   frame();
 
   logger_log("Cargando player.fpg");
-  fpgPlayer = load_fpg(pathResolve("fpg/PLAYER.FPG"));
+  fpgPlayer = load_fpg("fpg/PLAYER.FPG");
   _loadingMsg = "Cargando... 30%";
   frame();
 
   logger_log("Cargando shoots.fpg");
-  fpgShoots = load_fpg(pathResolve("fpg/shoots.fpg"));
+  fpgShoots = load_fpg("fpg/shoots.fpg");
   _loadingMsg = "Cargando... 40%";
   frame();
 
   logger_log("Cargando enemy.fpg");
-  fpgEnemy = load_fpg(pathResolve("fpg/enemy.fpg"));
+  fpgEnemy = load_fpg("fpg/enemy.fpg");
   _loadingMsg = "Cargando... 50%";
   frame();
 
   logger_log("Cargando explo.fpg");
-  fpgExplosion = load_fpg(pathResolve("fpg/EXPLO.FPG"));
+  fpgExplosion = load_fpg("fpg/EXPLO.FPG");
   _loadingMsg = "Cargando... 55%";
   frame();
 
   logger_log("Cargando hud.fpg");
-  fpgHud = load_fpg(pathResolve("fpg/hud.fpg"));
+  fpgHud = load_fpg("fpg/hud.fpg");
   _loadingMsg = "Cargando... 60%";
   frame();
 
@@ -207,14 +207,14 @@ begin
   _loadingMsg = "Cargando... 90%";
   frame();
 
-  // TODO Carga de FX de sonido
-  //snd.explosion = load_wav(pathResolve("snd/bigexpl0.wav"), 0);
-  //snd.bigExplosion = load_wav(pathResolve("snd/bigexpl1.wav"), 0);
+  // Carga de FX de sonido
+  snd.sExplosion = load_wav("snd/bigexpl0.wav", 0);
+  snd.bigExplosion = load_wav("snd/bigexpl1.wav", 0);
   ////snd.pickUp;
   ////snd.eShoot;
-  //snd.vulcan = load_wav(pathResolve("snd/vulcan.wav"), 0);
+  snd.vulcan = load_wav("snd/vulcan.wav", 0);
   ////snd.laser;
-  //_loadingMsg = "Cargando... 100%";
+  _loadingMsg = "Cargando... 100%";
   frame();
 
   frame(600); // Espera 6 frames -> 1/6 de segundo

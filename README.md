@@ -35,6 +35,13 @@ código con soporte de múltiples ventanas o bufferes, incluye un editor de
 gráficos, ficheros FPG (empaqueta gráficos), editor de sonido, editor de
 paletas, e incluso un generador de explosiones.
 
+## ¿Qué es Gemix Studio?
+
+Gemix Studio es un lenguaje DIV*like*, que conserva una buena compatibilidad
+con el lenguaje DIV original y agrega bastante mejoras (código fuente en
+múltiples ficheros, etc). Aparte de funcionar sobre sistemas operativos 
+modernos, y poder generar ejecutables para Linux, Windows, Android, etc...
+
 ## Inspiración para el matamarcianos
 
 Para esto me influencia bastante estos juegos :
@@ -44,24 +51,23 @@ Para esto me influencia bastante estos juegos :
 * [Major Striker](https://es.wikipedia.org/wiki/William_Stryker)
 * [19XX The war against destiny](https://en.wikipedia.org/wiki/19XX:_The_War_Against_Destiny)
 
-## Antes de lanzarlo desde DIV2...
+## Compilación...
 
-Se debe de instalar en una subcarpeta dentro de donde esté instalado DIV2 de la
-siguiente forma :
+Es necesario tener instalado Gemix Studio v8 (a fecha de hoy en BETA).
 
-```bash
-mkdir zardoz
-cd zardoz
-git clone git@github.com:Zardoz89/mata.git
-```
+La ruta al compilador de Gemix, se puede cambiar en el makefile o pasarlo al
+makefile con `make GEMIX_COMPILER_PATH=ruta`.
 
-El repositorio usa submodulos para las DLLs que usa para extender DIV, con lo
-que es importante ejecutar esto después de hacer un clone del repositorio :
+El ejecutable del compilador, se puede cambiar en el makefile o pasarlo al
+makefile con `make GEMIX_COMPILER=./gmxc-xxxx-yyyy`
 
-```bash
-git submodule init
-git submodule update
-```
+Ejecutar `make`. Se generará los ficheros de datos necesarios, los ejecutables
+y los ficheros .gbc en la carpeta `exe`.
+
+Los ejecutables y los ficheros .gbc , se generan en la carpeta del compilador, y
+se mueven a la carpeta `exe` (a fecha de hoy, el compilador de gemix falla si
+se intenta crear los ficheros en cualquier otra ruta). En dicha carpeta, habrá que copiar los .so de
+Gemix, incluido el .so adecuado del modulo de CSVs : https://github.com/Zardoz89/csvDll/tree/gemix 
 
 ## Recursos usados
 

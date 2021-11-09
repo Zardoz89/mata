@@ -62,7 +62,7 @@ const
 
 global
   // **** Libreria de graficos
-  int fpgTileset;
+  //int fpgTileset;
   int fpgPlayer;
   //int fpgShoots;
   int fpgEnemy;

@@ -10,6 +10,9 @@ const
   TILE_WIDTH=24;
   TILE_HEIGHT=28;
 
+global
+  int fpgTileset;
+
 /**
  * Crea el buffer de tilemap
  * @param mapRows Nº de filas del tilemap
@@ -30,6 +33,9 @@ begin
   //buffer = map_new(bufferHeight, bufferWidth, 
   //bufferWidth >> 1, bufferHeight >> 1, // 0, 0
   //keyColor);
+  //buffer = map_new(bufferWidth, bufferHeight,
+  //  bufferWidth >> 1, bufferHeight >> 1,
+  //  rgb(0, 0, 0));
   buffer = new_map(bufferWidth, bufferHeight,
     bufferWidth >> 1, bufferHeight >> 1, // 0, 0
     keyColor); // Color de transparencia
@@ -57,7 +63,9 @@ begin
       tileIndex = mapColumns * y + x;
       tileMap = tilesPtr[tileIndex];
       tileMap = max(tileMap, 1);
-      map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth, putY);
+      //map_put(0, buffer, tileMap, (x * tileWidth) + halfTileWidth, putY);
+      map_put(0, buffer, fpgTileset, tileMap, (x * tileWidth) + halfTileWidth, putY);
+
     end
   end
 end
